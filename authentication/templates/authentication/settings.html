@@ -1,0 +1,358 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title %}Account Settings - KoraQuest{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row fade-in">
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Account Settings</h5>
+                    <span class="badge bg-primary">{{ user.get_role_display }}</span>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
+                                <i class="bi bi-person me-2"></i>Profile
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="account-tab" data-bs-toggle="tab" data-bs-target="#account" type="button" role="tab" aria-controls="account" aria-selected="false">
+                                <i class="bi bi-gear me-2"></i>Account
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="upgrade-tab" data-bs-toggle="tab" data-bs-target="#upgrade" type="button" role="tab" aria-controls="upgrade" aria-selected="false">
+                                <i class="bi bi-arrow-up-circle me-2"></i>Upgrade
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content pt-4" id="settingsTabContent">
+                        <!-- Profile Settings Tab -->
+                        <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                            <form method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="profile">
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-3 text-center">
+                                        <div class="position-relative mb-3">
+                                            {% if user.profile_picture %}
+                                                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; margin: 0 auto;">
+                                                    <span class="display-4 text-secondary">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="profile_picture" class="form-label">Profile Picture</label>
+                                            <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+                                            <div class="form-text">
+                                                Upload a profile picture (JPG, PNG, GIF)
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="first_name" class="form-label">First Name</label>
+                                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="last_name" class="form-label">Last Name</label>
+                                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="phone_number" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="profile_cv" class="form-label">Upload CV/Resume {% if user.is_freelancer_role %}<span class="badge bg-success ms-2">Freelancer Enabled</span>{% endif %}</label>
+                                    <input type="file" class="form-control" id="profile_cv" name="profile_cv" accept=".pdf,.doc,.docx">
+                                    <div class="form-text">
+                                        Uploading your CV will automatically enable freelancer features on your account.
+                                        {% if user.is_freelancer_role %}You already have freelancer access.{% endif %}
+                                    </div>
+                                    {% if user.freelancer_cv %}
+                                    <div class="mt-2">
+                                        <span class="text-success"><i class="bi bi-file-earmark-check me-1"></i> Current CV: </span>
+                                        <a href="{{ user.freelancer_cv.url }}" target="_blank" class="text-decoration-none">{{ user.freelancer_cv.name|slice:"4:" }}</a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3" id="skills_container" {% if not user.freelancer_skills and not user.is_freelancer_role %}style="display: none;"{% endif %}>
+                                    <label for="profile_skills" class="form-label">Professional Skills</label>
+                                    <textarea class="form-control" id="profile_skills" name="profile_skills" rows="2" placeholder="E.g., Web Development, Graphic Design, Content Writing">{{ user.freelancer_skills }}</textarea>
+                                    <div class="form-text">
+                                        List your key professional skills (required for freelancer status)
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary">Save Profile</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Account Settings Tab -->
+                        <div class="tab-pane fade" id="account" role="tabpanel" aria-labelledby="account-tab">
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="account">
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" readonly>
+                                    <div class="form-text">Username cannot be changed.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="new_password" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary">Update Password</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Account Upgrade Tab -->
+                        <div class="tab-pane fade" id="upgrade" role="tabpanel" aria-labelledby="upgrade-tab">
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 {% if user.is_vendor_role %}border-success{% endif %}">
+                                        <div class="card-header bg-white">
+                                            <h5 class="mb-0 text-center fw-bold">
+                                                <i class="bi bi-shop me-2"></i>Vendor
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">Upgrade your account to sell products on KoraQuest.</p>
+                                            <ul class="mb-4">
+                                                <li>Create product listings</li>
+                                                <li>Connect with potential buyers</li>
+                                                <li>Build your brand on the platform</li>
+                                                <li>Access sales analytics</li>
+                                            </ul>
+                                            
+                                            {% if user.is_vendor_role %}
+                                                <div class="alert alert-success">
+                                                    <i class="bi bi-check-circle me-2"></i>You are already a vendor
+                                                </div>
+                                            {% else %}
+                                                <form method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="upgrade_type" value="vendor">
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="vendor_terms" required>
+                                                        <label class="form-check-label small" for="vendor_terms">
+                                                            I agree to the <a href="#">Terms of Service</a>
+                                                        </label>
+                                                    </div>
+                                                    <div class="d-grid">
+                                                        <button type="submit" class="btn btn-outline-primary">Become a Vendor</button>
+                                                    </div>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 {% if user.is_hiring_company_role %}border-success{% endif %}">
+                                        <div class="card-header bg-white">
+                                            <h5 class="mb-0 text-center fw-bold">
+                                                <i class="bi bi-building me-2"></i>Hiring Company
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">Register as a company to post job listings and find talent.</p>
+                                            <ul class="mb-3">
+                                                <li>Post job listings</li>
+                                                <li>Browse freelancer portfolios</li>
+                                                <li>Manage projects and teams</li>
+                                                <li>Access talent analytics</li>
+                                            </ul>
+                                            
+                                            {% if user.is_hiring_company_role %}
+                                                <div class="alert alert-success">
+                                                    <i class="bi bi-check-circle me-2"></i>You are registered as a company
+                                                </div>
+                                            {% else %}
+                                                <form method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="upgrade_type" value="hiring_company">
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="company_name" class="form-label small">Company Name</label>
+                                                        <input type="text" class="form-control form-control-sm" id="company_name" name="company_name" required>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="company_description" class="form-label small">Description</label>
+                                                        <textarea class="form-control form-control-sm" id="company_description" name="company_description" rows="2" required></textarea>
+                                                    </div>
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="company_terms" required>
+                                                        <label class="form-check-label small" for="company_terms">
+                                                            I agree to the <a href="#">Terms of Service</a>
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div class="d-grid">
+                                                        <button type="submit" class="btn btn-outline-primary">Register Company</button>
+                                                    </div>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 {% if user.is_freelancer_role %}border-success{% endif %}">
+                                        <div class="card-header bg-white">
+                                            <h5 class="mb-0 text-center fw-bold">
+                                                <i class="bi bi-person-badge me-2"></i>Freelancer
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">Apply as a freelancer to offer your services and find work.</p>
+                                            <ul class="mb-3">
+                                                <li>Connect with businesses</li>
+                                                <li>Create a professional portfolio</li>
+                                                <li>Receive project inquiries</li>
+                                                <li>Access job listings</li>
+                                            </ul>
+                                            
+                                            {% if user.is_freelancer_role %}
+                                                <div class="alert alert-success">
+                                                    <i class="bi bi-check-circle me-2"></i>You are registered as a freelancer
+                                                </div>
+                                                {% if user.freelancer_skills %}
+                                                <div class="mt-3">
+                                                    <h6 class="fw-bold small">Your Skills:</h6>
+                                                    <p class="small text-muted">{{ user.freelancer_skills }}</p>
+                                                </div>
+                                                {% endif %}
+                                                {% if user.freelancer_cv %}
+                                                <div class="mt-3">
+                                                    <a href="{{ user.freelancer_cv.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                        <i class="bi bi-file-earmark-text me-1"></i> View Your CV
+                                                    </a>
+                                                </div>
+                                                {% endif %}
+                                            {% else %}
+                                                <form method="POST" enctype="multipart/form-data">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="upgrade_type" value="freelancer">
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="cv" class="form-label small">Upload CV/Resume</label>
+                                                        <input type="file" class="form-control form-control-sm" id="cv" name="cv" accept=".pdf,.doc,.docx" required>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="skills" class="form-label small">Skills & Expertise</label>
+                                                        <textarea class="form-control form-control-sm" id="skills" name="skills" rows="2" required></textarea>
+                                                    </div>
+                                                    
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="freelancer_terms" required>
+                                                        <label class="form-check-label small" for="freelancer_terms">
+                                                            I agree to the <a href="#">Terms of Service</a>
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div class="d-grid">
+                                                        <button type="submit" class="btn btn-outline-primary">Apply as Freelancer</button>
+                                                    </div>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-2">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Note:</strong> You can have multiple roles on KoraQuest. For example, you can be both a vendor and a freelancer.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if URL has a hash and switch to the appropriate tab
+        if (window.location.hash) {
+            const targetTabId = window.location.hash.substring(1);
+            const targetTab = document.getElementById(`${targetTabId}-tab`);
+            
+            if (targetTab) {
+                // Create a new Bootstrap tab instance and show it
+                const tab = new bootstrap.Tab(targetTab);
+                tab.show();
+                
+                // Scroll to the tab content
+                const targetElement = document.getElementById(targetTabId);
+                if (targetElement) {
+                    setTimeout(function() {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }, 200);
+                }
+            }
+        }
+        
+        // Show skills field when CV is selected
+        const cvInput = document.getElementById('profile_cv');
+        const skillsContainer = document.getElementById('skills_container');
+        const skillsTextarea = document.getElementById('profile_skills');
+        
+        // If user has existing skills, don't hide the container when clearing the file input
+        {% if user.freelancer_skills %}
+        const hasExistingSkills = true;
+        {% else %}
+        const hasExistingSkills = false;
+        {% endif %}
+        
+        cvInput.addEventListener('change', function() {
+            if (cvInput.files.length > 0 || hasExistingSkills) {
+                skillsContainer.style.display = 'block';
+                skillsTextarea.setAttribute('required', 'required');
+            } else if (!hasExistingSkills) {
+                skillsContainer.style.display = 'none';
+                skillsTextarea.removeAttribute('required');
+            }
+        });
+    });
+</script>
+{% endblock extra_js %} 

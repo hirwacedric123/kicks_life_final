@@ -1,0 +1,273 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} - KoraQuest{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row fade-in">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-0">
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" class="card-img-top rounded-top" alt="{{ post.title }}" style="max-height: 400px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light p-5 text-center">
+                            <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="p-4">
+                        <h2 class="card-title mb-3">{{ post.title }}</h2>
+                        
+                        {% if post.post_type == 'product' %}
+                            <div class="d-flex align-items-center gap-2 mb-4">
+                                <span class="badge bg-primary">{{ post.category }}</span>
+                                <span class="badge bg-success">${{ post.price }}</span>
+                            </div>
+                        {% else %}
+                            <div class="d-flex align-items-center gap-2 mb-4">
+                                <span class="badge bg-primary">{{ post.job_type }}</span>
+                                <span class="badge bg-info">{{ post.job_location }}</span>
+                                {% if post.salary_range %}
+                                    <span class="badge bg-success">{{ post.salary_range }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">Description</h5>
+                            <p class="card-text">{{ post.description|linebreaksbr }}</p>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                {% if post.user.profile_picture %}
+                                    <img src="{{ post.user.profile_picture.url }}" class="rounded-circle me-2" alt="{{ post.user.username }}" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                        <span class="text-white">{{ post.user.first_name|first|upper }}{{ post.user.last_name|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ post.user.first_name }} {{ post.user.last_name }}</div>
+                                    <small class="text-muted">@{{ post.user.username }}</small>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <small class="text-muted">Posted {{ post.created_at|timesince }} ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        {% if post.post_type == 'product' %}
+                            Purchase Product
+                        {% else %}
+                            Apply for this Job
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if post.post_type == 'product' %}
+                        {% if has_purchased %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle-fill me-2"></i> You have already purchased this product.
+                            </div>
+                            <a href="{% url 'purchase_history' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-bag-check me-2"></i> View Your Purchases
+                            </a>
+                        {% else %}
+                            <div class="mb-3">
+                                <h3 class="text-primary mb-3">${{ post.price }}</h3>
+                                <p>Purchase this product securely with our payment system.</p>
+                            </div>
+                            <form method="POST" action="{% url 'purchase_product' post.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-lg w-100 pulsate-btn">
+                                    <i class="bi bi-bag-plus me-2"></i> Buy Now
+                                </button>
+                            </form>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <small class="text-muted"><i class="bi bi-shield-check"></i> Secure Payment</small>
+                                <small class="text-muted"><i class="bi bi-truck"></i> Fast Delivery</small>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% if has_applied %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle-fill me-2"></i> You have already applied for this job.
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6>Application Status:</h6>
+                                {% if application.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending Review</span>
+                                {% elif application.status == 'under_review' %}
+                                    <span class="badge bg-info">Under Review</span>
+                                {% elif application.status == 'interview' %}
+                                    <span class="badge bg-primary">Interview</span>
+                                {% elif application.status == 'accepted' %}
+                                    <span class="badge bg-success">Accepted</span>
+                                {% elif application.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if application.feedback %}
+                                <div class="mb-3">
+                                    <h6>Feedback:</h6>
+                                    <p>{{ application.feedback }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <a href="{% url 'freelancer_dashboard' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-briefcase me-2"></i> View Your Applications
+                            </a>
+                        {% else %}
+                            {% if user.is_freelancer_role %}
+                                <div class="mb-3">
+                                    <h6>Job Details:</h6>
+                                    <ul class="list-unstyled mb-3">
+                                        <li><i class="bi bi-geo-alt me-2 text-primary"></i>{{ post.job_location }}</li>
+                                        <li><i class="bi bi-briefcase me-2 text-primary"></i>{{ post.job_type }}</li>
+                                        {% if post.salary_range %}
+                                        <li><i class="bi bi-currency-dollar me-2 text-primary"></i>{{ post.salary_range }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                <a href="{% url 'apply_for_job' post.id %}" class="btn btn-success btn-lg w-100 pulsate-btn">
+                                    <i class="bi bi-file-earmark-person me-2"></i> Apply for this Job
+                                </a>
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">Your CV will be automatically included</small>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> You need to be a freelancer to apply for jobs.
+                                </div>
+                                <a href="{% url 'user_settings' %}#upgrade" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-person-plus me-2"></i> Become a Freelancer
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary bookmark-btn" data-post-id="{{ post.id }}">
+                            <i class="bi {% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %} me-2"></i>
+                            {% if is_bookmarked %}Saved{% else %}Save for Later{% endif %}
+                        </button>
+                        
+                        <button class="btn btn-outline-primary like-btn" data-post-id="{{ post.id }}">
+                            <i class="bi {% if user in post.likes.all %}bi-heart-fill{% else %}bi-heart{% endif %} me-2"></i>
+                            Like ({{ post.total_likes }})
+                        </button>
+                        
+                        <button class="btn btn-outline-primary share-btn">
+                            <i class="bi bi-share me-2"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle bookmark functionality
+    document.querySelector('.bookmark-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const postId = this.getAttribute('data-post-id');
+        const bookmarkBtn = this;
+        
+        fetch(`/auth/bookmark/${postId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_bookmarked) {
+                bookmarkBtn.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i> Saved';
+            } else {
+                bookmarkBtn.innerHTML = '<i class="bi bi-bookmark me-2"></i> Save for Later';
+            }
+        });
+    });
+    
+    // Handle like functionality
+    document.querySelector('.like-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const postId = this.getAttribute('data-post-id');
+        const likeBtn = this;
+        
+        fetch(`/auth/like-post/${postId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.liked) {
+                likeBtn.innerHTML = `<i class="bi bi-heart-fill me-2"></i> Like (${data.total_likes})`;
+            } else {
+                likeBtn.innerHTML = `<i class="bi bi-heart me-2"></i> Like (${data.total_likes})`;
+            }
+        });
+    });
+    
+    // Handle share functionality (dummy function for now)
+    document.querySelector('.share-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Get current URL
+        const url = window.location.href;
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                this.innerHTML = '<i class="bi bi-check-lg me-2"></i> Copied!';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="bi bi-share me-2"></i> Share';
+                }, 2000);
+            });
+    });
+
+    // Add pulsating effect for the main call-to-action buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulsate {
+                0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+                70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+                100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+            }
+            
+            .pulsate-btn {
+                animation: pulsate 2s ease-out infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
+{% endblock %}
