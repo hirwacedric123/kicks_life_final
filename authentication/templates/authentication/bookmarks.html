@@ -1,0 +1,265 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title %}My Bookmarks - KoraQuest{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row mb-4 fade-in">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">My Bookmarks</h2>
+            <p class="text-muted">Your saved posts and job listings</p>
+        </div>
+    </div>
+    
+    {% if bookmarks %}
+    <div class="row slide-up" id="masonry-container" style="animation-delay: 0.2s;">
+        {% for bookmark in bookmarks %}
+        <div class="col-sm-6 col-md-4 col-lg-3 mb-4 masonry-item">
+            <div class="card shadow-sm h-100">
+                <a href="{% url 'post_detail' bookmark.post.id %}" class="text-decoration-none text-dark card-link">
+                    {% if bookmark.post.image %}
+                    <div class="card-img-container">
+                        {% if bookmark.post.post_type == 'job' %}
+                        <span class="post-badge badge-job">Job</span>
+                        {% else %}
+                        <span class="post-badge badge-product">Product</span>
+                        {% endif %}
+                        <img src="{{ bookmark.post.image.url }}" class="card-img-top" alt="{{ bookmark.post.title }}" loading="lazy">
+                        <div class="card-img-overlay">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-light like-btn" data-post-id="{{ bookmark.post.id }}">
+                                    <i class="bi {% if user in bookmark.post.likes.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light bookmark-btn active" data-post-id="{{ bookmark.post.id }}">
+                                    <i class="bi bi-bookmark-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light">
+                                    <i class="bi bi-share"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="bg-light p-5 text-center">
+                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">{{ bookmark.post.title }}</h5>
+                        {% if bookmark.post.post_type == 'job' %}
+                        <p class="card-text text-muted mb-2">
+                            <i class="bi bi-geo-alt me-1"></i>{{ bookmark.post.job_location|default:"Remote" }}
+                            <span class="mx-2">•</span>
+                            <i class="bi bi-briefcase me-1"></i>{{ bookmark.post.job_type|default:"Full-time" }}
+                        </p>
+                        {% elif bookmark.post.post_type == 'product' %}
+                        <p class="card-text text-primary fw-bold mb-2">{{ bookmark.post.price|floatformat:2 }} USD</p>
+                        {% endif %}
+                        <p class="card-text small text-muted mb-2">{{ bookmark.post.description|truncatechars:100 }}</p>
+                    </div>
+                    
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            {% if bookmark.post.user.profile_picture %}
+                            <img src="{{ bookmark.post.user.profile_picture.url }}" alt="{{ bookmark.post.user.username }}" class="rounded-circle me-2 avatar-sm">
+                            {% else %}
+                            <div class="avatar avatar-sm rounded-circle bg-primary d-flex align-items-center justify-content-center me-2">
+                                <span class="text-white">{{ bookmark.post.user.first_name|first|upper }}{{ bookmark.post.user.last_name|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">{{ bookmark.post.user.first_name }} {{ bookmark.post.user.last_name }}</small>
+                        </div>
+                        <small class="text-muted">{{ bookmark.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row fade-in" style="animation-delay: 0.3s;">
+        <div class="col-12 text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-bookmark text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h3 class="mb-3">No bookmarks yet</h3>
+            <p class="text-muted mb-4">Start saving posts you like by clicking the bookmark icon</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary">
+                <i class="bi bi-grid me-2"></i>Browse Posts
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Post card hover effect */
+    .card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Card link styling */
+    .card-link {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Button inside card should have a higher z-index */
+    .card .btn {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Post badges */
+    .post-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+    
+    .badge-job {
+        background-color: #1e88e5;
+        color: white;
+    }
+    
+    .badge-product {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    /* Card image container and overlay */
+    .card-img-container {
+        position: relative;
+    }
+    
+    .card-img-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .card:hover .card-img-overlay {
+        opacity: 1;
+    }
+    
+    /* User avatar styles */
+    .avatar {
+        width: 32px;
+        height: 32px;
+        overflow: hidden;
+    }
+    
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+    }
+    
+    /* Active bookmark button */
+    .bookmark-btn.active {
+        color: #1e88e5;
+        background-color: #e3f2fd;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle bookmark button clicks
+    document.querySelectorAll('.bookmark-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const postId = this.getAttribute('data-post-id');
+            
+            // Send request to toggle bookmark
+            fetch(`/auth/bookmark/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'removed') {
+                    // Remove the card from the view since it's no longer bookmarked
+                    const card = this.closest('.masonry-item');
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // Check if there are any bookmarks left
+                        const remainingCards = document.querySelectorAll('.masonry-item');
+                        if (remainingCards.length === 0) {
+                            location.reload(); // Reload to show empty state
+                        }
+                    }, 300);
+                }
+            });
+        });
+    });
+    
+    // Handle like button clicks
+    document.querySelectorAll('.like-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const postId = this.getAttribute('data-post-id');
+            const icon = this.querySelector('i');
+            
+            // Send request to toggle like
+            fetch(`/auth/like/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'liked') {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                }
+            });
+        });
+    });
+    
+    // Get CSRF cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %} 

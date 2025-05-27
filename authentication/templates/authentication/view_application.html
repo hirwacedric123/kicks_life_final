@@ -1,0 +1,297 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title %}Application Details - KoraQuest{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row mb-4 fade-in">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">Your Application</h2>
+                <p class="text-muted">Application for {{ application.job.title }}</p>
+            </div>
+            <a href="{% url 'freelancer_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Application details -->
+    <div class="row mb-4 fade-in">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Application Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Application Status</h6>
+                            <div>
+                                {% if application.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif application.status == 'under_review' %}
+                                    <span class="badge bg-info">Under Review</span>
+                                {% elif application.status == 'pre_interview' %}
+                                    <span class="badge bg-info">Pre-Interview Assessment</span>
+                                {% elif application.status == 'interview' %}
+                                    <span class="badge bg-primary">Interview</span>
+                                {% elif application.status == 'accepted' %}
+                                    <span class="badge bg-success">Accepted</span>
+                                {% elif application.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Application Date</h6>
+                            <p>{{ application.created_at|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Your Cover Letter</h6>
+                        <div class="p-3 bg-light rounded border">
+                            {{ application.cover_letter|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    {% if application.cv %}
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Your CV</h6>
+                        <a href="{{ application.cv.url }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-file-earmark-text me-2"></i>View CV
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Interview details section (if available) -->
+            {% if application.interview_details or application.feedback %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Employer Feedback</h5>
+                </div>
+                <div class="card-body">
+                    {% if application.interview_details %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Interview Details</h6>
+                        <div class="p-3 bg-light rounded border">
+                            {{ application.interview_details|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if application.feedback %}
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Feedback from Employer</h6>
+                        <div class="p-3 bg-light rounded border">
+                            {{ application.feedback|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Assessments section -->
+            {% if application.status == 'pre_interview' %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Pre-Interview Assessments</h5>
+                </div>
+                <div class="card-body">
+                    {% if available_quizzes %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Assessment Required:</strong> You need to complete all assessments to progress to the interview stage.
+                        </div>
+                        
+                        <h6 class="fw-bold mb-3">Available Assessments</h6>
+                        <div class="list-group mb-4">
+                            {% for quiz in available_quizzes %}
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ quiz.title }}</h6>
+                                        <small class="text-muted">
+                                            {{ quiz.questions.count }} questions | 
+                                            {{ quiz.time_limit_minutes }} minutes | 
+                                            {{ quiz.passing_score }}% to pass
+                                        </small>
+                                        <div class="mt-1">
+                                            <span class="badge bg-warning text-dark">Required</span>
+                                            {% if quiz.difficulty == 'easy' %}
+                                                <span class="badge bg-success">Easy</span>
+                                            {% elif quiz.difficulty == 'medium' %}
+                                                <span class="badge bg-warning text-dark">Medium</span>
+                                            {% elif quiz.difficulty == 'hard' %}
+                                                <span class="badge bg-danger">Hard</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'take_quiz' quiz.id application.id %}" class="btn btn-primary">
+                                        <i class="bi bi-play-fill me-1"></i> Start Test
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if quiz_attempts %}
+                        <h6 class="fw-bold mb-3">Your Test Results</h6>
+                        <div class="list-group mb-3">
+                            {% for attempt in quiz_attempts %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">{{ attempt.quiz.title }}</h6>
+                                        <span class="badge {% if attempt.passed %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ attempt.score|floatformat:0 }}% - {% if attempt.passed %}Passed{% else %}Failed{% endif %}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">Completed on {{ attempt.completed_at|date:"F d, Y" }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if available_quizzes %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                You still have remaining assessments to complete.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                You have completed all required assessments!
+                            </div>
+                        {% endif %}
+                    {% elif not available_quizzes %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-journal-check text-muted mb-3" style="font-size: 2rem;"></i>
+                            <p>No assessment tests available at this time.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Comments section -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Communication</h5>
+                </div>
+                <div class="card-body">
+                    <div class="comments-container mb-4">
+                        {% if comments %}
+                            {% for comment in comments %}
+                                <div class="comment mb-3 p-3 {% if comment.author == request.user %}bg-light text-end{% else %}border-start border-primary border-3{% endif %} rounded">
+                                    <div class="d-flex {% if comment.author == request.user %}justify-content-end{% endif %} mb-2">
+                                        <div class="{% if comment.author == request.user %}order-2{% endif %}">
+                                            {% if comment.author.profile_picture %}
+                                                <img src="{{ comment.author.profile_picture.url }}" alt="{{ comment.author.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                                    <span class="text-white" style="font-size: 0.8rem;">{{ comment.author.first_name|first|upper }}{{ comment.author.last_name|first|upper }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="{% if comment.author == request.user %}me-2 order-1{% else %}ms-2{% endif %}">
+                                            <strong>{{ comment.author.first_name }} {{ comment.author.last_name }}</strong>
+                                            <small class="text-muted d-block">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="comment-content">
+                                        {{ comment.content|linebreaks }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-chat-square-text" style="font-size: 2rem;"></i>
+                                <p class="mt-2">No comments yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post" action="{% url 'add_application_comment' application.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Add Comment</label>
+                            <textarea id="content" name="content" class="form-control" rows="3" placeholder="Type your message here..."></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-1"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Job details summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Job Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold">{{ application.job.title }}</h6>
+                        <p class="text-muted mb-0">{{ application.job.job_location }} | {{ application.job.job_type }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Company</h6>
+                        <p>{{ application.job.user.first_name }} {{ application.job.user.last_name }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Salary Range</h6>
+                        <p>{{ application.job.salary_range|default:"Not specified" }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Description</h6>
+                        <p>{{ application.job.description|truncatewords:30 }}</p>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'post_detail' application.job.id %}" class="btn btn-outline-primary">
+                            <i class="bi bi-eye me-1"></i> View Full Job
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Application tips -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Application Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Keep your communication professional
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Complete any assessments promptly
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Prepare for interviews by researching the company
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Follow up after interviews with a thank-you message
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

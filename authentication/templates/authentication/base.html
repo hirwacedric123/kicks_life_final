@@ -459,9 +459,6 @@
                 <div class="px-3 py-2">
                     <small class="text-muted text-uppercase fw-bold">Account</small>
                 </div>
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-person-circle"></i> Profile
-                </a>
                 <a href="{% url 'user_settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
                     <i class="bi bi-gear"></i> Settings
                 </a>

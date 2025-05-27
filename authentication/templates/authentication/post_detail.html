@@ -9,24 +9,69 @@
         <div class="col-lg-8 mb-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body p-0">
-                    {% if post.image %}
-                        <img src="{{ post.image.url }}" class="card-img-top rounded-top" alt="{{ post.title }}" style="max-height: 400px; object-fit: cover;">
-                    {% else %}
-                        <div class="bg-light p-5 text-center">
-                            <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                    {% if post.post_type == 'product' %}
+                        <div class="product-gallery">
+                            <!-- Main product image display -->
+                            <div class="main-image-container">
+                                {% if post.image %}
+                                    <img src="{{ post.image.url }}" id="main-product-image" class="card-img-top rounded-top" alt="{{ post.title }}" style="max-height: 400px; object-fit: contain;">
+                                {% else %}
+                                    <div class="bg-light p-5 text-center">
+                                        <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Auxiliary image thumbnails -->
+                            {% if auxiliary_images %}
+                            <div class="auxiliary-images-container p-2 d-flex justify-content-center">
+                                <!-- Include main image as first thumbnail -->
+                                <div class="thumbnail-item mx-1 active" data-img-url="{{ post.image.url }}">
+                                    <img src="{{ post.image.url }}" alt="Main image" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;">
+                                </div>
+                                
+                                {% for aux_image in auxiliary_images %}
+                                <div class="thumbnail-item mx-1" data-img-url="{{ aux_image.image.url }}">
+                                    <img src="{{ aux_image.image.url }}" alt="Product view {{ forloop.counter }}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
+                    {% else %}
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" class="card-img-top rounded-top" alt="{{ post.title }}" style="max-height: 400px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light p-5 text-center">
+                                <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                            </div>
+                        {% endif %}
                     {% endif %}
                     
                     <div class="p-4">
-                        <h2 class="card-title mb-3">{{ post.title }}</h2>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h2 class="card-title mb-0">{{ post.title }}</h2>
+                            {% if is_owner and post.post_type == 'product' %}
+                            <a href="{% url 'edit_product' post.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil me-1"></i> Edit
+                            </a>
+                            {% endif %}
+                        </div>
                         
                         {% if post.post_type == 'product' %}
-                            <div class="d-flex align-items-center gap-2 mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-4 mt-2">
                                 <span class="badge bg-primary">{{ post.category }}</span>
                                 <span class="badge bg-success">${{ post.price }}</span>
+                                {% if post.inventory > 10 %}
+                                    <span class="badge bg-success">In Stock ({{ post.inventory }})</span>
+                                {% elif post.inventory > 0 %}
+                                    <span class="badge bg-warning text-dark">Low Stock ({{ post.inventory }} left)</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% endif %}
                             </div>
                         {% else %}
-                            <div class="d-flex align-items-center gap-2 mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-4 mt-2">
                                 <span class="badge bg-primary">{{ post.job_type }}</span>
                                 <span class="badge bg-info">{{ post.job_location }}</span>
                                 {% if post.salary_range %}
@@ -39,6 +84,62 @@
                             <h5 class="mb-3">Description</h5>
                             <p class="card-text">{{ post.description|linebreaksbr }}</p>
                         </div>
+
+                        {% if is_owner and post.post_type == 'job' and job_stats %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">Application Statistics</h5>
+                            <div class="row">
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="mb-1">{{ job_stats.total_applications }}</h3>
+                                            <small>Total Applications</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card bg-warning text-dark">
+                                        <div class="card-body text-center">
+                                            <h3 class="mb-1">{{ job_stats.pending_applications }}</h3>
+                                            <small>Pending Review</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="mb-1">{{ job_stats.under_review_applications }}</h3>
+                                            <small>Under Review</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card bg-secondary text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="mb-1">{{ job_stats.interview_applications }}</h3>
+                                            <small>Interview Stage</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="mb-1">{{ job_stats.accepted_applications }}</h3>
+                                            <small>Accepted</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center">
+                                            <h3 class="mb-1">{{ job_stats.rejected_applications }}</h3>
+                                            <small>Rejected</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                         
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="d-flex align-items-center">
@@ -84,21 +185,50 @@
                             <a href="{% url 'purchase_history' %}" class="btn btn-outline-primary w-100">
                                 <i class="bi bi-bag-check me-2"></i> View Your Purchases
                             </a>
+                        {% elif is_owner %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle-fill me-2"></i> This is your own product.
+                            </div>
+                            <a href="{% url 'edit_product' post.id %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-pencil me-2"></i> Edit Product
+                            </a>
                         {% else %}
-                            <div class="mb-3">
-                                <h3 class="text-primary mb-3">${{ post.price }}</h3>
-                                <p>Purchase this product securely with our payment system.</p>
-                            </div>
-                            <form method="POST" action="{% url 'purchase_product' post.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary btn-lg w-100 pulsate-btn">
-                                    <i class="bi bi-bag-plus me-2"></i> Buy Now
+                            {% if post.price %}
+                                {% if post.inventory > 0 %}
+                                <div class="mb-3">
+                                    <h3 class="text-primary mb-3">${{ post.price }}</h3>
+                                    <p>Purchase this product securely with our payment system.</p>
+                                    {% if post.inventory < 5 %}
+                                    <p class="text-danger"><strong>Only {{ post.inventory }} left in stock - order soon!</strong></p>
+                                    {% endif %}
+                                </div>
+                                <form method="POST" action="{% url 'purchase_product' post.id %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="quantity" class="form-label">Quantity</label>
+                                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" max="{{ post.inventory }}" value="1" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 pulsate-btn">
+                                        <i class="bi bi-bag-plus me-2"></i> Buy Now
+                                    </button>
+                                </form>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <small class="text-muted"><i class="bi bi-shield-check"></i> Secure Payment</small>
+                                    <small class="text-muted"><i class="bi bi-truck"></i> Fast Delivery</small>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> This product is currently out of stock.
+                                </div>
+                                <button class="btn btn-secondary btn-lg w-100" disabled>
+                                    <i class="bi bi-bag-plus me-2"></i> Out of Stock
                                 </button>
-                            </form>
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <small class="text-muted"><i class="bi bi-shield-check"></i> Secure Payment</small>
-                                <small class="text-muted"><i class="bi bi-truck"></i> Fast Delivery</small>
+                                {% endif %}
+                            {% else %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> This product is not available for purchase yet.
                             </div>
+                            {% endif %}
                         {% endif %}
                     {% else %}
                         {% if has_applied %}
@@ -149,7 +279,7 @@
                                 <div class="text-center mt-2">
                                     <small class="text-muted">Your CV will be automatically included</small>
                                 </div>
-                            {% else %}
+                            {% elif not is_owner %}
                                 <div class="alert alert-warning">
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i> You need to be a freelancer to apply for jobs.
                                 </div>
@@ -162,12 +292,21 @@
                 </div>
             </div>
             
+            {% if not is_owner or post.post_type == 'product' %}
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Actions</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
+                        {% if is_owner and post.post_type == 'product' %}
+                        <a href="{% url 'edit_product' post.id %}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-2"></i> Edit Product
+                        </a>
+                        <hr>
+                        {% endif %}
+                        
+                        {% if not is_owner %}
                         <button class="btn btn-outline-primary bookmark-btn" data-post-id="{{ post.id }}">
                             <i class="bi {% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %} me-2"></i>
                             {% if is_bookmarked %}Saved{% else %}Save for Later{% endif %}
@@ -181,77 +320,155 @@
                         <button class="btn btn-outline-primary share-btn">
                             <i class="bi bi-share me-2"></i> Share
                         </button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
+            {% endif %}
+
+            {% if is_owner and post.post_type == 'job' %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Job Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if post.total_applications > 0 %}
+                            <button class="btn btn-outline-secondary" disabled title="Cannot edit job with applications">
+                                <i class="bi bi-pencil me-2"></i> Edit Job ({{ post.total_applications }} applications received)
+                            </button>
+                        {% else %}
+                            <a href="{% url 'edit_job' post.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil me-2"></i> Edit Job
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'hiring_company_dashboard' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-briefcase me-2"></i> View All Applications
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if is_owner and post.post_type == 'job' %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Assessment Tests</h5>
+                    <a href="{% url 'create_quiz' post.id %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Create Test
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% with quizzes=post.quizzes.all %}
+                    {% if quizzes %}
+                        <div class="list-group">
+                            {% for quiz in quizzes %}
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ quiz.title }}</h6>
+                                        <small class="text-muted">
+                                            {{ quiz.questions.count }} questions | 
+                                            {{ quiz.time_limit_minutes }} min | 
+                                            {{ quiz.passing_score }}% to pass
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'edit_quiz' quiz.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-journal-check text-muted mb-3" style="font-size: 2rem;"></i>
+                            <p>No assessment tests created yet</p>
+                            <a href="{% url 'create_quiz' post.id %}" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-2"></i> Create Test
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <script>
     // Handle bookmark functionality
-    document.querySelector('.bookmark-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        const postId = this.getAttribute('data-post-id');
-        const bookmarkBtn = this;
-        
-        fetch(`/auth/bookmark/${postId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.is_bookmarked) {
-                bookmarkBtn.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i> Saved';
-            } else {
-                bookmarkBtn.innerHTML = '<i class="bi bi-bookmark me-2"></i> Save for Later';
-            }
+    const bookmarkBtn = document.querySelector('.bookmark-btn');
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.getAttribute('data-post-id');
+            const bookmarkBtn = this;
+            
+            fetch(`/auth/bookmark/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_bookmarked || data.status === 'added') {
+                    bookmarkBtn.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i> Saved';
+                } else {
+                    bookmarkBtn.innerHTML = '<i class="bi bi-bookmark me-2"></i> Save for Later';
+                }
+            });
         });
-    });
+    }
     
     // Handle like functionality
-    document.querySelector('.like-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        const postId = this.getAttribute('data-post-id');
-        const likeBtn = this;
-        
-        fetch(`/auth/like-post/${postId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.liked) {
-                likeBtn.innerHTML = `<i class="bi bi-heart-fill me-2"></i> Like (${data.total_likes})`;
-            } else {
-                likeBtn.innerHTML = `<i class="bi bi-heart me-2"></i> Like (${data.total_likes})`;
-            }
+    const likeBtn = document.querySelector('.like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.getAttribute('data-post-id');
+            const likeBtn = this;
+            
+            fetch(`/auth/like-post/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    likeBtn.innerHTML = `<i class="bi bi-heart-fill me-2"></i> Like (${data.total_likes})`;
+                } else {
+                    likeBtn.innerHTML = `<i class="bi bi-heart me-2"></i> Like (${data.total_likes})`;
+                }
+            });
         });
-    });
+    }
     
     // Handle share functionality (dummy function for now)
-    document.querySelector('.share-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        // Get current URL
-        const url = window.location.href;
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(url)
-            .then(() => {
-                this.innerHTML = '<i class="bi bi-check-lg me-2"></i> Copied!';
-                setTimeout(() => {
-                    this.innerHTML = '<i class="bi bi-share me-2"></i> Share';
-                }, 2000);
-            });
-    });
+    const shareBtn = document.querySelector('.share-btn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Get current URL
+            const url = window.location.href;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(url)
+                .then(() => {
+                    this.innerHTML = '<i class="bi bi-check-lg me-2"></i> Copied!';
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="bi bi-share me-2"></i> Share';
+                    }, 2000);
+                });
+        });
+    }
 
     // Add pulsating effect for the main call-to-action buttons
     document.addEventListener('DOMContentLoaded', function() {
@@ -266,8 +483,58 @@
             .pulsate-btn {
                 animation: pulsate 2s ease-out infinite;
             }
+            
+            /* Thumbnail styling */
+            .thumbnail-item {
+                border: 2px solid transparent;
+                border-radius: 4px;
+                transition: all 0.2s;
+            }
+            
+            .thumbnail-item.active {
+                border-color: #0d6efd;
+            }
+            
+            .main-image-container {
+                position: relative;
+                text-align: center;
+                background-color: #f8f9fa;
+            }
+            
+            #main-product-image {
+                transition: all 0.3s ease;
+            }
         `;
         document.head.appendChild(style);
+        
+        // Initialize gallery functionality
+        initializeGallery();
     });
+    
+    // Product gallery image switching
+    function initializeGallery() {
+        const thumbnails = document.querySelectorAll('.thumbnail-item');
+        const mainImage = document.getElementById('main-product-image');
+        
+        if (!thumbnails.length || !mainImage) return;
+        
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', function() {
+                // Update main image
+                const imgUrl = this.getAttribute('data-img-url');
+                mainImage.src = imgUrl;
+                
+                // Update active state
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Add a small zoom effect on change
+                mainImage.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    mainImage.style.transform = 'scale(1)';
+                }, 300);
+            });
+        });
+    }
 </script>
 {% endblock %}

@@ -24,6 +24,13 @@
                                 <i class="bi bi-gear me-2"></i>Account
                             </button>
                         </li>
+                        {% if user.is_freelancer_role %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="freelancer-tab" data-bs-toggle="tab" data-bs-target="#freelancer" type="button" role="tab" aria-controls="freelancer" aria-selected="false">
+                                <i class="bi bi-person-badge me-2"></i>Freelancer Profile
+                            </button>
+                        </li>
+                        {% endif %}
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="upgrade-tab" data-bs-toggle="tab" data-bs-target="#upgrade" type="button" role="tab" aria-controls="upgrade" aria-selected="false">
                                 <i class="bi bi-arrow-up-circle me-2"></i>Upgrade
@@ -81,28 +88,23 @@
                                     </div>
                                 </div>
                                 
+                                {% if not user.is_freelancer_role %}
                                 <div class="mb-4">
-                                    <label for="profile_cv" class="form-label">Upload CV/Resume {% if user.is_freelancer_role %}<span class="badge bg-success ms-2">Freelancer Enabled</span>{% endif %}</label>
+                                    <label for="profile_cv" class="form-label">Upload CV/Resume</label>
                                     <input type="file" class="form-control" id="profile_cv" name="profile_cv" accept=".pdf,.doc,.docx">
                                     <div class="form-text">
                                         Uploading your CV will automatically enable freelancer features on your account.
-                                        {% if user.is_freelancer_role %}You already have freelancer access.{% endif %}
                                     </div>
-                                    {% if user.freelancer_cv %}
-                                    <div class="mt-2">
-                                        <span class="text-success"><i class="bi bi-file-earmark-check me-1"></i> Current CV: </span>
-                                        <a href="{{ user.freelancer_cv.url }}" target="_blank" class="text-decoration-none">{{ user.freelancer_cv.name|slice:"4:" }}</a>
-                                    </div>
-                                    {% endif %}
                                 </div>
                                 
-                                <div class="mb-3" id="skills_container" {% if not user.freelancer_skills and not user.is_freelancer_role %}style="display: none;"{% endif %}>
+                                <div class="mb-3" id="skills_container" style="display: none;">
                                     <label for="profile_skills" class="form-label">Professional Skills</label>
-                                    <textarea class="form-control" id="profile_skills" name="profile_skills" rows="2" placeholder="E.g., Web Development, Graphic Design, Content Writing">{{ user.freelancer_skills }}</textarea>
+                                    <textarea class="form-control" id="profile_skills" name="profile_skills" rows="2" placeholder="E.g., Web Development, Graphic Design, Content Writing"></textarea>
                                     <div class="form-text">
                                         List your key professional skills (required for freelancer status)
                                     </div>
                                 </div>
+                                {% endif %}
                                 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                     <button type="submit" class="btn btn-primary">Save Profile</button>
@@ -137,6 +139,83 @@
                                 </div>
                             </form>
                         </div>
+                        
+                        <!-- Freelancer Profile Tab (only shown if user is a freelancer) -->
+                        {% if user.is_freelancer_role %}
+                        <div class="tab-pane fade" id="freelancer" role="tabpanel" aria-labelledby="freelancer-tab">
+                            <div class="card border-0 mb-4">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Freelancer Profile</h5>
+                                    <form method="POST" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_type" value="freelancer_profile">
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card h-100">
+                                                    <div class="card-header bg-white">
+                                                        <h6 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>CV / Resume</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        {% if user.freelancer_cv %}
+                                                        <div class="mb-3">
+                                                            <p class="mb-2">Current CV:</p>
+                                                            <div class="d-flex align-items-center p-3 bg-light rounded mb-3">
+                                                                <i class="bi bi-file-earmark-pdf fs-3 text-danger me-3"></i>
+                                                                <div>
+                                                                    <h6 class="mb-0 text-truncate">{{ user.freelancer_cv.name|slice:"4:" }}</h6>
+                                                                    <small class="text-muted">Uploaded on: {{ user.freelancer_cv.name|date:"M d, Y" }}</small>
+                                                                </div>
+                                                                <a href="{{ user.freelancer_cv.url }}" target="_blank" class="btn btn-sm btn-outline-primary ms-auto">
+                                                                    <i class="bi bi-eye me-1"></i> View
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        {% else %}
+                                                        <div class="alert alert-warning">
+                                                            <i class="bi bi-exclamation-circle me-2"></i>No CV uploaded yet.
+                                                        </div>
+                                                        {% endif %}
+                                                        
+                                                        <div class="mb-3">
+                                                            <label for="freelancer_cv" class="form-label">Update Your CV</label>
+                                                            <input type="file" class="form-control" id="freelancer_cv" name="freelancer_cv" accept=".pdf,.doc,.docx">
+                                                            <div class="form-text">
+                                                                Upload a new CV to replace the current one (.pdf, .doc, or .docx)
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card h-100">
+                                                    <div class="card-header bg-white">
+                                                        <h6 class="mb-0"><i class="bi bi-tools me-2"></i>Skills & Expertise</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="mb-3">
+                                                            <label for="freelancer_skills" class="form-label">Professional Skills</label>
+                                                            <textarea class="form-control" id="freelancer_skills" name="freelancer_skills" rows="5" placeholder="E.g., Web Development, Graphic Design, Content Writing">{{ user.freelancer_skills }}</textarea>
+                                                            <div class="form-text">
+                                                                List your key professional skills (comma separated)
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-save me-2"></i>Update Freelancer Profile
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                         
                         <!-- Account Upgrade Tab -->
                         <div class="tab-pane fade" id="upgrade" role="tabpanel" aria-labelledby="upgrade-tab">
@@ -337,22 +416,17 @@
         const skillsContainer = document.getElementById('skills_container');
         const skillsTextarea = document.getElementById('profile_skills');
         
-        // If user has existing skills, don't hide the container when clearing the file input
-        {% if user.freelancer_skills %}
-        const hasExistingSkills = true;
-        {% else %}
-        const hasExistingSkills = false;
-        {% endif %}
-        
-        cvInput.addEventListener('change', function() {
-            if (cvInput.files.length > 0 || hasExistingSkills) {
-                skillsContainer.style.display = 'block';
-                skillsTextarea.setAttribute('required', 'required');
-            } else if (!hasExistingSkills) {
-                skillsContainer.style.display = 'none';
-                skillsTextarea.removeAttribute('required');
-            }
-        });
+        if (cvInput && skillsContainer) {
+            cvInput.addEventListener('change', function() {
+                if (cvInput.files.length > 0) {
+                    skillsContainer.style.display = 'block';
+                    skillsTextarea.setAttribute('required', 'required');
+                } else {
+                    skillsContainer.style.display = 'none';
+                    skillsTextarea.removeAttribute('required');
+                }
+            });
+        }
     });
 </script>
 {% endblock extra_js %} 

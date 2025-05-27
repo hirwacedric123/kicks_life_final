@@ -1,0 +1,86 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title %}Edit Job - KoraQuest{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row mb-4 fade-in">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">Edit Job Listing</h2>
+                <p class="text-muted">Update your job posting details</p>
+            </div>
+            <a href="{% url 'hiring_company_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <div class="row mb-4 fade-in">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Job Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Job Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ job.title }}" required>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="job_location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="job_location" name="job_location" value="{{ job.job_location }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="job_type" class="form-label">Job Type</label>
+                                <select class="form-select" id="job_type" name="job_type" required>
+                                    <option value="Full-time" {% if job.job_type == 'Full-time' %}selected{% endif %}>Full-time</option>
+                                    <option value="Part-time" {% if job.job_type == 'Part-time' %}selected{% endif %}>Part-time</option>
+                                    <option value="Contract" {% if job.job_type == 'Contract' %}selected{% endif %}>Contract</option>
+                                    <option value="Freelance" {% if job.job_type == 'Freelance' %}selected{% endif %}>Freelance</option>
+                                    <option value="Internship" {% if job.job_type == 'Internship' %}selected{% endif %}>Internship</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="salary_range" class="form-label">Salary Range (Optional)</label>
+                            <input type="text" class="form-control" id="salary_range" name="salary_range" value="{{ job.salary_range }}" placeholder="e.g. $50,000 - $70,000/year">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Job Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="10" required>{{ job.description }}</textarea>
+                            <div class="form-text">Provide detailed information about job responsibilities, requirements, and company info.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Job Image (Optional)</label>
+                            <input class="form-control" type="file" id="image" name="image" accept="image/*">
+                            <div class="form-text">Upload a new image or keep the existing one.</div>
+                            
+                            {% if job.image %}
+                            <div class="mt-2">
+                                <p class="mb-1">Current Image:</p>
+                                <img src="{{ job.image.url }}" alt="{{ job.title }}" class="img-thumbnail" style="max-height: 150px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'hiring_company_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Job</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

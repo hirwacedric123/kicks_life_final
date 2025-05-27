@@ -63,12 +63,64 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="mb-4">
+                          <div class="mb-4">
                             <label for="image" class="form-label">Featured Image</label>
                             <input type="file" class="form-control" id="image" name="image" accept="image/*">
                             <div class="form-text">
                                 Add a company logo or relevant image for your job posting (optional)
+                            </div>
+                        </div>
+                        
+                        <!-- Pre-selection Test/Quiz Section -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-header bg-transparent">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="bi bi-clipboard-check me-2"></i>Pre-selection Test (Optional)
+                                </h6>
+                                <small class="text-muted">Add a test to pre-screen candidates before interviews</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="quiz_title" class="form-label">Test Title</label>
+                                    <input type="text" class="form-control" id="quiz_title" name="quiz_title" placeholder="e.g., Technical Assessment for Web Developer">
+                                    <div class="form-text">
+                                        A descriptive title for your pre-selection test
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="quiz_description" class="form-label">Test Description</label>
+                                    <textarea class="form-control" id="quiz_description" name="quiz_description" rows="3" placeholder="Describe what this test covers and what candidates should expect..."></textarea>
+                                    <div class="form-text">
+                                        Explain the purpose and content of the test to candidates
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="time_limit" class="form-label">Time Limit (minutes)</label>
+                                        <input type="number" class="form-control" id="time_limit" name="time_limit" value="30" min="10" max="180">
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="passing_score" class="form-label">Passing Score (%)</label>
+                                        <input type="number" class="form-control" id="passing_score" name="passing_score" value="70" min="0" max="100">
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label for="difficulty" class="form-label">Difficulty</label>
+                                        <select class="form-select" id="difficulty" name="difficulty">
+                                            <option value="easy">Easy</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="hard">Hard</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Note:</strong> You can add specific questions to your test after creating the job posting by visiting your hiring company dashboard.
+                                </div>
                             </div>
                         </div>
                         

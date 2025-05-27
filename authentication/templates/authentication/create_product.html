@@ -63,10 +63,35 @@
                         </div>
                         
                         <div class="mb-4">
-                            <label for="image" class="form-label">Product Image</label>
-                            <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                            <label for="inventory" class="form-label">Quantity in Stock</label>
+                            <input type="number" class="form-control" id="inventory" name="inventory" min="1" value="1" required>
                             <div class="form-text">
-                                Upload a clear image of your product (required)
+                                Number of items available for purchase
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="main_image" class="form-label">Main Product Image</label>
+                            <input type="file" class="form-control" id="main_image" name="main_image" accept="image/*" required onchange="previewMainImage(this)">
+                            <div id="main-image-preview" class="mt-2"></div>
+                            <div class="form-text">
+                                Upload a clear main image of your product (required)
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="auxiliary_images" class="form-label">Additional Product Images (Gallery)</label>
+                            
+                            <div class="card bg-light p-3 mb-2">
+                                <div class="mb-3">
+                                    <label for="auxiliary_images" class="form-label fw-bold">Select multiple images (up to 5):</label>
+                                    <input type="file" class="form-control" id="auxiliary_images" name="auxiliary_images" accept="image/*" multiple>
+                                </div>
+                                
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <strong>Tip:</strong> To select multiple images, hold down the Ctrl key (or Command key on Mac) while clicking on the files you want to upload.
+                                </div>
                             </div>
                         </div>
                         
@@ -80,4 +105,37 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Preview main product image
+    function previewMainImage(input) {
+        const previewContainer = document.getElementById('main-image-preview');
+        previewContainer.innerHTML = '';
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const preview = document.createElement('div');
+                preview.classList.add('main-preview');
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Main image preview" style="max-height: 200px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                `;
+                previewContainer.appendChild(preview);
+            };
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    // Initialize components when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up event listeners
+        document.getElementById('main_image').addEventListener('change', function() {
+            previewMainImage(this);
+        });
+    });
+</script>
 {% endblock %} 

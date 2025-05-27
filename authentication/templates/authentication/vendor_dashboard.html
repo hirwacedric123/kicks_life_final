@@ -171,13 +171,32 @@
                                             </td>
                                             <td>${{ product.price }}</td>
                                             <td>{{ product.category }}</td>
-                                            <td>{{ product.total_purchases }}</td>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <div>
+                                                            <span class="fw-bold text-primary">{{ product.total_purchases }}</span>  / 
+                                                            <span class="fw-bold {% if product.inventory == 0 %}text-danger{% elif product.inventory < 5 %}text-warning{% else %}text-success{% endif %}">
+                                                                {{ product.inventory }}
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        {% if product.inventory == 0 %}
+                                                            <span class="badge bg-danger ms-2">Out of Stock</span>
+                                                        {% elif product.inventory < 5 %}
+                                                            <span class="badge bg-warning text-dark ms-2">Low Stock</span>
+                                                        {% else %}
+                                                            <span class="badge bg-success ms-2">In Stock</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
                                             <td>
                                                 <div class="d-flex gap-1">
                                                     <a href="{% url 'post_detail' product.id %}" class="btn btn-sm btn-outline-primary">
                                                         <i class="bi bi-eye"></i>
                                                     </a>
-                                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                                    <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-outline-secondary">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>
                                                 </div>
@@ -185,6 +204,32 @@
                                         </tr>
                                     {% endfor %}
                                 </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td class="fw-bold">Total</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            {% with total_sales=0 total_inventory=0 %}
+                                                {% for product in products %}
+                                                    {% with total_sales=total_sales|add:product.total_purchases %}
+                                                        {% with total_inventory=total_inventory|add:product.inventory %}
+                                                            {% if forloop.last %}
+                                                                <div class="d-flex justify-content-between">
+                                                                    <div>
+                                                                        <span class="fw-bold text-primary">{{ total_sales }}</span> sold / 
+                                                                        <span class="fw-bold text-success">{{ total_inventory }}</span> in stock
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% endwith %}
+                                                {% endfor %}
+                                            {% endwith %}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     {% else %}

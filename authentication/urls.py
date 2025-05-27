@@ -13,6 +13,8 @@ urlpatterns = [
     path('create-post/', views.create_post, name='create_post'),
     path('create-product/', views.create_product, name='create_product'),
     path('create-job/', views.create_job, name='create_job'),
+    path('edit-product/<int:product_id>/', views.edit_product, name='edit_product'),
+    path('edit-job/<int:job_id>/', views.edit_job, name='edit_job'),
     path('like-post/<int:post_id>/', views.like_post, name='like_post'),
     
     # Post detail and actions
@@ -32,6 +34,19 @@ urlpatterns = [
     
     # Job application management
     path('application/<int:application_id>/update/', views.update_application_status, name='update_application_status'),
+    path('application/<int:application_id>/details/', views.application_details, name='application_details'),
+    path('application/<int:application_id>/view/', views.view_application, name='view_application'),
+    path('application/<int:application_id>/comment/', views.add_application_comment, name='add_application_comment'),
+    
+    # Quiz management
+    path('job/<int:job_id>/create-quiz/', views.create_quiz, name='create_quiz'),
+    path('quiz/<int:quiz_id>/edit/', views.edit_quiz, name='edit_quiz'),
+    path('quiz/<int:quiz_id>/add-question/', views.add_quiz_question, name='add_quiz_question'),
+    path('quiz/<int:quiz_id>/application/<int:application_id>/take/', views.take_quiz, name='take_quiz'),
+    
+    # Notification management
+    path('notification/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
+    path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     
     # Legacy paths (kept for compatibility)
     path('become-vendor/', views.become_vendor, name='become_vendor'),

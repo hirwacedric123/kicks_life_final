@@ -1,0 +1,280 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title %}Add Question - KoraQuest{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row mb-4 fade-in">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">Add Question</h2>
+                <p class="text-muted">To quiz: {{ quiz.title }}</p>
+            </div>
+            <a href="{% url 'edit_quiz' quiz.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Quiz
+            </a>
+        </div>
+    </div>
+    
+    <div class="row mb-4 fade-in">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Question Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="questionForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="question_text" class="form-label">Question Text</label>
+                            <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="question_type" class="form-label">Question Type</label>
+                                <select class="form-select" id="question_type" name="question_type" required onchange="toggleQuestionOptions()">
+                                    <option value="multiple_choice">Multiple Choice</option>
+                                    <option value="text">Text Answer</option>
+                                    <option value="code">Code Challenge</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="points" class="form-label">Points</label>
+                                <input type="number" class="form-control" id="points" name="points" value="10" min="1" max="100" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Code snippet section (for code challenges or providing code in a question) -->
+                        <div class="mb-3" id="codeSnippetSection">
+                            <label for="code_snippet" class="form-label">Code Snippet (Optional)</label>
+                            <textarea class="form-control font-monospace" id="code_snippet" name="code_snippet" rows="5" placeholder="Provide any code snippet for the question"></textarea>
+                            <div class="form-text">This code will be displayed as part of the question</div>
+                        </div>
+                        
+                        <!-- Multiple choice options section -->
+                        <div id="multipleChoiceSection">
+                            <h6 class="mb-3">Answer Options</h6>
+                            <input type="hidden" name="options_count" id="options_count" value="4">
+                            
+                            <div id="optionsContainer">
+                                <!-- Option 1 -->
+                                <div class="mb-3 option-row">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 me-2">
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input mt-0" type="radio" name="correct_option" value="1" checked>
+                                                </div>
+                                                <input type="text" class="form-control" name="option_1" placeholder="Option 1" required>
+                                                <input type="hidden" name="correct_1" value="on">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger remove-option" onclick="removeOption(this)" disabled>
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Option 2 -->
+                                <div class="mb-3 option-row">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 me-2">
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input mt-0" type="radio" name="correct_option" value="2">
+                                                </div>
+                                                <input type="text" class="form-control" name="option_2" placeholder="Option 2" required>
+                                                <input type="hidden" name="correct_2" value="">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger remove-option" onclick="removeOption(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Option 3 -->
+                                <div class="mb-3 option-row">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 me-2">
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input mt-0" type="radio" name="correct_option" value="3">
+                                                </div>
+                                                <input type="text" class="form-control" name="option_3" placeholder="Option 3" required>
+                                                <input type="hidden" name="correct_3" value="">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger remove-option" onclick="removeOption(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Option 4 -->
+                                <div class="mb-3 option-row">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1 me-2">
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input mt-0" type="radio" name="correct_option" value="4">
+                                                </div>
+                                                <input type="text" class="form-control" name="option_4" placeholder="Option 4" required>
+                                                <input type="hidden" name="correct_4" value="">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger remove-option" onclick="removeOption(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-outline-primary" id="addOptionBtn" onclick="addOption()">
+                                    <i class="bi bi-plus-circle me-1"></i> Add Option
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'edit_quiz' quiz.id %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Add Question</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let optionCount = 4; // Start with 4 options
+    
+    // Toggle sections based on question type
+    function toggleQuestionOptions() {
+        const questionType = document.getElementById('question_type').value;
+        const multipleChoiceSection = document.getElementById('multipleChoiceSection');
+        const codeSnippetSection = document.getElementById('codeSnippetSection');
+        
+        if (questionType === 'multiple_choice') {
+            multipleChoiceSection.style.display = 'block';
+            codeSnippetSection.style.display = 'block';
+        } else if (questionType === 'code') {
+            multipleChoiceSection.style.display = 'none';
+            codeSnippetSection.style.display = 'block';
+        } else { // text
+            multipleChoiceSection.style.display = 'none';
+            codeSnippetSection.style.display = 'block';
+        }
+    }
+    
+    // Add a new option
+    function addOption() {
+        optionCount++;
+        const optionsContainer = document.getElementById('optionsContainer');
+        
+        const newOption = document.createElement('div');
+        newOption.className = 'mb-3 option-row';
+        newOption.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1 me-2">
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0" type="radio" name="correct_option" value="${optionCount}">
+                        </div>
+                        <input type="text" class="form-control" name="option_${optionCount}" placeholder="Option ${optionCount}" required>
+                        <input type="hidden" name="correct_${optionCount}" value="">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-danger remove-option" onclick="removeOption(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        optionsContainer.appendChild(newOption);
+        document.getElementById('options_count').value = optionCount;
+        
+        // Update the radio button event listeners
+        updateRadioListeners();
+    }
+    
+    // Remove an option
+    function removeOption(button) {
+        if (document.querySelectorAll('.option-row').length > 2) {
+            button.closest('.option-row').remove();
+            reindexOptions();
+        }
+    }
+    
+    // Reindex options after removal
+    function reindexOptions() {
+        const options = document.querySelectorAll('.option-row');
+        options.forEach((option, index) => {
+            const newIndex = index + 1;
+            const radio = option.querySelector('input[type="radio"]');
+            const textInput = option.querySelector('input[type="text"]');
+            const hiddenInput = option.querySelector('input[type="hidden"]');
+            
+            radio.value = newIndex;
+            textInput.name = `option_${newIndex}`;
+            textInput.placeholder = `Option ${newIndex}`;
+            hiddenInput.name = `correct_${newIndex}`;
+            
+            // Disable remove button if only 2 options left
+            const removeButtons = document.querySelectorAll('.remove-option');
+            if (options.length <= 2) {
+                removeButtons.forEach(btn => btn.disabled = true);
+            } else {
+                removeButtons.forEach(btn => btn.disabled = false);
+            }
+        });
+        
+        optionCount = options.length;
+        document.getElementById('options_count').value = optionCount;
+    }
+    
+    // Update hidden fields when radio selection changes
+    function updateRadioListeners() {
+        document.querySelectorAll('input[name="correct_option"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Reset all hidden inputs
+                document.querySelectorAll('input[type="hidden"][name^="correct_"]').forEach(input => {
+                    input.value = '';
+                });
+                
+                // Set the selected one
+                const selectedIndex = this.value;
+                document.querySelector(`input[name="correct_${selectedIndex}"]`).value = 'on';
+            });
+        });
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleQuestionOptions();
+        updateRadioListeners();
+        
+        // Form submission handler
+        document.getElementById('questionForm').addEventListener('submit', function(e) {
+            const questionType = document.getElementById('question_type').value;
+            
+            if (questionType === 'multiple_choice') {
+                // Ensure at least one option is marked as correct
+                const correctOptions = document.querySelectorAll('input[type="hidden"][name^="correct_"][value="on"]');
+                if (correctOptions.length === 0) {
+                    e.preventDefault();
+                    alert('Please select a correct answer option.');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

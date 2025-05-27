@@ -184,8 +184,8 @@
                                         <button class="btn btn-sm btn-light like-btn" data-post-id="{{ post.id }}">
                                             <i class="bi {% if user in post.likes.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-light">
-                                            <i class="bi bi-bookmark"></i>
+                                        <button class="btn btn-sm btn-light bookmark-btn" data-post-id="{{ post.id }}">
+                                            <i class="bi {% if post.id in bookmarked_posts %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light">
                                             <i class="bi bi-share"></i>
@@ -389,9 +389,57 @@
         });
     });
     
+    // Handle bookmark functionality with AJAX
+    document.querySelectorAll('.bookmark-btn').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent card link click
+            const postId = this.getAttribute('data-post-id');
+            const bookmarkButtons = document.querySelectorAll(`.bookmark-btn[data-post-id="${postId}"]`);
+            
+            // Add a quick visual feedback
+            this.classList.add('animate__animated', 'animate__bounceIn');
+            
+            fetch(`/auth/bookmark/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                console.log('Bookmark response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Bookmark response data:', data);
+                bookmarkButtons.forEach(function(btn) {
+                    const bookmarkIcon = btn.querySelector('i');
+                    
+                    if (data.is_bookmarked || data.status === 'added') {
+                        bookmarkIcon.classList.remove('bi-bookmark');
+                        bookmarkIcon.classList.add('bi-bookmark-fill');
+                    } else {
+                        bookmarkIcon.classList.remove('bi-bookmark-fill');
+                        bookmarkIcon.classList.add('bi-bookmark');
+                    }
+                });
+                
+                // Remove the animation class after animation completes
+                setTimeout(() => {
+                    this.classList.remove('animate__animated', 'animate__bounceIn');
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error toggling bookmark:', error);
+            });
+        });
+    });
+    
     // Stop event propagation for bookmark and share buttons
     document.querySelectorAll('.card-img-overlay .btn').forEach(function(button) {
-        if (!button.classList.contains('like-btn')) { // Already handled like buttons
+        if (!button.classList.contains('like-btn') && !button.classList.contains('bookmark-btn')) { // Already handled like and bookmark buttons
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation(); // Prevent card link click
@@ -409,6 +457,36 @@
             this.classList.add('active');
         });
     });
+    
+    // Test button for bookmarking
+    const bookmarkTestBtn = document.getElementById('testBookmarkBtn');
+    const testResults = document.getElementById('testResults');
+    
+    if (bookmarkTestBtn) {
+        bookmarkTestBtn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            testResults.innerHTML = `<p>Testing bookmark for post ID: ${postId}...</p>`;
+            
+            fetch(`/auth/bookmark/${postId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                testResults.innerHTML += `<p>Response status: ${response.status}</p>`;
+                return response.json();
+            })
+            .then(data => {
+                testResults.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            })
+            .catch(error => {
+                testResults.innerHTML += `<p class="text-danger">Error: ${error.message}</p>`;
+            });
+        });
+    }
 </script>
 {% endblock extra_js %}
 {% endblock content %}
