@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,20 +9,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     {% load static %}
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <style>
         :root {
             --kora-white: #ffffff;
-            --kora-blue: #1e88e5;
-            --kora-blue-light: #bbdefb;
-            --kora-blue-dark: #0d47a1;
-            --kora-black: #212121;
-            --kora-gray: #f5f5f5;
-            --kora-border: #e0e0e0;
+            --kora-blue: #2563eb;
+            --kora-blue-light: #dbeafe;
+            --kora-blue-dark: #1d4ed8;
+            --kora-black: #000000;
+            --kora-gray: #f8fafc;
+            --kora-border: #e2e8f0;
+            --kora-text-gray: #64748b;
         }
-        
+
         body {
             background-color: var(--kora-gray);
             color: var(--kora-black);
@@ -29,7 +33,7 @@
             min-height: 100vh;
             display: flex;
         }
-        
+
         /* Sidebar styles */
         .sidebar {
             width: 250px;
@@ -43,84 +47,123 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-x: hidden; /* Hide horizontal scrollbar */
         }
-        
+
+        /* Custom scrollbar for sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: var(--kora-gray);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--kora-blue);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--kora-blue-dark);
+        }
+
         .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--kora-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
         }
-        
+
         .sidebar-brand {
             color: var(--kora-blue) !important;
             font-weight: 700;
-            font-size: 1.7rem;
+            font-size: 1.8rem;
             display: flex;
             align-items: center;
             text-decoration: none;
         }
-        
+
         .sidebar-brand i {
             margin-right: 8px;
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: var(--kora-blue);
         }
-        
+
         .sidebar-menu {
             padding: 1rem 0;
             flex-grow: 1;
+            background-color: var(--kora-gray);
+            border-radius: 16px;
+            overflow-y: auto; /* Menu area can scroll */
+            margin-bottom: 1rem;
         }
-        
+
         .sidebar-link {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1.5rem;
+            padding: 12px 20px;
             color: var(--kora-black);
             text-decoration: none;
             transition: all 0.3s ease;
             font-weight: 500;
+            border-radius: 8px;
+            margin: 4px 8px;
         }
-        
-        .sidebar-link:hover, .sidebar-link.active {
-            background-color: rgba(30, 136, 229, 0.1);
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background-color: var(--kora-blue-light);
             color: var(--kora-blue);
+            transform: translateX(4px);
         }
-        
+
         .sidebar-link i {
-            margin-right: 10px;
+            margin-right: 12px;
             font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
         }
-        
+
         .sidebar-footer {
+            flex-shrink: 0; /* Footer won't shrink */
             padding: 1rem 1.5rem;
+            background-color: var(--kora-white);
             border-top: 1px solid var(--kora-border);
+            margin: 0 -1rem -1rem -1rem; /* Extend to sidebar edges */
         }
-        
+
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 1rem;
         }
-        
+
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            background-color: var(--kora-blue-light);
+            background: linear-gradient(135deg, var(--kora-blue), var(--kora-blue-dark));
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--kora-blue);
+            color: var(--kora-white);
             font-weight: bold;
+            font-size: 16px;
         }
-        
+
         .sidebar-divider {
             height: 1px;
             background-color: var(--kora-border);
-            margin: 0.5rem 1.5rem;
+            margin: 16px 20px;
         }
-        
+
         /* Main content area */
         .main-wrapper {
             flex: 1;
@@ -129,140 +172,67 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            background-color: var(--kora-white);
         }
-        
+
         .main-content {
             flex: 1;
             padding: 2rem;
-            padding-top: 6rem; /* Extra padding for the top navigation */
         }
-        
-        /* Top navigation - Twitter style */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 250px;
-            right: 0;
-            background-color: var(--kora-white);
-            z-index: 999;
-            border-bottom: 1px solid var(--kora-border);
-            padding: 0.5rem 2rem;
-            transition: all 0.3s ease;
-        }
-        
-        .top-nav-tabs {
-            display: flex;
-            gap: 1rem;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-        
-        .top-nav-tab {
-            padding: 1rem 0;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        
-        .top-nav-tab a {
-            color: var(--kora-black);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 99px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .top-nav-tab a:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-        
-        .top-nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50%;
-            height: 4px;
-            background-color: var(--kora-blue);
-            border-radius: 4px 4px 0 0;
-        }
-        
-        .top-nav-tab.active a {
-            color: var(--kora-blue);
-            font-weight: 700;
-        }
-        
+
         .btn-primary {
             background-color: var(--kora-blue);
             border-color: var(--kora-blue);
-            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.25);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
             transition: all 0.3s ease;
+            border-radius: 8px;
         }
-        
+
         .btn-primary:hover {
             background-color: var(--kora-blue-dark);
             border-color: var(--kora-blue-dark);
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.35);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.35);
         }
-        
-        .btn-gradient {
-            background: linear-gradient(45deg, var(--kora-blue), var(--kora-blue-light));
-            border: none;
-            color: white;
-            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.25);
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
             transition: all 0.3s ease;
         }
-        
-        .btn-gradient:hover {
-            background: linear-gradient(45deg, var(--kora-blue-dark), var(--kora-blue));
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.35);
-            color: white;
-        }
-        
+
         .card {
-            border-radius: a2px;
+            border-radius: 12px;
             overflow: hidden;
             transition: all 0.3s ease;
-            border: none;
+            border: 1px solid var(--kora-border);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
-        
+
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
         }
-        
-        .card-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--kora-border);
-        }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-        
+
         .form-control {
-            padding: 0.75rem 1rem;
+            padding: 12px 16px;
             border-radius: 8px;
             border: 1px solid var(--kora-border);
             transition: all 0.3s ease;
         }
-        
+
         .form-control:focus {
             border-color: var(--kora-blue);
-            box-shadow: 0 0 0 0.25rem rgba(30, 136, 229, 0.25);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        
+
         .alert {
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 1rem 1.5rem;
             margin-bottom: 1.5rem;
             animation: slideDown 0.4s ease-out;
         }
-        
+
         @keyframes slideDown {
             from {
                 opacity: 0;
@@ -273,73 +243,47 @@
                 transform: translateY(0);
             }
         }
-        
+
         /* Role badge styles */
         .role-badge {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 50px;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
             margin-right: 0.5rem;
         }
-        
+
         .role-badge-user {
             background-color: var(--kora-gray);
             color: var(--kora-black);
         }
-        
+
         .role-badge-vendor {
-            background-color: #4caf50;
+            background-color: #10b981;
             color: white;
         }
-        
-        .role-badge-hiring {
-            background-color: #ff9800;
+
+        .role-badge-koraquest {
+            background-color: var(--kora-blue);
             color: white;
         }
-        
-        .role-badge-freelancer {
-            background-color: #9c27b0;
-            color: white;
-        }
-        
-        /* Dark mode toggle */
-        .theme-toggle {
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            color: var(--kora-black);
-            font-size: 1.2rem;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-        
-        .theme-toggle:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-        
+
         /* Mobile responsiveness */
         @media (max-width: 991.98px) {
             .sidebar {
                 transform: translateX(-100%);
             }
-            
+
             .sidebar.show {
                 transform: translateX(0);
             }
-            
+
             .main-wrapper {
                 margin-left: 0;
                 width: 100%;
             }
-            
-            .top-nav {
-                left: 0;
-                padding-left: 4.5rem; /* Space for sidebar toggle */
-            }
-            
+
             .toggle-sidebar {
                 display: block;
                 position: fixed;
@@ -347,10 +291,10 @@
                 left: 1rem;
                 z-index: 1100;
                 background-color: var(--kora-white);
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                width: 48px;
+                height: 48px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -359,19 +303,87 @@
                 font-size: 1.2rem;
             }
         }
-        
+
         @media (max-width: 576px) {
-            .top-nav {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            
-            .top-nav-tab a {
-                padding: 0.5rem;
-            }
-            
             .main-content {
-                padding: 6rem 1rem 1rem 1rem;
+                padding: 1rem;
+            }
+        }
+
+        /* KoraQuest Top Navigation Bar */
+        .koraquest-top-nav {
+            background: linear-gradient(135deg, var(--kora-blue), var(--kora-blue-dark));
+            color: white;
+            padding: 1rem 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
+        }
+
+        .koraquest-nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .koraquest-nav-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .koraquest-nav-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .koraquest-nav-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .koraquest-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .koraquest-nav-btn.active {
+            background: white;
+            color: var(--kora-blue);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .koraquest-top-nav {
+                padding: 1rem;
+                margin: -2rem -1rem 2rem -1rem;
+            }
+            
+            .koraquest-nav-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .koraquest-nav-actions {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -381,133 +393,194 @@
     <!-- Sidebar menu -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <a class="sidebar-brand" href="{% url 'dashboard' %}">
-                <i class="bi bi-grid-3x3-gap-fill"></i>KoraQuest
-            </a>
+            <div class="logo">
+                <h4 style="color: var(--kora-black); margin: 0;">Kora<span style="color: var(--kora-blue);"><i class="bi bi-search" style="color: var(--kora-blue);"></i>uest</span></h4>
+            </div>
         </div>
         <div class="sidebar-menu">
             {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <i class="bi bi-house-fill"></i> Home
-                </a>
-                
-                <!-- Role-specific dashboards -->
-                {% if user.is_vendor_role or user.is_hiring_company_role or user.is_freelancer_role %}
-                    <div class="sidebar-divider"></div>
-                    <div class="px-3 py-2">
-                        <small class="text-muted text-uppercase fw-bold">Dashboards</small>
-                    </div>
-                    
-                    {% if user.is_vendor_role %}
-                    <a href="{% url 'vendor_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
-                        <i class="bi bi-shop"></i> Vendor Dashboard
+            <a href="{% url 'dashboard' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-house-fill"></i> Marketplace
+            </a>
+
+            <!-- User data links -->
+            <div class="sidebar-divider"></div>
+            <div class="px-3 py-2">
+                <small class="text-muted text-uppercase fw-bold">My Account</small>
+            </div>
+            
+            <a href="{% url 'bookmarks' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}">
+                <i class="bi bi-bookmark"></i> Bookmarks
+            </a>
+            <a href="{% url 'purchase_history' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
+                <i class="bi bi-bag"></i> Purchase History
+            </a>
+
+            <!-- Role-specific dashboards -->
+            {% if user.is_vendor_role or user.is_koraquest %}
+            <div class="sidebar-divider"></div>
+            <div class="px-3 py-2">
+                <small class="text-muted text-uppercase fw-bold">Dashboards</small>
+            </div>
+
+            {% if user.is_vendor_role %}
+            <a href="{% url 'vendor_dashboard' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'vendor_dashboard' %}active{% endif %}">
+                <i class="bi bi-shop"></i> Vendor Dashboard
+            </a>
+            {% endif %}
+
+            {% if user.is_koraquest %}
+            <a href="{% url 'koraquest_dashboard' %}" 
+                class="sidebar-link {% if request.resolver_match.url_name == 'koraquest_dashboard' %}active{% endif %}"
+                style="background: linear-gradient(135deg, var(--kora-blue), var(--kora-blue-dark)); color: white; border-radius: 10px; margin: 0 10px; font-weight: 600; box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);">
+                <i class="bi bi-shield-check" style="color: white;"></i> KoraQuest Dashboard
+            </a>
+            {% endif %}
+            {% endif %}
+
+            <!-- KoraQuest Operations Center -->
+            {% if user.is_koraquest %}
+            <div class="sidebar-divider" style="margin: 20px 15px; background: linear-gradient(90deg, var(--kora-blue), transparent);"></div>
+            <div class="px-3 py-2">
+                <small class="text-muted text-uppercase fw-bold">
+                    <i class="bi bi-qr-code-scan me-1" style="color: var(--kora-blue);"></i>
+                    KoraQuest Operations
+                </small>
+            </div>
+
+            <a href="{% url 'scan_qr_code' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'scan_qr_code' %}active{% endif %}">
+                <i class="bi bi-camera" style="color: #10b981;"></i> 
+                <span>QR Scanner</span>
+                <small class="ms-auto text-muted">📱</small>
+            </a>
+
+            <a href="{% url 'koraquest_purchase_history' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'koraquest_purchase_history' %}active{% endif %}">
+                <i class="bi bi-clock-history" style="color: #f59e0b;"></i> 
+                <span>Transaction History</span>
+                <small class="ms-auto text-muted">📊</small>
+            </a>
+
+            <!-- Quick Actions for KoraQuest -->
+            <div class="px-3 py-2 mt-2">
+                <small class="text-muted text-uppercase fw-bold">
+                    <i class="bi bi-lightning me-1" style="color: #ef4444;"></i>
+                    Quick Actions
+                </small>
+            </div>
+
+            <div style="padding: 0 15px;">
+                <div class="d-flex gap-2 mb-2">
+                    <a href="{% url 'scan_qr_code' %}" 
+                       class="btn btn-outline-primary btn-sm flex-fill"
+                       style="border-radius: 20px; font-size: 0.8rem;">
+                        <i class="bi bi-qr-code-scan"></i> Scan
                     </a>
-                    {% endif %}
-                    
-                    {% if user.is_hiring_company_role %}
-                    <a href="{% url 'hiring_company_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'hiring_company_dashboard' %}active{% endif %}">
-                        <i class="bi bi-building"></i> Hiring Dashboard
+                    <a href="{% url 'koraquest_dashboard' %}" 
+                       class="btn btn-outline-success btn-sm flex-fill"
+                       style="border-radius: 20px; font-size: 0.8rem;">
+                        <i class="bi bi-speedometer2"></i> Stats
                     </a>
-                    {% endif %}
-                    
-                    {% if user.is_freelancer_role %}
-                    <a href="{% url 'freelancer_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'freelancer_dashboard' %}active{% endif %}">
-                        <i class="bi bi-person-badge"></i> Freelancer Dashboard
-                    </a>
-                    {% endif %}
-                {% endif %}
-                
-                <!-- Content Creation -->
-                {% if user.is_vendor_role or user.is_hiring_company_role %}
-                    <div class="sidebar-divider"></div>
-                    <div class="px-3 py-2">
-                        <small class="text-muted text-uppercase fw-bold">Create</small>
-                    </div>
-                    
-                    <a href="{% url 'create_post' %}" class="sidebar-link {% if request.resolver_match.url_name == 'create_post' %}active{% endif %}">
-                        <i class="bi bi-plus-circle"></i> Create Post
-                    </a>
-                    
-                    <a href="#" class="sidebar-link">
-                        <i class="bi bi-collection"></i> My Posts
-                    </a>
-                {% endif %}
-                
-                <!-- User data links -->
-                <div class="sidebar-divider"></div>
-                <div class="px-3 py-2">
-                    <small class="text-muted text-uppercase fw-bold">My Data</small>
                 </div>
-                <a href="{% url 'bookmarks' %}" class="sidebar-link {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}">
-                    <i class="bi bi-bookmark"></i> Bookmarks
+            </div>
+            {% endif %}
+
+            <!-- User QR Code for all authenticated users -->
+            {% if user.is_authenticated %}
+            <div class="sidebar-divider"></div>
+            <div class="px-3 py-2">
+                <small class="text-muted text-uppercase fw-bold">My QR</small>
+            </div>
+
+            <a href="{% url 'user_qr_code' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'user_qr_code' %}active{% endif %}">
+                <i class="bi bi-qr-code"></i> My QR Code
+            </a>
+            {% endif %}
+
+            <!-- Content Creation -->
+            {% if user.is_vendor_role %}
+            <div class="sidebar-divider"></div>
+            <div class="px-3 py-2">
+                <small class="text-muted text-uppercase fw-bold">Create</small>
+            </div>
+
+            <a href="{% url 'create_post' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'create_post' %}active{% endif %}">
+                <i class="bi bi-plus-circle"></i> Create Product
+            </a>
+            {% endif %}
+
+            {% if not user.is_vendor_role %}
+            <div class="sidebar-divider"></div>
+            <div class="px-3 py-2">
+                <small class="text-muted text-uppercase fw-bold">Upgrade Account</small>
+            </div>
+            <a href="{% url 'user_settings' %}#upgrade" class="sidebar-link">
+                <i class="bi bi-arrow-up-circle"></i> Become Vendor
+            </a>
+            {% endif %}
+
+            <div class="sidebar-divider"></div>
+            <div class="px-3 py-2">
+                <small class="text-muted text-uppercase fw-bold">Account</small>
+            </div>
+            <a href="{% url 'user_settings' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+            <form method="post" action="{% url 'logout' %}" class="d-inline" id="logout-form">
+                {% csrf_token %}
+                <a href="javascript:void(0)" class="sidebar-link"
+                    onclick="document.getElementById('logout-form').submit()">
+                    <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
-                <a href="{% url 'purchase_history' %}" class="sidebar-link {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
-                    <i class="bi bi-bag"></i> Purchases
-                </a>
-                
-                {% if not user.is_vendor_role and not user.is_hiring_company_role and not user.is_freelancer_role %}
-                    <div class="sidebar-divider"></div>
-                    <div class="px-3 py-2">
-                        <small class="text-muted text-uppercase fw-bold">Upgrade Account</small>
-                    </div>
-                    <a href="{% url 'user_settings' %}#upgrade" class="sidebar-link">
-                        <i class="bi bi-arrow-up-circle"></i> Upgrade Options
-                    </a>
-                {% endif %}
-                
-                <div class="sidebar-divider"></div>
-                <div class="px-3 py-2">
-                    <small class="text-muted text-uppercase fw-bold">Account</small>
-                </div>
-                <a href="{% url 'user_settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
-                    <i class="bi bi-gear"></i> Settings
-                </a>
-                <form method="post" action="{% url 'logout' %}" class="d-inline" id="logout-form">
-                    {% csrf_token %}
-                    <a href="javascript:void(0)" class="sidebar-link" onclick="document.getElementById('logout-form').submit()">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
-                </form>
+            </form>
             {% else %}
-                <a href="{% url 'login' %}" class="sidebar-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
-                    <i class="bi bi-box-arrow-in-right"></i> Login
-                </a>
-                <a href="{% url 'register' %}" class="sidebar-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
-                    <i class="bi bi-person-plus"></i> Register
-                </a>
+            <a href="{% url 'login' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+            <a href="{% url 'register' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="fw-medium">{{ user.first_name }} {{ user.last_name }}</div>
+                        <div class="small text-muted">@{{ user.username }}</div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-1">
+                    {% if not user.is_vendor_role and not user.is_koraquest %}
+                    <span class="role-badge role-badge-user">User</span>
+                    {% endif %}
+                    {% if user.is_vendor_role %}
+                    <span class="role-badge role-badge-vendor">Vendor</span>
+                    {% endif %}
+                    {% if user.is_koraquest %}
+                    <span class="role-badge role-badge-koraquest">KoraQuest</span>
+                    {% endif %}
+                </div>
+            </div>
             {% endif %}
         </div>
-                    {% if user.is_authenticated %}
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">
-                    {% if user.profile_picture %}
-                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    {% else %}
-                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                    {% endif %}
-                </div>
-                <div>
-                    <div class="fw-medium">{{ user.first_name }} {{ user.last_name }}</div>
-                    <div class="small text-muted">@{{ user.username }}</div>
-                </div>
-            </div>
-            <div class="d-flex flex-wrap gap-1">
-                {% if not user.is_vendor_role and not user.is_hiring_company_role and not user.is_freelancer_role %}
-                <span class="role-badge role-badge-user">User</span>
-                {% endif %}
-                {% if user.is_vendor_role %}
-                <span class="role-badge role-badge-vendor">Vendor</span>
-                {% endif %}
-                {% if user.is_hiring_company_role %}
-                <span class="role-badge role-badge-hiring">Hiring</span>
-                {% endif %}
-                {% if user.is_freelancer_role %}
-                <span class="role-badge role-badge-freelancer">Freelancer</span>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 
     <!-- Mobile sidebar toggle -->
@@ -519,80 +592,51 @@
     <div class="main-wrapper">
         <!-- Top navigation (Twitter style) -->
         {% if user.is_authenticated %}
-        <div class="top-nav shadow-sm d-flex align-items-center justify-content-between">
-            <ul class="top-nav-tabs">
-                <li class="top-nav-tab {% if not request.GET.category or request.GET.category == 'market' %}active{% endif %}">
-                    <a href="{% url 'dashboard' %}">
-                        <i class="bi bi-shop me-1"></i> Market
-                    </a>
-                </li>
-                <li class="top-nav-tab {% if request.GET.category == 'jobs' %}active{% endif %}">
-                    <a href="{% url 'dashboard' %}?category=jobs">
-                        <i class="bi bi-briefcase me-1"></i> Job Board
-                    </a>
-                </li>
-                </ul>
-            
-            <!-- Twitter-style search button -->
-            <div class="d-none d-md-block">
-                <a href="#" class="btn btn-outline-primary rounded-circle" data-bs-toggle="modal" data-bs-target="#searchModal">
-                    <i class="bi bi-search"></i>
-                </a>
-            </div>
-        </div>
-        
         <!-- Search Modal -->
         <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title" id="searchModalLabel">Search KoraQuest</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="{% url 'dashboard' %}" method="GET">
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0">
-                                    <i class="bi bi-search"></i>
-                                </span>
-                                <input type="text" class="form-control border-start-0" name="q" placeholder="{% if request.GET.category == 'jobs' %}Search for jobs...{% else %}Search for products...{% endif %}">
-                                <input type="hidden" name="category" value="{{ request.GET.category|default:'market' }}">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </div>
-                        </form>
-                    </div>
+            <form action="{% url 'dashboard' %}" method="GET">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" name="q"
+                        placeholder="{% if request.GET.category == 'jobs' %}Search for jobs...{% else %}Search for products...{% endif %}">
+                    <input type="hidden" name="category" value="{{ request.GET.category|default:'market' }}">
+                    <button class="btn btn-primary" type="submit"></button>
                 </div>
-            </div>
+            </form>
         </div>
         {% endif %}
 
         <div class="main-content">
-        {% if messages %}
+            {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        
-        {% block content %}{% endblock %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
             </div>
+            {% endfor %}
+            {% endif %}
+
+            {% block koraquest_nav %}{% endblock %}
+
+            {% block content %}{% endblock %}
         </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Mobile sidebar toggle
-        document.getElementById('toggleSidebar').addEventListener('click', function() {
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
             document.getElementById('sidebar').classList.toggle('show');
         });
-        
+
         // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('toggleSidebar');
-            
-            if (window.innerWidth < 992 && 
-                !sidebar.contains(event.target) && 
+
+            if (window.innerWidth < 992 &&
+                !sidebar.contains(event.target) &&
                 !toggleBtn.contains(event.target) &&
                 sidebar.classList.contains('show')) {
                 sidebar.classList.remove('show');
@@ -601,4 +645,5 @@
     </script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

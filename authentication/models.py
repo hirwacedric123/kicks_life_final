@@ -4,15 +4,15 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
 class User(AbstractUser):
     USER_ROLES = (
-        ('user', 'user'),
-        ('staff', 'Staff'),
-        ('hiring_company', 'Hiring Company'),
+        ('user', 'User'),
+        ('staff', 'Staff'), 
         ('vendor', 'Vendor'),
-        ('freelancer', 'Freelancer'),
+        ('koraquest', 'KoraQuest'),
     )
     
     # Base role for all users
@@ -21,12 +21,6 @@ class User(AbstractUser):
     
     # Additional role flags to support multiple roles
     is_vendor_role = models.BooleanField(default=False)
-    is_hiring_company_role = models.BooleanField(default=False)
-    is_freelancer_role = models.BooleanField(default=False)
-    
-    # Freelancer specific fields
-    freelancer_skills = models.TextField(blank=True, null=True)
-    freelancer_cv = models.FileField(upload_to='cvs/', blank=True, null=True)
     
     # Profile picture
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
@@ -36,24 +30,29 @@ class User(AbstractUser):
     total_purchases = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     def is_user(self):
-        return self.role == 'user' and not (self.is_vendor_role or self.is_hiring_company_role or self.is_freelancer_role)
+        return self.role == 'user' and not self.is_vendor_role
     
     def is_staff_member(self):
         return self.role == 'staff'
     
-    def is_hiring_company(self):
-        return self.is_hiring_company_role
-    
     def is_vendor(self):
         return self.is_vendor_role
     
-    def is_freelancer(self):
-        return self.is_freelancer_role
+    def is_koraquest(self):
+        return self.role == 'koraquest'
 
 class Post(models.Model):
-    POST_TYPES = (
-        ('product', 'Product'),
-        ('job', 'Job Posting'),
+    CATEGORY_CHOICES = (
+        ('electronics', 'Electronics'),
+        ('fashion', 'Fashion & Apparel'),
+        ('books', 'Books & Media'),
+        ('home', 'Home & Garden'),
+        ('sports', 'Sports & Recreation'),
+        ('beauty', 'Beauty & Personal Care'),
+        ('food', 'Food & Beverages'),
+        ('automotive', 'Automotive'),
+        ('toys', 'Toys & Games'),
+        ('other', 'Other'),
     )
     
     title = models.CharField(max_length=255)
@@ -64,22 +63,13 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     
-    # Post type (product or job)
-    post_type = models.CharField(max_length=10, choices=POST_TYPES, default='product')
-    
-    # Product specific fields
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    category = models.CharField(max_length=100, blank=True, null=True)
+    # Product fields
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     inventory = models.IntegerField(default=1, help_text="Number of items in stock")
-    
-    # Job specific fields
-    job_location = models.CharField(max_length=100, blank=True, null=True)
-    job_type = models.CharField(max_length=50, blank=True, null=True)  # Full-time, Part-time, Contract, etc.
-    salary_range = models.CharField(max_length=100, blank=True, null=True)
     
     # Stats
     total_purchases = models.IntegerField(default=0)
-    total_applications = models.IntegerField(default=0)
     
     def __str__(self):
         return self.title
@@ -87,15 +77,58 @@ class Post(models.Model):
     def total_likes(self):
         return self.likes.count()
     
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if reviews:
+            return reviews.aggregate(models.Avg('rating'))['rating__avg']
+        return 0
+    
+    def review_count(self):
+        return self.reviews.count()
+    
+    def is_sold_out(self):
+        return self.inventory <= 0
+    
     class Meta:
         ordering = ['-created_at']
+
+class ProductReview(models.Model):
+    product = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reviews')
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Rating from 1 to 5 stars"
+    )
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['product', 'reviewer']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.reviewer.username} - {self.product.title} - {self.rating} stars"
 
 class Purchase(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('processing', 'Processing'),
+        ('awaiting_pickup', 'Awaiting Pickup'),  # Added for KoraQuest workflow
+        ('awaiting_delivery', 'Awaiting Delivery'),  # Added for delivery option
+        ('out_for_delivery', 'Out for Delivery'),  # Added for delivery tracking
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
+    )
+    
+    DELIVERY_CHOICES = (
+        ('pickup', 'Pickup from KoraQuest'),
+        ('delivery', 'Home Delivery'),
+    )
+    
+    PAYMENT_METHOD_CHOICES = (
+        ('momo', 'Mobile Money'),
+        ('credit', 'Credit Card'),
     )
     
     order_id = models.CharField(max_length=50, unique=True, blank=True)
@@ -104,127 +137,63 @@ class Purchase(models.Model):
     quantity = models.IntegerField(default=1)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    delivery_method = models.CharField(max_length=20, choices=DELIVERY_CHOICES, default='pickup')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='momo')
+    delivery_fee = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    delivery_address = models.TextField(blank=True, null=True, help_text="Delivery address for home delivery")
+    delivery_latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    delivery_longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # KoraQuest workflow fields
+    koraquest_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+                                     related_name='koraquest_purchases', 
+                                     help_text="KoraQuest user handling this purchase")
+    pickup_confirmed_at = models.DateTimeField(null=True, blank=True)
+    vendor_payment_sent = models.BooleanField(default=False)
+    koraquest_commission_sent = models.BooleanField(default=False)
+    vendor_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    koraquest_commission_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
     def save(self, *args, **kwargs):
         if not self.order_id:
             # Generate a unique order ID
             self.order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+        
+        # Set delivery fee if delivery method is delivery
+        if self.delivery_method == 'delivery' and self.delivery_fee == 0:
+            from decimal import Decimal
+            self.delivery_fee = Decimal('5.00')  # $5 delivery fee
+        
+        # Calculate payment splits when status changes to completed
+        if self.status == 'completed' and not self.vendor_payment_amount:
+            from decimal import Decimal
+            total_amount = self.purchase_price + self.delivery_fee
+            product_amount = self.purchase_price
+            self.vendor_payment_amount = product_amount * Decimal('0.8')  # 80% of product price to vendor
+            self.koraquest_commission_amount = (product_amount * Decimal('0.2')) + self.delivery_fee  # 20% of product + full delivery fee to KoraQuest
+        
         super().save(*args, **kwargs)
+    
+    def calculate_payment_split(self):
+        """Calculate the 80/20 payment split including delivery fees"""
+        from decimal import Decimal
+        product_amount = self.purchase_price
+        total_amount = product_amount + self.delivery_fee
+        return {
+            'total': total_amount,
+            'product_amount': product_amount,
+            'delivery_fee': self.delivery_fee,
+            'vendor_amount': product_amount * Decimal('0.8'),
+            'koraquest_amount': (product_amount * Decimal('0.2')) + self.delivery_fee
+        }
     
     def __str__(self):
         return f"{self.buyer.username} - {self.product.title} - {self.order_id}"
     
     class Meta:
         ordering = ['-created_at']
-
-class JobApplication(models.Model):
-    STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('under_review', 'Under Review'),
-        ('pre_interview', 'Pre-Interview Assessment'),
-        ('interview', 'Interview'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-    )
-    
-    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_applications')
-    job = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='applications')
-    cover_letter = models.TextField(blank=True, null=True)
-    cv = models.FileField(upload_to='applications/cvs/', blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    feedback = models.TextField(blank=True, null=True)
-    interview_details = models.TextField(blank=True, null=True, help_text="Details about interview time, place, etc.")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.applicant.username} - {self.job.title}"
-    
-    class Meta:
-        ordering = ['-created_at']
-        unique_together = ['applicant', 'job']
-
-class ApplicationComment(models.Model):
-    application = models.ForeignKey(JobApplication, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='application_comments')
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Comment on {self.application} by {self.author.username}"
-    
-    class Meta:
-        ordering = ['created_at']
-
-class Quiz(models.Model):
-    DIFFICULTY_CHOICES = (
-        ('easy', 'Easy'),
-        ('medium', 'Medium'),
-        ('hard', 'Hard'),
-    )
-    
-    job = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='quizzes')
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    time_limit_minutes = models.IntegerField(default=30)
-    passing_score = models.IntegerField(default=70)
-    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='medium')
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.title
-    
-    class Meta:
-        verbose_name_plural = 'Quizzes'
-
-class QuizQuestion(models.Model):
-    QUESTION_TYPES = (
-        ('multiple_choice', 'Multiple Choice'),
-        ('text', 'Text Answer'),
-        ('code', 'Code Snippet'),
-    )
-    
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
-    question_text = models.TextField()
-    question_type = models.CharField(max_length=20, choices=QUESTION_TYPES)
-    code_snippet = models.TextField(blank=True, null=True, help_text="Optional code snippet for the question")
-    points = models.IntegerField(default=10)
-    
-    def __str__(self):
-        return f"{self.question_text[:30]}..."
-
-class QuizOption(models.Model):
-    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE, related_name='options')
-    option_text = models.CharField(max_length=255)
-    is_correct = models.BooleanField(default=False)
-    
-    def __str__(self):
-        return self.option_text
-
-class QuizAttempt(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='attempts')
-    application = models.ForeignKey(JobApplication, on_delete=models.CASCADE, related_name='quiz_attempts')
-    started_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    score = models.IntegerField(default=0)
-    passed = models.BooleanField(default=False)
-    
-    def __str__(self):
-        return f"{self.application.applicant.username}'s attempt at {self.quiz.title}"
-
-class QuizAnswer(models.Model):
-    attempt = models.ForeignKey(QuizAttempt, on_delete=models.CASCADE, related_name='answers')
-    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
-    selected_option = models.ForeignKey(QuizOption, on_delete=models.CASCADE, null=True, blank=True)
-    text_answer = models.TextField(blank=True, null=True)
-    code_answer = models.TextField(blank=True, null=True)
-    is_correct = models.BooleanField(default=False)
-    points_earned = models.IntegerField(default=0)
-    
-    def __str__(self):
-        return f"Answer to {self.question} by {self.attempt.application.applicant.username}"
 
 class Bookmark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
@@ -245,29 +214,41 @@ class ProductImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"Image for {self.product.title} - {self.display_order}"
+        return f"{self.product.title} - Image {self.display_order + 1}"
     
     class Meta:
         ordering = ['display_order']
 
-class Notification(models.Model):
-    NOTIFICATION_TYPES = (
-        ('application_status_change', 'Application Status Change'),
-        ('new_application', 'New Application'),
-        ('interview_scheduled', 'Interview Scheduled'),
-        ('general', 'General'),
-    )
-    
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES, default='general')
-    title = models.CharField(max_length=255)
-    message = models.TextField()
-    application = models.ForeignKey(JobApplication, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
-    is_read = models.BooleanField(default=False)
+class UserQRCode(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='qr_code')
+    qr_data = models.TextField()  # JWT token or encrypted data
+    qr_image = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField()
     
     def __str__(self):
-        return f"Notification for {self.recipient.username}: {self.title}"
+        return f"QR Code for {self.user.username}"
     
-    class Meta:
-        ordering = ['-created_at']
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+class OTPVerification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_verifications')
+    otp_code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=50, default='purchase_confirmation')  # purchase_confirmation, general
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"OTP for {self.user.username} - {self.purpose}"
+    
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+    
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            # Set expiration to 10 minutes from creation
+            self.expires_at = timezone.now() + timezone.timedelta(minutes=10)
+        super().save(*args, **kwargs)

@@ -72,7 +72,7 @@
                         
                         <div class="mb-4">
                             <label for="main_image" class="form-label">Main Product Image</label>
-                            <input type="file" class="form-control" id="main_image" name="main_image" accept="image/*" required onchange="previewMainImage(this)">
+                            <input type="file" class="form-control" id="main_image" name="main_image" accept="image/*" required>
                             <div id="main-image-preview" class="mt-2"></div>
                             <div class="form-text">
                                 Upload a clear main image of your product (required)
@@ -121,7 +121,12 @@
                 const preview = document.createElement('div');
                 preview.classList.add('main-preview');
                 preview.innerHTML = `
-                    <img src="${e.target.result}" alt="Main image preview" style="max-height: 200px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                    <div class="d-flex justify-content-center align-items-center bg-light border rounded p-3" style="min-height: 200px; max-height: 300px;">
+                        <img src="${e.target.result}" alt="Main image preview" style="max-height: 250px; max-width: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    </div>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">Image preview</small>
+                    </div>
                 `;
                 previewContainer.appendChild(preview);
             };

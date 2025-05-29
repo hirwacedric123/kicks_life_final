@@ -1,0 +1,189 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% block title %}My QR Code - KoraQuest{% endblock %}
+
+{% block extra_head %}
+<style>
+    .qr-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .qr-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .qr-header {
+        background: linear-gradient(45deg, #4CAF50, #45a049);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+    }
+    
+    .qr-code-section {
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .qr-code-image {
+        border: 3px solid #f0f0f0;
+        border-radius: 15px;
+        padding: 15px;
+        background: white;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+    
+    .refresh-btn {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .refresh-btn:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+    }
+    
+    .purchase-item {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .expires-timer {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 10px;
+    }
+    
+    .status-badge {
+        background: #4CAF50;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="qr-container">
+    <div class="qr-card">
+        <div class="qr-header">
+            <h2><i class="bi bi-qr-code"></i> My QR Code</h2>
+            <p>Show this to KoraQuest for pickup verification</p>
+        </div>
+        
+        <div class="qr-code-section">
+            {% if user_qr.qr_image %}
+                <div class="qr-code-image">
+                    <img src="{{ user_qr.qr_image.url }}" alt="User QR Code" style="max-width: 200px; max-height: 200px;">
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> QR Code not available
+                </div>
+            {% endif %}
+            
+            <div class="expires-timer">
+                <i class="bi bi-clock"></i> 
+                Expires: <span id="expiry-time">{{ qr_expires_at|date:"M d, Y H:i" }}</span>
+            </div>
+            
+            <button class="refresh-btn" onclick="refreshQRCode()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh Code
+            </button>
+        </div>
+          {% if pending_purchases %}
+        <div style="padding: 0 30px 30px;">
+            <h6 style="margin-bottom: 15px; color: #333;">Items Ready for Pickup/Delivery:</h6>
+            {% for purchase in pending_purchases %}
+            <div class="purchase-item">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                    <div>
+                        <strong>{{ purchase.product.title }}</strong><br>
+                        <small>Qty: {{ purchase.quantity }} | Total: ${{ purchase.purchase_price|floatformat:2 }}</small><br>
+                        <span class="status-badge">
+                            {% if purchase.status == 'awaiting_pickup' %}
+                                Awaiting Pickup
+                            {% elif purchase.status == 'awaiting_delivery' %}
+                                Awaiting Delivery
+                            {% else %}
+                                {{ purchase.status|title }}
+                            {% endif %}
+                        </span>
+                        {% if purchase.delivery_method == 'delivery' %}
+                            <small style="display: block; color: #666; margin-top: 5px;">
+                                <i class="bi bi-truck"></i> Delivery to: {{ purchase.delivery_address|truncatechars:30 }}
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="padding: 0 30px 30px; text-align: center;">
+            <p style="color: #666; margin-bottom: 20px;">No items awaiting pickup or delivery</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                <i class="bi bi-shop"></i> Browse Products
+            </a>
+        </div>
+        {% endif %}
+        
+        <div style="padding: 20px; background: #f8f9fa; text-align: center;">
+            <small style="color: #666;">
+                <i class="bi bi-info-circle"></i> 
+                QR code updates automatically every 10 minutes
+            </small>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshQRCode() {
+    const btn = document.querySelector('.refresh-btn');
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refreshing...';
+    btn.disabled = true;
+    
+    fetch('{% url "update_qr_code_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.qr_image_url) {
+            document.querySelector('.qr-code-image img').src = data.qr_image_url + '?t=' + new Date().getTime();
+            document.getElementById('expiry-time').textContent = new Date(data.expires_at).toLocaleString();
+        }
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Code';
+        btn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Code';
+        btn.disabled = false;
+    });
+}
+
+// Auto-refresh every 10 minutes
+setInterval(refreshQRCode, 600000);
+</script>
+{% endblock %}

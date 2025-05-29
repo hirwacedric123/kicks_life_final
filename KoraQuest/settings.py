@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-yg!+2gbi#185v4j8r!qg&@+%mrl*qti5&1c!7y-sx0d)n(yj&@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['fd09-197-243-41-234.ngrok-free.app','127.0.0.1']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://fd09-197-243-41-234.ngrok-free.app',
+]
 
 
 # Application definition
@@ -51,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'KoraQuest.urls'
 
@@ -133,3 +138,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'dashboard'  # Change to your preferred redirect page
 LOGOUT_REDIRECT_URL = 'login'
+
+# Email Configuration for OTP
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
+# For production, use SMTP:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Use your email provider's SMTP host
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'b.uteramaho@alustudent.com'
+EMAIL_HOST_PASSWORD = 'tglb sxys nmfq wxgc'
+
+# QR Code Settings
+QR_CODE_UPDATE_INTERVAL = 600  # 10 minutes in seconds

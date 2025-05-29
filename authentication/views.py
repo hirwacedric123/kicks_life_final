@@ -1,26 +1,31 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from .forms import UserRegistrationForm
-from .models import Post, User, Purchase, JobApplication, Bookmark, ProductImage, ApplicationComment, Quiz, QuizQuestion, QuizOption, QuizAttempt, QuizAnswer, Notification
+from django.http import JsonResponse, Http404
+from .forms import SignUpForm
+from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 import os
 import decimal
 from django.utils import timezone
+from .qr_utils import update_user_qr_code, decode_qr_data, get_user_purchases_from_qr
+from .otp_utils import create_otp, verify_otp
+import json
+from django.core.paginator import Paginator
 
 def register(request):
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
+        form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             messages.success(request, f'Account created for {user.username}! You can now log in.')
             return redirect('login')  # Redirect to login page after successful registration
     else:
-        form = UserRegistrationForm()
+        form = SignUpForm()
     
     return render(request, 'authentication/register.html', {'form': form})
 
@@ -39,44 +44,82 @@ def login_view(request):
 
 @login_required
 def dashboard(request):
-    # Get the category parameter from the request to filter posts
-    category = request.GET.get('category')
-    search_query = request.GET.get('q')
+    # Get filter parameters from the request
+    search_query = request.GET.get('q', '').strip()
+    category = request.GET.get('category', '')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    sort_by = request.GET.get('sort', 'newest')
     
-    # Business Rule: Prevent hiring companies from viewing the Job Board
-    if category == 'jobs' and request.user.is_hiring_company_role:
-        messages.error(request, 'Hiring companies cannot access the Job Board. Use your dashboard to manage your job postings.')
-        return redirect('hiring_company_dashboard')
+    # Start with all products (no job posts anymore)
+    posts = Post.objects.all()
     
-    # Filter posts based on category
-    if category == 'jobs':
-        posts = Post.objects.filter(post_type='job')
-        view_type = 'jobs'
-        
-        # Filter out the user's own job postings if they are a hiring company
-        if request.user.is_hiring_company_role:
-            posts = posts.exclude(user=request.user)
-    else:
-        # Default to products/market if no category specified or any other value
-        posts = Post.objects.filter(post_type='product')
-        view_type = 'market'
-        
-        # Filter out the user's own products if they are a vendor
-        if request.user.is_vendor_role:
-            posts = posts.exclude(user=request.user)
+    # Filter out sold-out products
+    posts = posts.filter(inventory__gt=0)
+    
+    # Filter out the user's own products if they are a vendor
+    if request.user.is_vendor_role:
+        posts = posts.exclude(user=request.user)
     
     # Apply search filter if provided
     if search_query:
-        posts = posts.filter(title__icontains=search_query)
+        posts = posts.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(user__username__icontains=search_query)
+        )
+    
+    # Apply category filter if provided
+    if category:
+        posts = posts.filter(category=category)
+    
+    # Apply price range filters
+    if min_price:
+        try:
+            posts = posts.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+    
+    if max_price:
+        try:
+            posts = posts.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+    
+    # Apply sorting
+    if sort_by == 'price_low':
+        posts = posts.order_by('price')
+    elif sort_by == 'price_high':
+        posts = posts.order_by('-price')
+    elif sort_by == 'popular':
+        posts = posts.order_by('-total_purchases', '-created_at')
+    elif sort_by == 'rating':
+        # Order by average rating (we'll implement this later)
+        posts = posts.order_by('-created_at')
+    else:  # newest (default)
+        posts = posts.order_by('-created_at')
+    
+    # Get all categories for the filter dropdown
+    categories = Post.CATEGORY_CHOICES
     
     # Get user's bookmarked posts for easier template rendering
     bookmarked_posts = [bookmark.post.id for bookmark in Bookmark.objects.filter(user=request.user)]
     
+    # Pagination
+    paginator = Paginator(posts, 20)  # 20 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'posts': posts,
-        'view_type': view_type,
+        'posts': page_obj,
         'search_query': search_query,
-        'bookmarked_posts': bookmarked_posts
+        'selected_category': category,
+        'min_price': min_price,
+        'max_price': max_price,
+        'sort_by': sort_by,
+        'categories': categories,
+        'bookmarked_posts': bookmarked_posts,
+        'total_products': posts.count(),
     }
     
     return render(request, 'authentication/dashboard.html', context)
@@ -89,52 +132,32 @@ def post_detail(request, post_id):
     # Check if the user is the owner of the post
     is_owner = (post.user == request.user)
     
-    # Get auxiliary images if this is a product
-    auxiliary_images = []
-    if post.post_type == 'product':
-        auxiliary_images = ProductImage.objects.filter(product=post).order_by('display_order')
+    # Get auxiliary images for the product
+    auxiliary_images = ProductImage.objects.filter(product=post).order_by('display_order')
     
-    # Check if the user has purchased this product (if it's a product)
-    has_purchased = False
-    if post.post_type == 'product':
-        has_purchased = Purchase.objects.filter(
-            buyer=request.user, 
-            product=post, 
-            status__in=['completed', 'processing']
-        ).exists()
+    # Check if the user has purchased this product
+    has_purchased = Purchase.objects.filter(
+        buyer=request.user, 
+        product=post, 
+        status__in=['completed', 'processing']
+    ).exists()
     
-    # Check if the user has applied for this job (if it's a job)
-    has_applied = False
-    application = None
-    job_stats = None
-    if post.post_type == 'job':
-        application = JobApplication.objects.filter(
-            applicant=request.user,
-            job=post
-        ).first()
-        has_applied = application is not None
-        
-        # Get job statistics if the user is the owner (hiring company)
-        if is_owner:
-            applications = JobApplication.objects.filter(job=post)
-            job_stats = {
-                'total_applications': applications.count(),
-                'pending_applications': applications.filter(status='pending').count(),
-                'under_review_applications': applications.filter(status='under_review').count(),
-                'interview_applications': applications.filter(status='interview').count(),
-                'accepted_applications': applications.filter(status='accepted').count(),
-                'rejected_applications': applications.filter(status='rejected').count(),
-            }
+    # Get product reviews
+    reviews = ProductReview.objects.filter(product=post).order_by('-created_at')
+    
+    # Check if current user has already reviewed this product
+    user_review = None
+    if request.user.is_authenticated:
+        user_review = ProductReview.objects.filter(product=post, reviewer=request.user).first()
     
     context = {
         'post': post,
         'is_bookmarked': is_bookmarked,
         'has_purchased': has_purchased,
-        'has_applied': has_applied,
-        'application': application,
         'is_owner': is_owner,
         'auxiliary_images': auxiliary_images,
-        'job_stats': job_stats
+        'reviews': reviews,
+        'user_review': user_review,
     }
     
     return render(request, 'authentication/post_detail.html', context)
@@ -142,7 +165,7 @@ def post_detail(request, post_id):
 @login_required
 def purchase_product(request, post_id):
     if request.method == 'POST':
-        product = get_object_or_404(Post, id=post_id, post_type='product')
+        product = get_object_or_404(Post, id=post_id)
         
         # Check if user is trying to buy their own product
         if product.user == request.user:
@@ -168,17 +191,48 @@ def purchase_product(request, post_id):
             messages.error(request, f'Sorry, there are only {product.inventory} items available.')
             return redirect('post_detail', post_id=post_id)
         
-        # Calculate total price
-        total_price = product.price * quantity
+        # Get delivery method and details
+        delivery_method = request.POST.get('delivery_method', 'pickup')
+        delivery_address = request.POST.get('delivery_address', '')
+        delivery_latitude = request.POST.get('delivery_latitude')
+        delivery_longitude = request.POST.get('delivery_longitude')
+        payment_method = request.POST.get('payment_method', 'momo')  # New payment method field
         
-        # Create a new purchase
+        # Calculate total price
+        from decimal import Decimal
+        total_price = product.price * quantity
+        delivery_fee = Decimal('5.00') if delivery_method == 'delivery' else Decimal('0.00')
+        
+        # Validate delivery details if delivery is selected
+        if delivery_method == 'delivery':
+            if not delivery_address:
+                messages.error(request, "Please provide a delivery address for home delivery.")
+                return redirect('post_detail', post_id=post_id)
+        
+        # Determine initial status based on delivery method
+        initial_status = 'awaiting_delivery' if delivery_method == 'delivery' else 'awaiting_pickup'
+        
+        # Create a new purchase with KoraQuest workflow
         purchase = Purchase(
             buyer=request.user,
             product=product,
             quantity=quantity,
             purchase_price=total_price,
-            status='completed'  # Auto-complete for demo purposes
+            delivery_method=delivery_method,
+            payment_method=payment_method,
+            delivery_fee=delivery_fee,
+            delivery_address=delivery_address,
+            status=initial_status
         )
+        
+        # Add location coordinates if provided
+        if delivery_latitude and delivery_longitude:
+            try:
+                purchase.delivery_latitude = float(delivery_latitude)
+                purchase.delivery_longitude = float(delivery_longitude)
+            except (ValueError, TypeError):
+                pass  # Ignore invalid coordinates
+        
         purchase.save()
         
         # Update inventory
@@ -188,78 +242,19 @@ def purchase_product(request, post_id):
         product.total_purchases += 1
         product.save()
         
-        request.user.total_purchases += decimal.Decimal(total_price)
-        request.user.save()
+        # Update QR code to include this purchase
+        from .qr_utils import update_user_qr_code
+        update_user_qr_code(request.user)
         
-        product.user.total_sales += decimal.Decimal(total_price)
-        product.user.save()
+        # Success message based on delivery method
+        if delivery_method == 'delivery':
+            messages.success(request, f'You have successfully purchased {quantity} {product.title}! Total: ${total_price + delivery_fee:.2f} (including ${delivery_fee:.2f} delivery fee). KoraQuest will deliver to your address.')
+        else:
+            messages.success(request, f'You have successfully purchased {quantity} {product.title}! Please go to KoraQuest to collect your items.')
         
-        messages.success(request, f'You have successfully purchased {quantity} {product.title}!')
         return redirect('purchase_history')
     
     return redirect('post_detail', post_id=post_id)
-
-@login_required
-def apply_for_job(request, post_id):
-    job = get_object_or_404(Post, id=post_id, post_type='job')
-    
-    # Check if user is a freelancer
-    if not request.user.is_freelancer_role:
-        messages.error(request, 'You need to be registered as a freelancer to apply for jobs.')
-        return redirect('user_settings')
-    
-    # Business Rule: A freelancer who becomes a hiring company can no longer apply for jobs
-    if request.user.is_freelancer_role and request.user.is_hiring_company_role:
-        messages.error(request, 'You cannot apply for jobs as you are now registered as a hiring company. Hiring companies cannot apply for jobs.')
-        return redirect('post_detail', post_id=post_id)
-    
-    # Check if user is trying to apply to their own job posting
-    if job.user == request.user:
-        messages.error(request, 'You cannot apply to your own job posting.')
-        return redirect('post_detail', post_id=post_id)
-    
-    # Check if already applied
-    if JobApplication.objects.filter(applicant=request.user, job=job).exists():
-        messages.info(request, 'You have already applied for this job.')
-        return redirect('post_detail', post_id=post_id)
-    
-    if request.method == 'POST':
-        cover_letter = request.POST.get('cover_letter')
-        
-        # Create the application
-        application = JobApplication(
-            applicant=request.user,
-            job=job,
-            cover_letter=cover_letter,
-            status='pending'
-        )
-        
-        # Use the freelancer's CV if available
-        if request.user.freelancer_cv:
-            application.cv = request.user.freelancer_cv
-        else:
-            cv_file = request.FILES.get('cv')
-            if cv_file:
-                application.cv = cv_file
-            else:
-                messages.error(request, 'Please upload your CV or complete your freelancer profile first.')
-                return redirect('post_detail', post_id=post_id)
-        
-        application.save()
-        
-        # Update job application count
-        job.total_applications += 1
-        job.save()
-        
-        messages.success(request, f'Your application for {job.title} has been submitted successfully!')
-        return redirect('freelancer_dashboard')
-    
-    context = {
-        'job': job,
-        'has_cv': bool(request.user.freelancer_cv)
-    }
-    
-    return render(request, 'authentication/apply_job.html', context)
 
 @login_required
 def bookmark_toggle(request, post_id):
@@ -323,7 +318,7 @@ def vendor_dashboard(request):
         return redirect('dashboard')
     
     # Get vendor's products
-    products = Post.objects.filter(user=request.user, post_type='product')
+    products = Post.objects.filter(user=request.user)
     
     # Get purchases for vendor's products
     purchases = Purchase.objects.filter(product__user=request.user)
@@ -344,166 +339,6 @@ def vendor_dashboard(request):
     }
     
     return render(request, 'authentication/vendor_dashboard.html', context)
-
-@login_required
-def hiring_company_dashboard(request):
-    # Ensure user is a hiring company
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You need to be registered as a hiring company to access this dashboard.')
-        return redirect('dashboard')
-    
-    # Get company's job postings
-    jobs = Post.objects.filter(user=request.user, post_type='job')
-    
-    # Get applications for company's jobs
-    applications = JobApplication.objects.filter(job__user=request.user)
-    
-    # Count applications by status
-    pending_applications = applications.filter(status='pending').count()
-    under_review_applications = applications.filter(status='under_review').count()
-    interview_applications = applications.filter(status='interview').count()
-    accepted_applications = applications.filter(status='accepted').count()
-    rejected_applications = applications.filter(status='rejected').count()
-    
-    # Get recent applications
-    recent_applications = applications.order_by('-created_at')[:5]
-    
-    context = {
-        'jobs': jobs,
-        'applications': applications,
-        'pending_applications': pending_applications,
-        'under_review_applications': under_review_applications,
-        'interview_applications': interview_applications,
-        'accepted_applications': accepted_applications,
-        'rejected_applications': rejected_applications,
-        'recent_applications': recent_applications
-    }
-    
-    return render(request, 'authentication/hiring_company_dashboard.html', context)
-
-@login_required
-def freelancer_dashboard(request):
-    # Ensure user is a freelancer
-    if not request.user.is_freelancer_role:
-        messages.error(request, 'You need to be registered as a freelancer to access this dashboard.')
-        return redirect('dashboard')
-    
-    # Get freelancer's job applications
-    applications = JobApplication.objects.filter(applicant=request.user)
-    
-    # Count applications by status
-    pending_applications = applications.filter(status='pending').count()
-    under_review_applications = applications.filter(status='under_review').count()
-    pre_interview_applications = applications.filter(status='pre_interview').count()
-    interview_applications = applications.filter(status='interview').count()
-    accepted_applications = applications.filter(status='accepted').count()
-    rejected_applications = applications.filter(status='rejected').count()
-    
-    # Get unread notifications for the user
-    unread_notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
-    
-    # Get recent notifications (read and unread)
-    recent_notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')[:10]
-    
-    # Get applications that are in pre_interview status with available quizzes
-    pre_interview_apps_with_quizzes = []
-    for app in applications.filter(status='pre_interview'):
-        # Get quizzes for this job
-        all_quizzes = Quiz.objects.filter(job=app.job)
-        
-        # Get already attempted quizzes
-        attempted_quiz_ids = QuizAttempt.objects.filter(application=app).values_list('quiz_id', flat=True)
-        
-        # Get available quizzes (not attempted yet)
-        available_quizzes = all_quizzes.exclude(id__in=attempted_quiz_ids)
-        
-        if available_quizzes.exists():
-            pre_interview_apps_with_quizzes.append({
-                'application': app,
-                'available_quizzes': available_quizzes
-            })
-    
-    context = {
-        'applications': applications,
-        'pending_applications': pending_applications,
-        'under_review_applications': under_review_applications,
-        'pre_interview_applications': pre_interview_applications,
-        'interview_applications': interview_applications,
-        'accepted_applications': accepted_applications,
-        'rejected_applications': rejected_applications,
-        'unread_notifications': unread_notifications,
-        'recent_notifications': recent_notifications,
-        'pre_interview_apps_with_quizzes': pre_interview_apps_with_quizzes,
-    }
-    
-    return render(request, 'authentication/freelancer_dashboard.html', context)
-
-@login_required
-def update_application_status(request, application_id):
-    # Only hiring companies can update application status
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('dashboard')
-    
-    application = get_object_or_404(JobApplication, id=application_id)
-    
-    # Ensure the job belongs to the hiring company
-    if application.job.user != request.user:
-        messages.error(request, 'You are not authorized to update this application.')
-        return redirect('hiring_company_dashboard')
-    
-    if request.method == 'POST':
-        new_status = request.POST.get('status')
-        feedback = request.POST.get('feedback')
-        interview_details = request.POST.get('interview_details')
-        
-        if new_status in dict(JobApplication.STATUS_CHOICES).keys():
-            # Store old status for comparison
-            old_status = application.status
-            
-            application.status = new_status
-            if feedback:
-                application.feedback = feedback
-            if interview_details:
-                application.interview_details = interview_details
-            application.save()
-            
-            # Create notification for the applicant when status changes
-            if old_status != new_status:
-                # Get human-readable status names
-                status_display = dict(JobApplication.STATUS_CHOICES).get(new_status, new_status)
-                
-                # Create notification title and message based on status
-                if new_status == 'pre_interview':
-                    title = "Assessment Required - Take Your Pre-Interview Test"
-                    message = f"Your application for '{application.job.title}' has moved to the assessment stage. Please complete the required tests to proceed to the interview stage."
-                elif new_status == 'interview':
-                    title = "Congratulations! You've Been Selected for Interview"
-                    message = f"Your application for '{application.job.title}' has been selected for an interview. Check your application details for interview information."
-                elif new_status == 'accepted':
-                    title = "🎉 Congratulations! Your Application Has Been Accepted"
-                    message = f"Great news! Your application for '{application.job.title}' has been accepted. The employer will contact you soon with next steps."
-                elif new_status == 'rejected':
-                    title = "Application Update"
-                    message = f"Your application for '{application.job.title}' status has been updated. Please check your dashboard for details."
-                else:
-                    title = f"Application Status Updated to {status_display}"
-                    message = f"Your application for '{application.job.title}' status has been updated to {status_display}."
-                
-                # Create the notification
-                Notification.objects.create(
-                    recipient=application.applicant,
-                    notification_type='application_status_change',
-                    title=title,
-                    message=message,
-                    application=application
-                )
-            
-            messages.success(request, f'Application status updated to {new_status}.')
-        else:
-            messages.error(request, 'Invalid status provided.')
-    
-    return redirect('hiring_company_dashboard')
 
 @login_required
 def user_settings(request):
@@ -530,49 +365,9 @@ def user_settings(request):
             if profile_picture:
                 request.user.profile_picture = profile_picture
             
-            # Check if a CV was uploaded - if so, enable freelancer role
-            profile_cv = request.FILES.get('profile_cv')
-            if profile_cv:
-                # Get skills information
-                profile_skills = request.POST.get('profile_skills')
-                
-                if not profile_skills:
-                    messages.error(request, 'Please provide your professional skills to enable freelancer features.')
-                    return redirect('user_settings')
-                
-                # Save CV file and skills to the user model
-                request.user.freelancer_cv = profile_cv
-                request.user.freelancer_skills = profile_skills
-                
-                # Enable freelancer role without changing primary role
-                if not request.user.is_freelancer_role:
-                    request.user.is_freelancer_role = True
-                    messages.success(request, 'Your account has been upgraded with Freelancer capabilities!')
-            
             request.user.save()
             messages.success(request, 'Profile updated successfully.')
             return redirect('user_settings')
-        
-        # Freelancer profile update (from dedicated freelancer tab)
-        elif form_type == 'freelancer_profile':
-            # Ensure user is a freelancer
-            if not request.user.is_freelancer_role:
-                messages.error(request, 'You need to be registered as a freelancer to update this profile.')
-                return redirect('user_settings')
-            
-            # Update freelancer skills
-            freelancer_skills = request.POST.get('freelancer_skills')
-            if freelancer_skills:
-                request.user.freelancer_skills = freelancer_skills
-            
-            # Update CV if a new one was uploaded
-            freelancer_cv = request.FILES.get('freelancer_cv')
-            if freelancer_cv:
-                request.user.freelancer_cv = freelancer_cv
-                
-            request.user.save()
-            messages.success(request, 'Freelancer profile updated successfully.')
-            return redirect('user_settings#freelancer')
         
         # Account form submission (password change)
         elif form_type == 'account':
@@ -591,46 +386,6 @@ def user_settings(request):
                 messages.error(request, 'Please fill in both password fields.')
         
         # Role upgrade form submissions
-        elif upgrade_type == 'hiring_company':
-            # Process hiring company upgrade
-            if request.user.is_hiring_company_role:
-                messages.info(request, 'You are already registered as a hiring company.')
-            else:
-                company_name = request.POST.get('company_name')
-                company_description = request.POST.get('company_description')
-                
-                if not company_name or not company_description:
-                    messages.error(request, 'Please fill all required fields for company registration.')
-                else:
-                    # Enable hiring company role without changing other roles
-                    request.user.is_hiring_company_role = True
-                    request.user.save()
-                    messages.success(request, 'Congratulations! Your account has been upgraded to include Hiring Company capabilities. You can now post job listings.')
-        
-        elif upgrade_type == 'freelancer':
-            # Process freelancer upgrade
-            if request.user.is_freelancer_role:
-                messages.info(request, 'You are already registered as a freelancer.')
-            else:
-                # Business Rule: A hiring company can become a vendor but never a freelancer
-                if request.user.is_hiring_company_role:
-                    messages.error(request, 'Hiring companies cannot register as freelancers.')
-                else:
-                    cv_file = request.FILES.get('cv')
-                    skills = request.POST.get('skills')
-                    
-                    if not cv_file or not skills:
-                        messages.error(request, 'Please upload your CV and list your skills to register as a freelancer.')
-                    else:
-                        # Save CV and skills to the user model
-                        request.user.freelancer_cv = cv_file
-                        request.user.freelancer_skills = skills
-                        
-                        # Enable freelancer role without changing other roles
-                        request.user.is_freelancer_role = True
-                        request.user.save()
-                        messages.success(request, 'Congratulations! Your application has been submitted. Your account has been upgraded to include Freelancer capabilities.')
-        
         elif upgrade_type == 'vendor':
             # Process vendor upgrade
             if request.user.is_vendor_role:
@@ -645,19 +400,13 @@ def user_settings(request):
 
 @login_required
 def create_post(request):
-    # Check if user has proper permissions
-    if not (request.user.is_vendor_role or request.user.is_hiring_company_role):
-        messages.error(request, 'You need to upgrade your account to create posts. Become a vendor or hiring company first.')
-        return redirect('dashboard')
+    # Check if user has vendor permissions
+    if not request.user.is_vendor_role:
+        messages.error(request, 'You need to upgrade your account to Vendor status to create product listings.')
+        return redirect('user_settings')
     
-    # Direct to the appropriate post creation form based on user role
-    if request.user.is_vendor_role and not request.user.is_hiring_company_role:
-        return redirect('create_product')
-    elif request.user.is_hiring_company_role and not request.user.is_vendor_role:
-        return redirect('create_job')
-    else:
-        # If user has both roles, ask which type of post they want to create
-        return render(request, 'authentication/post_type_selection.html')
+    # Direct to product creation since we only have products now
+    return redirect('create_product')
 
 @login_required
 def create_product(request):
@@ -682,13 +431,12 @@ def create_product(request):
             inventory = 1
         
         if title and description and main_image and price:
-            # Create the main product
+            # Create the main product (no post_type needed since all posts are products now)
             post = Post(
                 title=title,
                 description=description,
                 image=main_image,
                 user=request.user,
-                post_type='product',
                 price=price,
                 category=category,
                 inventory=inventory
@@ -714,62 +462,6 @@ def create_product(request):
             messages.error(request, 'Please fill all required fields')
     
     return render(request, 'authentication/create_product.html')
-
-@login_required
-def create_job(request):
-    # Check if user has hiring company role
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You need to upgrade your account to Hiring Company status to create job listings.')
-        return redirect('user_settings')
-    
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        image = request.FILES.get('image')
-        job_location = request.POST.get('job_location')
-        job_type = request.POST.get('job_type')
-        salary_range = request.POST.get('salary_range')
-        
-        # Quiz/test creation fields
-        quiz_title = request.POST.get('quiz_title')
-        quiz_description = request.POST.get('quiz_description')
-        time_limit = request.POST.get('time_limit', 30)
-        passing_score = request.POST.get('passing_score', 70)
-        difficulty = request.POST.get('difficulty', 'medium')
-        
-        if title and description and job_location and job_type:
-            post = Post(
-                title=title,
-                description=description,
-                image=image if image else None,
-                user=request.user,
-                post_type='job',
-                job_location=job_location,
-                job_type=job_type,
-                salary_range=salary_range
-            )
-            post.save()
-            
-            # Create quiz if provided
-            if quiz_title and quiz_description:
-                quiz = Quiz(
-                    job=post,
-                    title=quiz_title,
-                    description=quiz_description,
-                    time_limit_minutes=int(time_limit),
-                    passing_score=int(passing_score),
-                    difficulty=difficulty
-                )
-                quiz.save()
-                messages.success(request, 'Job posting created successfully with pre-selection test!')
-            else:
-                messages.success(request, 'Job posting created successfully!')
-            
-            return redirect('hiring_company_dashboard')
-        else:
-            messages.error(request, 'Please fill all required fields')
-    
-    return render(request, 'authentication/create_job.html')
 
 @login_required
 def like_post(request, post_id):
@@ -804,67 +496,14 @@ def become_vendor(request):
     return redirect('user_settings')
 
 @login_required
-def become_hiring_company(request):
-    if request.method == 'POST':
-        if request.user.is_hiring_company_role:
-            messages.info(request, 'You are already registered as a hiring company.')
-            return redirect('user_settings')
-        
-        company_name = request.POST.get('company_name')
-        company_description = request.POST.get('company_description')
-        
-        if not company_name or not company_description:
-            messages.error(request, 'Please fill all required fields')
-            return redirect('user_settings')
-        
-        # Update user role to hiring company
-        request.user.is_hiring_company_role = True
-        request.user.save()
-        messages.success(request, 'Congratulations! Your account has been upgraded to Hiring Company status. You can now post job listings.')
-        return redirect('user_settings')
-    
-    return redirect('user_settings')
-
-@login_required
-def become_freelancer(request):
-    if request.method == 'POST':
-        if request.user.is_freelancer_role:
-            messages.info(request, 'You are already registered as a freelancer.')
-            return redirect('user_settings')
-        
-        cv_file = request.FILES.get('cv')
-        skills = request.POST.get('skills')
-        
-        if not cv_file or not skills:
-            messages.error(request, 'Please upload your CV and list your skills')
-            return redirect('user_settings')
-        
-        # Save CV and skills to the user model
-        request.user.freelancer_cv = cv_file
-        request.user.freelancer_skills = skills
-        
-        # Enable freelancer role
-        request.user.is_freelancer_role = True
-        request.user.save()
-        messages.success(request, 'Congratulations! Your application has been submitted. Your account has been upgraded to Freelancer status.')
-        return redirect('user_settings')
-    
-    return redirect('user_settings')
-
-@login_required
 def edit_product(request, product_id):
     # Check if user has vendor role
     if not request.user.is_vendor_role:
         messages.error(request, 'You need to have Vendor status to edit product listings.')
         return redirect('dashboard')
     
-    # Get the product
-    product = get_object_or_404(Post, id=product_id, post_type='product')
-    
-    # Check if the product belongs to the current user
-    if product.user != request.user:
-        messages.error(request, 'You do not have permission to edit this product.')
-        return redirect('vendor_dashboard')
+    # Get the product (ensure it belongs to the user)
+    product = get_object_or_404(Post, id=product_id, user=request.user)
     
     # Business Rule: Check if product has been purchased or bookmarked
     has_purchases = Purchase.objects.filter(product=product).exists()
@@ -948,426 +587,380 @@ def edit_product(request, product_id):
     
     return render(request, 'authentication/edit_product.html', context)
 
+# KoraQuest Views
 @login_required
-def add_application_comment(request, application_id):
-    application = get_object_or_404(JobApplication, id=application_id)
+def user_qr_code(request):
+    """Display user's QR code with their purchase information"""
+    # Update/create QR code for the user
+    user_qr = update_user_qr_code(request.user)
     
-    # Check if user is authorized (either the applicant or the job poster)
-    if request.user != application.applicant and request.user != application.job.user:
-        messages.error(request, 'You are not authorized to comment on this application.')
+    # Get user's pending purchases (both pickup and delivery)
+    pending_purchases = Purchase.objects.filter(
+        buyer=request.user,
+        status__in=['awaiting_pickup', 'awaiting_delivery']
+    ).select_related('product')
+    
+    context = {
+        'user_qr': user_qr,
+        'pending_purchases': pending_purchases,
+        'qr_expires_at': user_qr.expires_at,
+    }
+    
+    return render(request, 'authentication/user_qr_code.html', context)
+
+@login_required
+def koraquest_dashboard(request):
+    """Dashboard for KoraQuest users to manage purchases and inventory"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
         return redirect('dashboard')
+    
+    # Get all purchases awaiting pickup
+    awaiting_purchases = Purchase.objects.filter(
+        status='awaiting_pickup'
+    ).select_related('buyer', 'product', 'product__user').order_by('-created_at')
+    
+    # Get all purchases awaiting delivery
+    awaiting_deliveries = Purchase.objects.filter(
+        status='awaiting_delivery'
+    ).select_related('buyer', 'product', 'product__user').order_by('-created_at')
+    
+    # Get orders out for delivery
+    out_for_delivery = Purchase.objects.filter(
+        status='out_for_delivery'
+    ).select_related('buyer', 'product', 'product__user').order_by('-created_at')
+    
+    # Get completed purchases for revenue tracking
+    completed_purchases = Purchase.objects.filter(
+        status='completed',
+        koraquest_user=request.user
+    ).select_related('buyer', 'product')
+    
+    # Calculate revenue statistics
+    total_commission = completed_purchases.aggregate(
+        total=Sum('koraquest_commission_amount')
+    )['total'] or 0
+    
+    monthly_commission = completed_purchases.filter(
+        pickup_confirmed_at__month=timezone.now().month,
+        pickup_confirmed_at__year=timezone.now().year
+    ).aggregate(total=Sum('koraquest_commission_amount'))['total'] or 0
+    
+    context = {
+        'awaiting_purchases': awaiting_purchases,
+        'awaiting_deliveries': awaiting_deliveries,
+        'out_for_delivery': out_for_delivery,
+        'completed_purchases': completed_purchases[:10],  # Latest 10
+        'total_commission': total_commission,
+        'monthly_commission': monthly_commission,
+        'total_completed': completed_purchases.count(),
+    }
+    
+    return render(request, 'authentication/koraquest_dashboard.html', context)
+
+@login_required
+def scan_qr_code(request):
+    """QR code scanner interface for KoraQuest users"""
+    print('Scan Called')
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    print('User is Koraquest')
+    # Create context for rendering
+    context = {
+        'page_title': 'QR Code Scanner',
+        'error_message': None,
+        'success_message': None,
+    }
     
     if request.method == 'POST':
-        content = request.POST.get('content')
-        if content:
-            comment = ApplicationComment(
-                application=application,
-                author=request.user,
-                content=content
-            )
-            comment.save()
-            messages.success(request, 'Comment added successfully.')
-            
-            # Redirect to appropriate dashboard based on user role
-            if request.user == application.job.user:
-                return redirect('application_details', application_id=application_id)
-            else:
-                return redirect('view_application', application_id=application_id)
-        else:
-            messages.error(request, 'Comment cannot be empty.')
-    
-    # If not POST or empty content, redirect back
-    if request.user == application.job.user:
-        return redirect('application_details', application_id=application_id)
-    else:
-        return redirect('view_application', application_id=application_id)
-
-@login_required
-def application_details(request, application_id):
-    # For hiring companies to view application details
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You are not authorized to view this page.')
-        return redirect('dashboard')
-    
-    application = get_object_or_404(JobApplication, id=application_id)
-    
-    # Ensure the job belongs to the hiring company
-    if application.job.user != request.user:
-        messages.error(request, 'You are not authorized to view this application.')
-        return redirect('hiring_company_dashboard')
-    
-    # Get comments on this application
-    comments = ApplicationComment.objects.filter(application=application).order_by('created_at')
-    
-    # Get quizzes for this job
-    quizzes = Quiz.objects.filter(job=application.job)
-    
-    context = {
-        'application': application,
-        'comments': comments,
-        'quizzes': quizzes
-    }
-    
-    return render(request, 'authentication/application_details.html', context)
-
-@login_required
-def view_application(request, application_id):
-    # For freelancers to view their application details
-    application = get_object_or_404(JobApplication, id=application_id)
-    
-    # Ensure the application belongs to the freelancer
-    if application.applicant != request.user:
-        messages.error(request, 'You are not authorized to view this application.')
-        return redirect('freelancer_dashboard')
-    
-    # Get comments on this application
-    comments = ApplicationComment.objects.filter(application=application).order_by('created_at')
-    
-    # Get quiz attempts by this freelancer
-    quiz_attempts = QuizAttempt.objects.filter(application=application)
-    
-    # Get quizzes available for this job that haven't been attempted yet
-    available_quizzes = []
-    if application.status == 'pre_interview':
-        all_quizzes = Quiz.objects.filter(job=application.job)
-        attempted_quiz_ids = quiz_attempts.values_list('quiz_id', flat=True)
-        available_quizzes = all_quizzes.exclude(id__in=attempted_quiz_ids)
-    
-    context = {
-        'application': application,
-        'comments': comments,
-        'quiz_attempts': quiz_attempts,
-        'available_quizzes': available_quizzes
-    }
-    
-    return render(request, 'authentication/view_application.html', context)
-
-@login_required
-def create_quiz(request, job_id):
-    # Only hiring companies can create quizzes for their jobs
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('dashboard')
-    
-    job = get_object_or_404(Post, id=job_id, post_type='job')
-    
-    # Ensure the job belongs to the hiring company
-    if job.user != request.user:
-        messages.error(request, 'You are not authorized to create quizzes for this job.')
-        return redirect('hiring_company_dashboard')
-    
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        time_limit = request.POST.get('time_limit', 30)
-        passing_score = request.POST.get('passing_score', 70)
-        difficulty = request.POST.get('difficulty', 'medium')
+        print('Request Made')
+        qr_data = request.POST.get('qr_data')
+        print(qr_data)
+        purchase_id = request.POST.get('purchase_id')
         
-        if title and description:
-            quiz = Quiz(
-                job=job,
-                title=title,
-                description=description,
-                time_limit_minutes=time_limit,
-                passing_score=passing_score,
-                difficulty=difficulty
-            )
-            quiz.save()
-            messages.success(request, 'Quiz created successfully.')
-            return redirect('edit_quiz', quiz_id=quiz.id)
-        else:
-            messages.error(request, 'Please fill all required fields.')
-    
-    context = {
-        'job': job
-    }
-    
-    return render(request, 'authentication/create_quiz.html', context)
-
-@login_required
-def edit_quiz(request, quiz_id):
-    # Only hiring companies can edit quizzes
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('dashboard')
-    
-    quiz = get_object_or_404(Quiz, id=quiz_id)
-    
-    # Ensure the quiz belongs to a job owned by the hiring company
-    if quiz.job.user != request.user:
-        messages.error(request, 'You are not authorized to edit this quiz.')
-        return redirect('hiring_company_dashboard')
-    
-    # Get existing questions
-    questions = QuizQuestion.objects.filter(quiz=quiz)
-    
-    context = {
-        'quiz': quiz,
-        'questions': questions
-    }
-    
-    return render(request, 'authentication/edit_quiz.html', context)
-
-@login_required
-def add_quiz_question(request, quiz_id):
-    # Only hiring companies can add questions
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('dashboard')
-    
-    quiz = get_object_or_404(Quiz, id=quiz_id)
-    
-    # Ensure the quiz belongs to a job owned by the hiring company
-    if quiz.job.user != request.user:
-        messages.error(request, 'You are not authorized to edit this quiz.')
-        return redirect('hiring_company_dashboard')
-    
-    if request.method == 'POST':
-        question_text = request.POST.get('question_text')
-        question_type = request.POST.get('question_type')
-        code_snippet = request.POST.get('code_snippet')
-        points = request.POST.get('points', 10)
-        
-        if question_text and question_type:
-            question = QuizQuestion(
-                quiz=quiz,
-                question_text=question_text,
-                question_type=question_type,
-                code_snippet=code_snippet,
-                points=points
-            )
-            question.save()
-            
-            # For multiple choice questions, handle options
-            if question_type == 'multiple_choice':
-                options_count = int(request.POST.get('options_count', 0))
-                for i in range(1, options_count + 1):
-                    option_text = request.POST.get(f'option_{i}')
-                    is_correct = request.POST.get(f'correct_{i}') == 'on'
-                    
-                    if option_text:
-                        QuizOption.objects.create(
-                            question=question,
-                            option_text=option_text,
-                            is_correct=is_correct
-                        )
-            
-            messages.success(request, 'Question added successfully.')
-            return redirect('edit_quiz', quiz_id=quiz.id)
-        else:
-            messages.error(request, 'Please fill all required fields.')
-    
-    context = {
-        'quiz': quiz
-    }
-    
-    return render(request, 'authentication/add_quiz_question.html', context)
-
-@login_required
-def take_quiz(request, quiz_id, application_id):
-    # Only freelancers can take quizzes
-    if not request.user.is_freelancer_role:
-        messages.error(request, 'You are not authorized to perform this action.')
-        return redirect('dashboard')
-    
-    quiz = get_object_or_404(Quiz, id=quiz_id)
-    application = get_object_or_404(JobApplication, id=application_id)
-    
-    # Ensure the application belongs to the freelancer
-    if application.applicant != request.user:
-        messages.error(request, 'You are not authorized to take this quiz.')
-        return redirect('freelancer_dashboard')
-    
-    # Ensure the quiz belongs to the job applied for
-    if quiz.job != application.job:
-        messages.error(request, 'This quiz is not associated with your job application.')
-        return redirect('view_application', application_id=application.id)
-    
-    # Check if application is in the right status
-    if application.status != 'pre_interview':
-        messages.error(request, 'You can only take quizzes during the pre-interview assessment phase.')
-        return redirect('view_application', application_id=application.id)
-    
-    # Check if quiz has already been attempted
-    if QuizAttempt.objects.filter(quiz=quiz, application=application).exists():
-        messages.error(request, 'You have already attempted this quiz.')
-        return redirect('view_application', application_id=application.id)
-    
-    # Get quiz questions
-    questions = QuizQuestion.objects.filter(quiz=quiz)
-    
-    if request.method == 'POST':
-        # Create a new attempt
-        attempt = QuizAttempt(
-            quiz=quiz,
-            application=application,
-            completed_at=timezone.now()
-        )
-        attempt.save()
-        
-        # Process answers
-        total_points = 0
-        earned_points = 0
-        
-        for question in questions:
-            if question.question_type == 'multiple_choice':
-                selected_option_id = request.POST.get(f'question_{question.id}')
-                if selected_option_id:
-                    selected_option = QuizOption.objects.get(id=selected_option_id)
-                    is_correct = selected_option.is_correct
-                    points_earned = question.points if is_correct else 0
-                    
-                    answer = QuizAnswer(
-                        attempt=attempt,
-                        question=question,
-                        selected_option=selected_option,
-                        is_correct=is_correct,
-                        points_earned=points_earned
-                    )
-                    answer.save()
-                    
-                    earned_points += points_earned
-                    total_points += question.points
-            
-            elif question.question_type == 'text':
-                text_answer = request.POST.get(f'question_{question.id}')
-                # For text answers, manual grading is required
-                answer = QuizAnswer(
-                    attempt=attempt,
-                    question=question,
-                    text_answer=text_answer,
-                    is_correct=False,  # Will be graded later
-                    points_earned=0
-                )
-                answer.save()
-                total_points += question.points
-            
-            elif question.question_type == 'code':
-                code_answer = request.POST.get(f'question_{question.id}')
-                # For code answers, manual grading is required
-                answer = QuizAnswer(
-                    attempt=attempt,
-                    question=question,
-                    code_answer=code_answer,
-                    is_correct=False,  # Will be graded later
-                    points_earned=0
-                )
-                answer.save()
-                total_points += question.points
-        
-        # Calculate score (based on multiple choice questions only for now)
-        if total_points > 0:
-            score = (earned_points / total_points) * 100
-            attempt.score = score
-            
-            # Check if passed
-            if score >= quiz.passing_score:
-                attempt.passed = True
+        if qr_data:
+            try:
+                # Decode QR data
+                decoded_data = decode_qr_data(qr_data.strip())
+                print("============================= Decoded QR Data:")
+                print(decoded_data)
                 
-                # If all quizzes for this job have been passed, move to interview
-                all_quizzes = Quiz.objects.filter(job=application.job)
-                all_passed = True
+                if isinstance(decoded_data, dict) and 'error' in decoded_data:
+                    context['error_message'] = decoded_data['error']
+                    messages.error(request, decoded_data['error'])
+                    return render(request, 'authentication/scan_qr_code.html', context)
                 
-                for job_quiz in all_quizzes:
-                    # Skip this quiz if it's the one we just took
-                    if job_quiz.id == quiz.id:
-                        continue
-                    
-                    # Check if this quiz has been attempted and passed
-                    quiz_attempt = QuizAttempt.objects.filter(quiz=job_quiz, application=application).first()
-                    if not quiz_attempt or not quiz_attempt.passed:
-                        all_passed = False
-                        break
+                # Get purchase information
+                purchase_info = get_user_purchases_from_qr(decoded_data)
                 
-                if all_passed:
-                    application.status = 'interview'
-                    application.save()
-                    messages.success(request, 'Congratulations! You have passed all assessments and moved to the interview stage.')
-            
-            attempt.save()
-        
-        messages.success(request, 'Quiz completed successfully.')
-        return redirect('view_application', application_id=application.id)
+                # If no purchases found or empty QR data
+                if not purchase_info.get('purchases'):
+                    context['error_message'] = 'No pending purchases found in this QR code.'
+                    messages.warning(request, context['error_message'])
+                    return render(request, 'authentication/scan_qr_code.html', context)
+                
+                # If purchase_id is provided, complete that specific purchase
+                if purchase_id:
+                    try:
+                        # Find the specific purchase from the database
+                        purchase = Purchase.objects.get(id=purchase_id)
+                        
+                        # Verify the purchase belongs to the user in the QR code
+                        if purchase.buyer.id != purchase_info['user_id']:
+                            context['error_message'] = 'Purchase verification failed: User mismatch.'
+                            messages.error(request, context['error_message'])
+                            return render(request, 'authentication/scan_qr_code.html', context)
+                        
+                        # Complete the purchase directly (fallback from JS flow)
+                        purchase.status = 'completed'
+                        purchase.koraquest_user = request.user
+                        purchase.pickup_confirmed_at = timezone.now()
+                        purchase.save()
+                        
+                        # Update vendor and buyer stats
+                        vendor = purchase.product.user
+                        vendor.total_sales += purchase.vendor_payment_amount
+                        vendor.save()
+                        
+                        buyer = purchase.buyer
+                        buyer.total_purchases += (purchase.purchase_price * purchase.quantity)
+                        buyer.save()
+                        
+                        # Success message
+                        context['success_message'] = f'Purchase {purchase.order_id} confirmed successfully! Vendor payment: ${purchase.vendor_payment_amount}, KoraQuest commission: ${purchase.koraquest_commission_amount}'
+                        messages.success(request, context['success_message'])
+                        
+                        # Redirect to dashboard after successful completion
+                        return redirect('koraquest_dashboard')
+                    except Purchase.DoesNotExist:
+                        context['error_message'] = f'Purchase not found with ID: {purchase_id}'
+                        messages.error(request, context['error_message'])
+                        return render(request, 'authentication/scan_qr_code.html', context)
+                
+                # If no specific purchase_id, show all purchases
+                user = get_object_or_404(User, id=purchase_info['user_id'])
+                
+                # Add data to context
+                context.update({
+                    'qr_data': purchase_info,
+                    'user_info': user,
+                    'success_message': f'Successfully retrieved purchase information for {user.username}.'
+                })
+                
+                messages.success(request, context['success_message'])
+                return render(request, 'authentication/scan_qr_code.html', context)
+                
+            except Exception as e:
+                context['error_message'] = f"Error processing QR code: {str(e)}"
+                messages.error(request, context['error_message'])
+                return render(request, 'authentication/scan_qr_code.html', context)
+        else:
+            context['error_message'] = 'No QR data provided'
+            messages.error(request, context['error_message'])
+            return render(request, 'authentication/scan_qr_code.html', context)
     
-    context = {
-        'quiz': quiz,
-        'questions': questions,
-        'application': application
-    }
-    
-    return render(request, 'authentication/take_quiz.html', context)
+    # For GET requests, just render the scan page
+    print("nothing kweri")
+    return render(request, 'authentication/scan_qr_code.html', context)
 
 @login_required
-def edit_job(request, job_id):
-    # Check if user has hiring company role
-    if not request.user.is_hiring_company_role:
-        messages.error(request, 'You need to have Hiring Company status to edit job listings.')
+def confirm_purchase_pickup(request, purchase_id):
+    """Confirm purchase pickup and initiate OTP verification"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
         return redirect('dashboard')
     
-    # Get the job
-    job = get_object_or_404(Post, id=job_id, post_type='job')
-    
-    # Check if the job belongs to the current user
-    if job.user != request.user:
-        messages.error(request, 'You do not have permission to edit this job.')
-        return redirect('hiring_company_dashboard')
-    
-    # Business Rule: Prevent editing job posts if someone has already applied to them
-    if JobApplication.objects.filter(job=job).exists():
-        messages.error(request, 'This job cannot be edited because applications have already been received.')
-        return redirect('hiring_company_dashboard')
+    purchase = get_object_or_404(Purchase, id=purchase_id, status='awaiting_pickup')
     
     if request.method == 'POST':
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        job_location = request.POST.get('job_location')
-        job_type = request.POST.get('job_type')
-        salary_range = request.POST.get('salary_range')
+        action = request.POST.get('action')
         
-        if title and description and job_location and job_type:
-            # Update job details
-            job.title = title
-            job.description = description
-            job.job_location = job_location
-            job.job_type = job_type
-            job.salary_range = salary_range
+        if action == 'request_otp':
+            # Create OTP for buyer
+            otp_result = create_otp(purchase.buyer, 'purchase_confirmation')
             
-            # Handle image update if provided
-            image = request.FILES.get('image')
-            if image:
-                job.image = image
+            return JsonResponse({
+                'success': True,
+                'message': f'OTP sent to {purchase.buyer.email}',
+                'otp_id': otp_result['otp_id']
+            })
+        
+        elif action == 'verify_otp':
+            password = request.POST.get('password')
+            otp_code = request.POST.get('otp_code')
             
-            job.save()
-            messages.success(request, 'Job posting updated successfully!')
-            return redirect('hiring_company_dashboard')
-        else:
-            messages.error(request, 'Please fill all required fields')
+            # Verify buyer's password
+            if not purchase.buyer.check_password(password):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid password'
+                })
+            
+            # Verify OTP
+            otp_result = verify_otp(purchase.buyer, otp_code, 'purchase_confirmation')
+            
+            if not otp_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': otp_result['error']
+                })
+            
+            # Complete the purchase
+            purchase.status = 'completed'
+            purchase.koraquest_user = request.user
+            purchase.pickup_confirmed_at = timezone.now()
+            purchase.save()
+            
+            # Update vendor and buyer stats
+            vendor = purchase.product.user
+            vendor.total_sales += purchase.vendor_payment_amount
+            vendor.save()
+            
+            buyer = purchase.buyer
+            buyer.total_purchases += (purchase.purchase_price * purchase.quantity)
+            buyer.save()
+            
+            # Update product inventory and sales
+            product = purchase.product
+            product.inventory -= purchase.quantity
+            product.total_purchases += purchase.quantity
+            product.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Purchase confirmed successfully!',
+                'vendor_payment': str(purchase.vendor_payment_amount),
+                'koraquest_commission': str(purchase.koraquest_commission_amount)
+            })
     
     context = {
-        'job': job
+        'purchase': purchase,
+        'payment_split': purchase.calculate_payment_split()
     }
     
-    return render(request, 'authentication/edit_job.html', context)
+    return render(request, 'authentication/confirm_purchase_pickup.html', context)
 
 @login_required
-def mark_notification_read(request, notification_id):
-    """Mark a notification as read"""
-    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
-    notification.is_read = True
-    notification.save()
+def confirm_delivery(request, purchase_id):
+    """Confirm delivery completion and initiate OTP verification"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
     
-    # Return JSON response for AJAX calls
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'success': True})
+    purchase = get_object_or_404(Purchase, id=purchase_id, status__in=['awaiting_delivery', 'out_for_delivery'])
     
-    # Redirect back to the previous page
-    return redirect(request.META.get('HTTP_REFERER', 'freelancer_dashboard'))
-
-@login_required
-def mark_all_notifications_read(request):
-    """Mark all notifications as read for the current user"""
     if request.method == 'POST':
-        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
-        messages.success(request, 'All notifications marked as read.')
+        action = request.POST.get('action')
+        
+        if action == 'mark_out_for_delivery':
+            # Mark as out for delivery
+            purchase.status = 'out_for_delivery'
+            purchase.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Order marked as out for delivery!'
+            })
+        
+        elif action == 'request_otp':
+            # Create OTP for buyer
+            otp_result = create_otp(purchase.buyer, 'delivery_confirmation')
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'OTP sent to {purchase.buyer.email}',
+                'otp_id': otp_result['otp_id']
+            })
+        
+        elif action == 'verify_delivery':
+            password = request.POST.get('password')
+            otp_code = request.POST.get('otp_code')
+            
+            # Verify buyer's password
+            if not purchase.buyer.check_password(password):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid password'
+                })
+            
+            # Verify OTP
+            otp_result = verify_otp(purchase.buyer, otp_code, 'delivery_confirmation')
+            
+            if not otp_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': otp_result['error']
+                })
+            
+            # Complete the delivery
+            purchase.status = 'completed'
+            purchase.koraquest_user = request.user
+            purchase.pickup_confirmed_at = timezone.now()  # Using same field for delivery confirmation time
+            purchase.save()
+            
+            # Update vendor and buyer stats
+            vendor = purchase.product.user
+            vendor.total_sales += purchase.vendor_payment_amount
+            vendor.save()
+            
+            buyer = purchase.buyer
+            buyer.total_purchases += purchase.purchase_price
+            buyer.save()
+            
+            # Update product sales (inventory already reduced during purchase)
+            product = purchase.product
+            product.total_purchases += purchase.quantity
+            product.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Delivery confirmed successfully!',
+                'vendor_payment': str(purchase.vendor_payment_amount),
+                'koraquest_commission': str(purchase.koraquest_commission_amount)
+            })
     
-    return redirect('freelancer_dashboard')
+    context = {
+        'purchase': purchase,
+        'payment_split': purchase.calculate_payment_split(),
+        'is_delivery': True
+    }
+    
+    return render(request, 'authentication/confirm_purchase_pickup.html', context)
+
+@login_required
+def update_qr_code_ajax(request):
+    """AJAX endpoint to update user's QR code"""
+    if request.method == 'POST':
+        user_qr = update_user_qr_code(request.user)
+        
+        return JsonResponse({
+            'success': True,
+            'qr_image_url': user_qr.qr_image.url if user_qr.qr_image else None,
+            'expires_at': user_qr.expires_at.isoformat()
+        })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def koraquest_purchase_history(request):
+    """View purchase history for KoraQuest users"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    purchases = Purchase.objects.filter(
+        koraquest_user=request.user,
+        status='completed'
+    ).select_related('buyer', 'product', 'product__user').order_by('-pickup_confirmed_at')
+    
+    # Pagination could be added here
+    context = {
+        'purchases': purchases,
+        'total_commission': purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+    }
+    
+    return render(request, 'authentication/koraquest_purchase_history.html', context)

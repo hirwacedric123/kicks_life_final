@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My QR Code - KoraQuest</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .qr-container {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f8f9ff;
+        }
+        .qr-code {
+            max-width: 250px;
+            height: auto;
+            border-radius: 8px;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 0 5px 5px 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .status.active {
+            background: #4caf50;
+            color: white;
+        }
+        .status.expired {
+            background: #f44336;
+            color: white;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        .timer {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 My QR Code</h1>
+        <p>Show this QR code at KoraQuest to collect your purchases</p>
+        
+        {% if qr_code %}
+            <div class="qr-container">
+                <img src="{{ qr_code.qr_image.url }}" alt="User QR Code" class="qr-code">
+                <div class="status {% if qr_code.is_expired %}expired{% else %}active{% endif %}">
+                    {% if qr_code.is_expired %}
+                        Expired
+                    {% else %}
+                        Active
+                    {% endif %}
+                </div>
+                <div class="timer">
+                    Expires: <span id="expiry-time">{{ qr_code.expires_at|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h3>📦 Purchase Information</h3>
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Last Updated:</strong> {{ qr_code.updated_at|date:"M d, Y H:i" }}</p>
+                <p><strong>QR Code Status:</strong> 
+                    {% if qr_code.is_expired %}
+                        <span style="color: red;">Expired - Please generate a new one</span>
+                    {% else %}
+                        <span style="color: green;">Active</span>
+                    {% endif %}
+                </p>
+            </div>
+        {% else %}
+            <div class="qr-container">
+                <p style="color: #666; margin: 40px 0;">No QR code generated yet</p>
+            </div>
+        {% endif %}
+        
+        <button class="btn" onclick="generateQR()">
+            {% if qr_code %}Refresh QR Code{% else %}Generate QR Code{% endif %}
+        </button>
+        
+        <button class="btn" onclick="window.location.href='{% url 'dashboard' %}'" style="background: #64b5f6;">
+            Back to Dashboard
+        </button>
+        
+        <div class="info-box">
+            <h3>ℹ️ How it works</h3>
+            <ul style="text-align: left;">
+                <li>Your QR code updates automatically every 10 minutes</li>
+                <li>It contains information about your pending purchases</li>
+                <li>Show this code to KoraQuest staff to collect your items</li>
+                <li>You'll need to verify with your password and OTP</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function generateQR() {
+            fetch('{% url "generate_user_qr" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Failed to generate QR code');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while generating QR code');
+            });
+        }
+
+        // Auto-refresh QR code every 10 minutes
+        setInterval(() => {
+            generateQR();
+        }, 600000); // 10 minutes in milliseconds
+    </script>
+</body>
+</html>

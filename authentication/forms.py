@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User
+from .models import User, ProductReview
 
-class UserRegistrationForm(UserCreationForm):
+class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True)
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
@@ -13,7 +13,7 @@ class UserRegistrationForm(UserCreationForm):
         fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'password1', 'password2']
     
     def __init__(self, *args, **kwargs):
-        super(UserRegistrationForm, self).__init__(*args, **kwargs)
+        super(SignUpForm, self).__init__(*args, **kwargs)
         # Add Bootstrap classes to form fields
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
@@ -29,3 +29,17 @@ class UserRegistrationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+class ProductReviewForm(forms.ModelForm):
+    rating = forms.ChoiceField(
+        choices=[(i, i) for i in range(1, 6)],
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    comment = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Write your review...'}),
+        required=False
+    )
+    
+    class Meta:
+        model = ProductReview
+        fields = ['rating', 'comment']
