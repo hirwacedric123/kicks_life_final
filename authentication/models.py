@@ -164,7 +164,7 @@ class Purchase(models.Model):
         # Set delivery fee if delivery method is delivery
         if self.delivery_method == 'delivery' and self.delivery_fee == 0:
             from decimal import Decimal
-            self.delivery_fee = Decimal('5.00')  # $5 delivery fee
+            self.delivery_fee = Decimal('5.00')  # RWF5 delivery fee
         
         # Calculate payment splits when status changes to completed
         if self.status == 'completed' and not self.vendor_payment_amount:

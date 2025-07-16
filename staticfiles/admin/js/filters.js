@@ -11,7 +11,7 @@
     }
 
     Object.entries(filters).forEach(([key, value]) => {
-        const detailElement = document.querySelector(`[data-filter-title='${CSS.escape(key)}']`);
+        const detailElement = document.querySelector(`[data-filter-title='RWF{CSS.escape(key)}']`);
 
         // Check if the filter is present, it could be from other view.
         if (detailElement) {
@@ -23,7 +23,7 @@
     const details = document.querySelectorAll('details');
     details.forEach(detail => {
         detail.addEventListener('toggle', event => {
-            filters[`${event.target.dataset.filterTitle}`] = detail.open;
+            filters[`RWF{event.target.dataset.filterTitle}`] = detail.open;
             sessionStorage.setItem('django.admin.filtersState', JSON.stringify(filters));
         });
     });

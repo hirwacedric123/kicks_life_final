@@ -48,44 +48,70 @@ def generate_user_qr_data(user):
 
 def create_qr_image(data):
     """Create QR code image from data"""
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(data)
-    qr.make(fit=True)
-    
-    # Create image
-    img = qr.make_image(fill_color="black", back_color="white")
-    
-    # Convert to bytes
-    buffer = io.BytesIO()
-    img.save(buffer, format='PNG')
-    buffer.seek(0)
-    
-    return ContentFile(buffer.read(), name=f'qr_code_{datetime.now().strftime("%Y%m%d_%H%M%S")}.png')
+    try:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+        
+        # Create image
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convert to bytes using a context manager
+        with io.BytesIO() as buffer:
+            img.save(buffer, format='PNG')
+            buffer.seek(0)
+            image_content = buffer.getvalue()
+            
+        # Generate a unique filename that's platform-independent
+        filename = f'qr_code_{datetime.now().strftime("%Y%m%d_%H%M%S")}.png'
+        return ContentFile(image_content, name=filename)
+    except Exception as e:
+        print(f"Error creating QR image: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise IOError(f"Failed to create QR code image: {str(e)}")
 
 def update_user_qr_code(user):
     """Update or create QR code for user"""
-    qr_data = generate_user_qr_data(user)
-    qr_image = create_qr_image(qr_data)
-    
-    # Get or create user QR code with expires_at set for new records
-    expires_at = timezone.now() + timedelta(minutes=10)
-    user_qr, created = UserQRCode.objects.get_or_create(
-        user=user,
-        defaults={'expires_at': expires_at}
-    )
-    
-    # Update the QR code
-    user_qr.qr_data = qr_data
-    user_qr.qr_image.save(f'qr_{user.username}_{timezone.now().strftime("%Y%m%d_%H%M%S")}.png', qr_image)
-    user_qr.expires_at = expires_at
-    user_qr.save()
-    
-    return user_qr
+    try:
+        qr_data = generate_user_qr_data(user)
+        qr_image = create_qr_image(qr_data)
+        
+        # Get or create user QR code with expires_at set for new records
+        expires_at = timezone.now() + timedelta(minutes=10)
+        user_qr, created = UserQRCode.objects.get_or_create(
+            user=user,
+            defaults={'expires_at': expires_at}
+        )
+        
+        # Update the QR code
+        # Use a unique filename based on timestamp
+        filename = f'qr_{user.username}_{timezone.now().strftime("%Y%m%d_%H%M%S")}.png'
+        
+        # Clear old image if it exists
+        if user_qr.qr_image:
+            try:
+                user_qr.qr_image.delete(save=False)
+            except Exception as e:
+                print(f"Warning: Could not delete old QR image: {str(e)}")
+        
+        # Save new image
+        user_qr.qr_data = qr_data
+        user_qr.qr_image.save(filename, qr_image, save=False)
+        user_qr.expires_at = expires_at
+        user_qr.save()
+        
+        return user_qr
+    except Exception as e:
+        print(f"Error updating QR code: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise IOError(f"Failed to update QR code: {str(e)}")
 
 def decode_qr_data(token):
     """Decode QR code token and return user data"""

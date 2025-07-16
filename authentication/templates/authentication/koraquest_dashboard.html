@@ -187,7 +187,7 @@
             <div>Out for Delivery</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">${{ total_commission|floatformat:2 }}</div>
+            <div class="stat-value">RWF{{ total_commission|floatformat:2 }}</div>
             <div>Total Commission</div>
         </div>
     </div><!-- QR Scanner Section -->
@@ -208,7 +208,7 @@
                         Customer: {{ purchase.buyer.username }} | 
                         Order: {{ purchase.order_id }} | 
                         Qty: {{ purchase.quantity }} | 
-                        Total: ${{ purchase.purchase_price|floatformat:2 }}
+                        Total: RWF{{ purchase.purchase_price|floatformat:2 }}
                     </small><br>
                     <span class="status awaiting">Awaiting Pickup</span>
                 </div>
@@ -234,7 +234,7 @@
                         Customer: {{ purchase.buyer.username }} | 
                         Order: {{ purchase.order_id }} | 
                         Qty: {{ purchase.quantity }} | 
-                        Total: ${{ purchase.purchase_price|floatformat:2 }}
+                        Total: RWF{{ purchase.purchase_price|floatformat:2 }}
                         {% if purchase.delivery_address %}
                         <br>Address: {{ purchase.delivery_address|truncatechars:50 }}
                         {% endif %}
@@ -264,7 +264,7 @@
                         Customer: {{ purchase.buyer.username }} | 
                         Order: {{ purchase.order_id }} | 
                         Qty: {{ purchase.quantity }} | 
-                        Total: ${{ purchase.purchase_price|floatformat:2 }}
+                        Total: RWF{{ purchase.purchase_price|floatformat:2 }}
                         {% if purchase.delivery_address %}
                         <br>Address: {{ purchase.delivery_address|truncatechars:50 }}
                         {% endif %}
@@ -291,8 +291,8 @@
                     <small>
                         Customer: {{ purchase.buyer.username }} | 
                         Order: {{ purchase.order_id }} | 
-                        Vendor Payment: ${{ purchase.vendor_payment_amount|floatformat:2 }} | 
-                        Commission: ${{ purchase.koraquest_commission_amount|floatformat:2 }}
+                        Vendor Payment: RWF{{ purchase.vendor_payment_amount|floatformat:2 }} | 
+                        Commission: RWF{{ purchase.koraquest_commission_amount|floatformat:2 }}
                     </small><br>
                     <span class="status completed">Completed</span>
                 </div>
@@ -317,7 +317,7 @@
                     <strong>{{ product.title }}</strong><br>
                     <small>
                         Vendor: {{ product.user.username }} | 
-                        Price: ${{ product.price|floatformat:2 }} | 
+                        Price: RWF{{ product.price|floatformat:2 }} | 
                         Category: {{ product.category|default:"N/A" }}
                     </small>
                 </div>

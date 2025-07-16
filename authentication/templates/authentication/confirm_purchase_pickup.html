@@ -270,7 +270,7 @@ Confirm Purchase Pickup
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Total Price</div>
-                    <div class="detail-value">${{ purchase.purchase_price|floatformat:2 }}</div>
+                    <div class="detail-value">RWF{{ purchase.purchase_price|floatformat:2 }}</div>
                 </div>                <div class="detail-item">
                     <div class="detail-label">Status</div>
                     <div class="detail-value">
@@ -289,7 +289,7 @@ Confirm Purchase Pickup
                 {% if purchase.delivery_fee %}
                 <div class="detail-item">
                     <div class="detail-label">Delivery Fee</div>
-                    <div class="detail-value">${{ purchase.delivery_fee|floatformat:2 }}</div>
+                    <div class="detail-value">RWF{{ purchase.delivery_fee|floatformat:2 }}</div>
                 </div>
                 {% endif %}
                 {% else %}
@@ -304,25 +304,25 @@ Confirm Purchase Pickup
                 <h4>💰 Payment Breakdown</h4>
                 <div class="payment-item">
                     <span>Product Subtotal</span>
-                    <span>${{ purchase.product.price|floatformat:2 }}</span>
+                    <span>RWF{{ purchase.product.price|floatformat:2 }}</span>
                 </div>
                 {% if purchase.delivery_method == 'delivery' and purchase.delivery_fee %}
                 <div class="payment-item">
                     <span>Delivery Fee</span>
-                    <span>${{ purchase.delivery_fee|floatformat:2 }}</span>
+                    <span>RWF{{ purchase.delivery_fee|floatformat:2 }}</span>
                 </div>
                 {% endif %}
                 <div class="payment-item">
                     <span>Vendor Payment (80% of product price)</span>
-                    <span>${{ purchase.vendor_payment_amount|floatformat:2 }}</span>
+                    <span>RWF{{ purchase.vendor_payment_amount|floatformat:2 }}</span>
                 </div>
                 <div class="payment-item">
                     <span>KoraQuest Commission (20% + delivery fee)</span>
-                    <span>${{ purchase.koraquest_commission_amount|floatformat:2 }}</span>
+                    <span>RWF{{ purchase.koraquest_commission_amount|floatformat:2 }}</span>
                 </div>
                 <div class="payment-item">
                     <span>Total Amount</span>
-                    <span>${{ purchase.purchase_price|floatformat:2 }}</span>
+                    <span>RWF{{ purchase.purchase_price|floatformat:2 }}</span>
                 </div>
             </div>
         </div>        <!-- Physical Verification Checklist -->

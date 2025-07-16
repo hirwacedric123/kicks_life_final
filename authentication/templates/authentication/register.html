@@ -1,288 +1,176 @@
-{% extends "authentication/base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}Register - KoraQuest{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KoraQuest</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    {% load static %}
+    <link href="{% static 'css/login.css' %}" rel="stylesheet">
+</head>
 
-{% block content %}
-<div class="row justify-content-center slide-up">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-sm auth-card">
-            <div class="card-header bg-white text-center">
-                <div class="mb-2">
-                    <i class="bi bi-person-plus-fill text-primary" style="font-size: 3rem;"></i>
+<body>
+    <div class="body-container">
+        <div class="logo">
+            <h3 style="color: rgb(255, 255, 255);">Kora<span style="color: rgb(255, 255, 255);"><i class="bi bi-search"style="color: white;"></i>uest</span></h3>
+        </div>
+    </div>
+    <div class="container">
+        <div class="sub-container">
+            <div class="login-container">
+                <div class="">
+                    <h3 class="login-title">Sign Up</h3>
                 </div>
-                <h3 class="fw-bold text-primary">Create Your Account</h3>
-                <p class="text-muted mb-0">Join the KoraQuest community and share amazing content</p>
-            </div>
-            <div class="card-body p-4">
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0">
-                                    <i class="bi bi-person text-primary"></i>
-                                </span>
-                            {{ form.first_name }}
+                <div class="form-container">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                <div class="input-group">
+                                    {{ form.first_name }}
+                                </div>
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger mt-1 small">{{ form.first_name.errors }}</div>
+                                {% endif %}
                             </div>
-                            {% if form.first_name.errors %}
-                                <div class="text-danger mt-1 small">{{ form.first_name.errors }}</div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                <div class="input-group">
+                                    {{ form.last_name }}
+                                </div>
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger mt-1 small">{{ form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                            <div class="input-group">
+                                {{ form.username }}
+                            </div>
+                            {% if form.username.errors %}
+                                <div class="text-danger mt-1 small">{{ form.username.errors }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0">
-                                    <i class="bi bi-person text-primary"></i>
-                                </span>
-                            {{ form.last_name }}
+                                {{ form.email }}
                             </div>
-                            {% if form.last_name.errors %}
-                                <div class="text-danger mt-1 small">{{ form.last_name.errors }}</div>
+                            {% if form.email.errors %}
+                                <div class="text-danger mt-1 small">{{ form.email.errors }}</div>
                             {% endif %}
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-at text-primary"></i>
-                            </span>
-                            {{ form.username }}
+
+                        <div class="mb-3">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                {{ form.phone_number }}
+                            </div>
+                            {% if form.phone_number.errors %}
+                                <div class="text-danger mt-1 small">{{ form.phone_number.errors }}</div>
+                            {% endif %}
                         </div>
-                        {% if form.username.errors %}
-                            <div class="text-danger mt-1 small">{{ form.username.errors }}</div>
-                        {% endif %}
-                        <div class="form-text">This will be your unique identifier on KoraQuest</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-envelope text-primary"></i>
-                            </span>
-                            {{ form.email }}
+
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                            <div class="input-group">
+                                {{ form.password1 }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword1">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="text-danger mt-1 small">{{ form.password1.errors }}</div>
+                            {% endif %}
                         </div>
-                        {% if form.email.errors %}
-                            <div class="text-danger mt-1 small">{{ form.email.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-phone text-primary"></i>
-                            </span>
-                        {{ form.phone_number }}
+
+                        <div class="mb-4">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                            <div class="input-group">
+                                {{ form.password2 }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="text-danger mt-1 small">{{ form.password2.errors }}</div>
+                            {% endif %}
                         </div>
-                        {% if form.phone_number.errors %}
-                            <div class="text-danger mt-1 small">{{ form.phone_number.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-lock text-primary"></i>
-                            </span>
-                        {{ form.password1 }}
-                            <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword1">
-                                <i class="bi bi-eye"></i>
+
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="sigin_button">
+                                <i class="bi bi-person-plus me-2"></i>Create Account
                             </button>
                         </div>
-                        {% if form.password1.errors %}
-                            <div class="text-danger mt-1 small">{{ form.password1.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-lock-fill text-primary"></i>
-                            </span>
-                        {{ form.password2 }}
-                            <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword2">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                        {% if form.password2.errors %}
-                            <div class="text-danger mt-1 small">{{ form.password2.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-4 form-check">
-                        <input type="checkbox" class="form-check-input" id="termsCheck" required>
-                        <label class="form-check-label" for="termsCheck">
-                            I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
-                        </label>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-gradient btn-lg">
-                            <i class="bi bi-person-plus me-2"></i> Create Account
-                        </button>
-                    </div>
-                </form>
-                
-                <div class="text-center my-4">
-                    <span class="divider-text">or sign up with</span>
-                </div>
-                
-                <div class="row g-2 mb-2">
-                    <div class="col-6">
-                        <button class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-google me-2"></i>Google
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-facebook me-2"></i>Facebook
-                        </button>
+                    </form>
+                    <div class="register_link">
+                        <p class="mb-0">Already have an account? <a href="{% url 'login' %}"
+                                class="text-primary fw-medium">Login here</a></p>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer text-center py-3 bg-white">
-                <p class="mb-0">Already have an account? <a href="{% url 'login' %}" class="text-primary fw-medium">Login here</a></p>
             </div>
         </div>
     </div>
-</div>
 
-<style>
-.divider-text {
-    position: relative;
-    display: inline-block;
-    font-size: 0.9rem;
-    color: #aaa;
-}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add form-control class to all form inputs
+            const formFields = [
+                '{{ form.username.id_for_label }}',
+                '{{ form.email.id_for_label }}',
+                '{{ form.first_name.id_for_label }}',
+                '{{ form.last_name.id_for_label }}',
+                '{{ form.phone_number.id_for_label }}',
+                '{{ form.password1.id_for_label }}',
+                '{{ form.password2.id_for_label }}'
+            ];
+            
+            formFields.forEach(function(fieldId) {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.classList.add('form-control');
+                }
+            });
 
-.divider-text::before,
-.divider-text::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 80px;
-    height: 1px;
-    background-color: #e0e0e0;
-}
-
-.divider-text::before {
-    right: 100%;
-    margin-right: 15px;
-}
-
-.divider-text::after {
-    left: 100%;
-    margin-left: 15px;
-}
-</style>
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add Bootstrap form-control class to form fields
-        const formFields = [
-            '{{ form.username.id_for_label }}',
-            '{{ form.email.id_for_label }}',
-            '{{ form.first_name.id_for_label }}',
-            '{{ form.last_name.id_for_label }}',
-            '{{ form.phone_number.id_for_label }}',
-            '{{ form.password1.id_for_label }}',
-            '{{ form.password2.id_for_label }}'
-        ];
-        
-        formFields.forEach(function(fieldId) {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.classList.add('form-control', 'border-start-0');
+            // Toggle password visibility
+            function setupPasswordToggle(toggleId, passwordId) {
+                const toggleBtn = document.getElementById(toggleId);
+                const passwordField = document.getElementById(passwordId);
+                
+                if (toggleBtn && passwordField) {
+                    toggleBtn.addEventListener('click', function() {
+                        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                        passwordField.setAttribute('type', type);
+                        
+                        const icon = toggleBtn.querySelector('i');
+                        icon.classList.toggle('bi-eye');
+                        icon.classList.toggle('bi-eye-slash');
+                    });
+                }
             }
+
+            setupPasswordToggle('togglePassword1', '{{ form.password1.id_for_label }}');
+            setupPasswordToggle('togglePassword2', '{{ form.password2.id_for_label }}');
         });
-        
-        // Toggle password visibility for first password field
-        const togglePassword1 = document.getElementById('togglePassword1');
-        const passwordField1 = document.getElementById('{{ form.password1.id_for_label }}');
-        
-        togglePassword1.addEventListener('click', function() {
-            const type = passwordField1.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordField1.setAttribute('type', type);
-            
-            const icon = togglePassword1.querySelector('i');
-            if (type === 'text') {
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
-            } else {
-                icon.classList.remove('bi-eye-slash');
-                icon.classList.add('bi-eye');
-            }
-        });
-        
-        // Toggle password visibility for second password field
-        const togglePassword2 = document.getElementById('togglePassword2');
-        const passwordField2 = document.getElementById('{{ form.password2.id_for_label }}');
-        
-        togglePassword2.addEventListener('click', function() {
-            const type = passwordField2.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordField2.setAttribute('type', type);
-            
-            const icon = togglePassword2.querySelector('i');
-            if (type === 'text') {
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
-            } else {
-                icon.classList.remove('bi-eye-slash');
-                icon.classList.add('bi-eye');
-            }
-        });
-        
-        // Password strength feedback (basic example)
-        passwordField1.addEventListener('input', function() {
-            const strength = calculatePasswordStrength(this.value);
-            let strengthClass = 'text-danger';
-            let strengthText = 'Weak';
-            
-            if (strength > 60) {
-                strengthClass = 'text-success';
-                strengthText = 'Strong';
-            } else if (strength > 30) {
-                strengthClass = 'text-warning';
-                strengthText = 'Medium';
-            }
-            
-            // Find or create strength indicator
-            let indicator = document.getElementById('password-strength');
-            if (!indicator) {
-                indicator = document.createElement('div');
-                indicator.id = 'password-strength';
-                indicator.classList.add('form-text', 'mt-1');
-                this.parentNode.parentNode.appendChild(indicator);
-            }
-            
-            indicator.className = 'form-text mt-1 ' + strengthClass;
-            indicator.textContent = 'Password strength: ' + strengthText;
-        });
-        
-        function calculatePasswordStrength(password) {
-            let strength = 0;
-            
-            // Length contribution
-            if (password.length > 6) strength += 20;
-            if (password.length > 10) strength += 10;
-            
-            // Complexity contribution
-            if (/[a-z]/.test(password)) strength += 10; // lowercase
-            if (/[A-Z]/.test(password)) strength += 20; // uppercase
-            if (/[0-9]/.test(password)) strength += 20; // numbers
-            if (/[^a-zA-Z0-9]/.test(password)) strength += 20; // special characters
-            
-            return strength;
-        }
-    });
-</script>
-{% endblock extra_js %}
-{% endblock content %}
+    </script>
+</body>
+
+</html>

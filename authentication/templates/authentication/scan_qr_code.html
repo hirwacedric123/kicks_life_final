@@ -5,971 +5,740 @@
 
 {% block extra_head %}
 <style>
+    ::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Main container styles */
     .scanner-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 20px;
-    }
-    
-    .scanner-header {
         background: white;
-        border-radius: 15px;
-        padding: 30px;
-        margin-bottom: 30px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    
-    .scanner-section {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    
-    .qr-input-section {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 25px;
-        margin-bottom: 20px;
-        border: 2px dashed #667eea;
-    }
-    
-    .qr-input {
         width: 100%;
-        padding: 15px;
-        border: 2px solid #e1e5e9;
-        border-radius: 10px;
-        font-size: 16px;
-        margin-bottom: 15px;
-        font-family: monospace;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    
-    .qr-input:focus {
-        border-color: #667eea;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .btn {
-        background: #667eea;
-        color: white;
-        padding: 12px 25px;
-        border: none;
-        border-radius: 25px;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: 500;
-    }
-    
-    .btn:hover {
-        background: #5a6fd8;
-        transform: translateY(-2px);
-        color: white;
-        text-decoration: none;
-    }
-    
-    .btn:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(45deg, #4CAF50, #45a049);
-        font-size: 18px;
-        padding: 15px 30px;
-    }
-    
-    .btn-danger {
-        background: linear-gradient(45deg, #f44336, #d32f2f);
-    }
-    
-    .instruction-box {
-        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-left: 4px solid #2196F3;
-    }
-    
-    .instruction-box h3 {
-        color: #1976D2;
-        margin-bottom: 15px;
-    }
-    
-    .instruction-list {
-        list-style: none;
-        padding: 0;
-    }
-    
-    .instruction-list li {
-        margin-bottom: 10px;
-        padding-left: 25px;
-        position: relative;
-    }
-    
-    .instruction-list li:before {
-        content: "✓";
-        position: absolute;
-        left: 0;
-        color: #4CAF50;
-        font-weight: bold;
-    }
-    
-    .result-section {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 20px;
-        margin-top: 20px;
-        border-left: 4px solid #4CAF50;
-        display: none;
-    }
-    
-    .error-section {
-        background: #ffebee;
-        border-radius: 10px;
-        padding: 20px;
-        margin-top: 20px;
-        border-left: 4px solid #f44336;
-        color: #c62828;
-        display: none;
-    }
-    
-    .camera-section {
-        text-align: center;
-        margin: 20px 0;
-    }
-    
-    .camera-placeholder {
-        background: #f5f5f5;
-        border: 2px dashed #ccc;
-        border-radius: 10px;
-        padding: 40px;
-        margin: 20px 0;
-        color: #666;
-    }
-    
-    .debug-info {
-        background: #f0f0f0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 10px;
-        margin: 10px 0;
-        font-family: monospace;
-        font-size: 12px;
-        max-height: 150px;
-        overflow-y: auto;
-    }
-    
-    .loading-spinner {
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #667eea;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        animation: spin 1s linear infinite;
-        display: inline-block;
-        margin-right: 10px;
-    }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .library-status {
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 5px;
-        font-size: 14px;
-    }
-    
-    .library-status.loading {
-        background: #e3f2fd;
-        color: #1976d2;
-        border: 1px solid #2196f3;
-    }
-    
-    .library-status.success {
-        background: #e8f5e8;
-        color: #2e7d32;
-        border: 1px solid #4caf50;
-    }
-    
-    .library-status.error {
-        background: #ffebee;
-        color: #c62828;
-        border: 1px solid #f44336;
-    }
-    
-    /* Popup Styles - Enhanced */
-    .popup-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(102, 126, 234, 0.2));
-        backdrop-filter: blur(5px);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .popup-overlay.active {
-        opacity: 1;
-        visibility: visible;
-    }
-    
-    .popup-container {
-        background: linear-gradient(145deg, #ffffff, #f8f9fa);
-        border-radius: 24px;
-        width: 90%;
-        max-width: 600px;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 
-            0 25px 50px rgba(0, 0, 0, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        padding: 40px;
-        position: relative;
-        transform: translateY(30px) scale(0.9);
-        opacity: 0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .popup-overlay.active .popup-container {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-    
-    .popup-close {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        font-size: 24px;
-        background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .popup-close:hover {
-        background: linear-gradient(145deg, #e0e0e0, #d0d0d0);
-        transform: scale(1.1);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .popup-header {
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #f0f0f0;
-        text-align: center;
-        position: relative;
-    }
-    
-    .popup-header::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        border-radius: 2px;
-    }
-    
-    .popup-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: #2c3e50;
-        margin: 0 0 12px 0;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .popup-subtitle {
-        color: #6c757d;
-        margin: 0;
-        font-size: 16px;
-        font-weight: 400;
-        line-height: 1.5;
-    }
-    
-    .purchase-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    
-    .purchase-item {
-        background: linear-gradient(145deg, #ffffff, #f8f9fa);
-        border: 2px solid #e9ecef;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 16px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .purchase-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-    }
-    
-    .purchase-item:hover {
-        border-color: #667eea;
-        box-shadow: 
-            0 8px 25px rgba(102, 126, 234, 0.15),
-            0 0 0 1px rgba(102, 126, 234, 0.1);
-        transform: translateY(-4px);
-    }
-    
-    .purchase-item:hover::before {
-        transform: scaleX(1);
-    }
-    
-    .purchase-item.selected {
-        border-color: #4CAF50;
-        background: linear-gradient(145deg, #f8fff8, #f0f8f0);
-        box-shadow: 
-            0 12px 30px rgba(76, 175, 80, 0.2),
-            0 0 0 2px rgba(76, 175, 80, 0.1);
-        transform: translateY(-6px);
-    }
-    
-    .purchase-item.selected::before {
-        background: linear-gradient(90deg, #4CAF50, #45a049);
-        transform: scaleX(1);
-    }
-    
-    .purchase-item.selected::after {
-        content: "✓";
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(145deg, #4CAF50, #45a049);
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        font-weight: bold;
-        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-    }
-    
-    .purchase-title {
-        font-weight: 700;
-        font-size: 20px;
-        color: #2c3e50;
-        margin: 0 0 12px 0;
-        padding-right: 50px;
-    }
-    
-    .purchase-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        font-size: 14px;
-        color: #6c757d;
-        margin-bottom: 12px;
-    }
-    
-    .purchase-meta {
+
+    .scanner-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-top: 12px;
-        border-top: 1px solid #e9ecef;
+        margin-bottom: 2rem;
     }
-    
-    .purchase-price {
-        font-weight: 700;
-        font-size: 18px;
-        color: #1976d2;
-        background: linear-gradient(135deg, #1976d2, #1565c0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+
+    .scanner-header h1 {
+        font-size: 2rem;
+        color: #333;
+        margin: 0;
     }
-    
-    .popup-footer {
-        margin-top: 30px;
-        padding-top: 25px;
-        border-top: 2px solid #f0f0f0;
-        text-align: center;
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-    }
-    
-    .popup-btn {
-        background: linear-gradient(145deg, #6c757d, #5a6268);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 14px 28px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        min-width: 120px;
-    }
-    
-    .popup-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .popup-btn:disabled {
-        background: linear-gradient(145deg, #e9ecef, #dee2e6);
-        color: #6c757d;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-    
-    .popup-btn-green {
-        background: linear-gradient(145deg, #4CAF50, #45a049);
-    }
-    
-    .popup-btn-green:hover {
-        background: linear-gradient(145deg, #43a047, #388e3c);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
-    }
-    
-    /* Auth popup styles - Enhanced */
-    .auth-form-group {
-        margin-bottom: 24px;
-    }
-    
-    .auth-label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #2c3e50;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .auth-input {
-        width: 100%;
-        padding: 16px 20px;
-        font-size: 16px;
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        background: linear-gradient(145deg, #ffffff, #f8f9fa);
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-    
-    .auth-input:focus {
-        border-color: #667eea;
-        outline: none;
-        box-shadow: 
-            0 0 0 4px rgba(102, 126, 234, 0.1),
-            inset 0 2px 4px rgba(0, 0, 0, 0.05);
-        background: #ffffff;
-    }
-    
-    .otp-group {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        margin: 30px 0;
-    }
-    
-    .otp-input {
-        width: 56px;
-        height: 64px;
-        font-size: 24px;
-        font-weight: 700;
-        text-align: center;
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
-        background: linear-gradient(145deg, #ffffff, #f8f9fa);
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-    
-    .otp-input:focus {
-        border-color: #667eea;
-        outline: none;
-        box-shadow: 
-            0 0 0 4px rgba(102, 126, 234, 0.1),
-            0 4px 8px rgba(0, 0, 0, 0.1);
-        background: #ffffff;
-        transform: scale(1.05);
-    }
-    
-    /* Loading states */
-    #purchase-loading {
-        text-align: center;
-        padding: 40px;
-        color: #6c757d;
-    }
-    
-    #purchase-empty {
-        text-align: center;
-        padding: 40px;
-        color: #6c757d;
-        font-style: italic;
-    }
-    
-    /* Error states */
-    #auth-error, #otp-error {
-        background: linear-gradient(145deg, #ffebee, #ffcdd2);
-        color: #c62828;
-        padding: 12px 16px;
+
+    /* Camera section styles */
+    .camera-section {
+        background: #f8f9fa;
+        padding: 2rem;
         border-radius: 8px;
-        border-left: 4px solid #f44336;
-        margin-top: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    #scanner-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #qr-video {
+        width: 100%;
+        max-width: 600px;
+        border-radius: 8px;
+        transform: scaleX(-1); /* Mirror the video feed for selfie mode */
+    }
+
+    .scan-region-highlight {
+        border: 2px solid #007bff;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        border-radius: 8px;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .scan-region-highlight::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: #00ff00;
+        animation: scan 2s linear infinite;
+    }
+
+    @keyframes scan {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(200px); }
+        100% { transform: translateY(0); }
+    }
+
+    /* Button styles */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+    }
+
+    /* Status indicators */
+    .library-status {
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .library-status.loading {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .library-status.success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .library-status.error {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Manual QR input section */
+    .qr-input-section {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-top: 2rem;
+    }
+
+    .qr-input-section h3 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .qr-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Debug section */
+    .debug-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+        font-family: monospace;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    /* Unified Popup Styles */
+    .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .popup-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .popup-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .popup-title {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .popup-subtitle {
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .popup-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 0.5rem;
+        line-height: 1;
+    }
+
+    .popup-close:hover {
+        color: #343a40;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #495057;
         font-weight: 500;
     }
-    
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-        .popup-container {
-            width: 95%;
-            padding: 30px 20px;
-            margin: 20px;
-            max-height: 85vh;
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    /* OTP Input Styles */
+    .otp-group {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin: 2rem 0;
+    }
+
+    .otp-input {
+        width: 3rem;
+        height: 3rem;
+        text-align: center;
+        font-size: 1.25rem;
+        border: 2px solid #ced4da;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .otp-input:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    /* Purchase List Styles */
+    .purchase-list {
+        max-height: 300px;
+        overflow-y: auto;
+        margin: 1rem 0;
+    }
+
+    .purchase-item {
+        padding: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .purchase-item:hover {
+        background: #f8f9fa;
+        border-color: #007bff;
+    }
+
+    .purchase-item.selected {
+        background: #e7f5ff;
+        border-color: #007bff;
+    }
+
+    /* Error Message Styles */
+    .error-message {
+        color: #dc3545;
+        background: #f8d7da;
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+        display: none;
+    }
+
+    /* Timer Styles */
+    .timer {
+        text-align: center;
+        color: #6c757d;
+        margin: 1rem 0;
+    }
+
+    /* Popup Footer */
+    .popup-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        gap: 1rem;
+    }
+
+    .popup-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        border: none;
+    }
+
+    .popup-btn-primary {
+        background: #007bff;
+        color: white;
+    }
+
+    .popup-btn-primary:hover {
+        background: #0056b3;
+    }
+
+    .popup-btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .popup-btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .popup-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* QR Scanner Enhancements */
+    #qr-reader {
+        position: relative;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #qr-reader video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    #qr-reader__scan_region {
+        position: relative;
+    }
+
+    #qr-reader__scan_region img {
+        display: none; /* Hide the default scan region image */
+    }
+
+    .scan-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 250px;
+        height: 250px;
+        background: transparent;
+        border: 2px solid #fff;
+        border-radius: 20px;
+        box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
+        animation: scan 3s ease-in-out infinite;
+    }
+
+    .scan-indicator::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #00ff00;
+        animation: scanline 2s linear infinite;
+    }
+
+    @keyframes scan {
+        0% {
+            border-color: rgba(255, 255, 255, 0.5);
         }
-        
-        .popup-title {
-            font-size: 24px;
+        50% {
+            border-color: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5),
+                        0 0 0 4000px rgba(0, 0, 0, 0.3);
         }
-        
-        .purchase-details {
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-        
-        .popup-footer {
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .popup-btn {
-            width: 100%;
-        }
-        
-        .otp-group {
-            gap: 8px;
-        }
-        
-        .otp-input {
-            width: 48px;
-            height: 56px;
-            font-size: 20px;
+        100% {
+            border-color: rgba(255, 255, 255, 0.5);
         }
     }
-    
-    /* Additional animations */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
+
+    @keyframes scanline {
+        0% {
+            transform: translateY(0);
         }
-        to {
-            opacity: 1;
+        50% {
+            transform: translateY(250px);
+        }
+        100% {
             transform: translateY(0);
         }
     }
-    
-    .purchase-item {
-        animation: fadeInUp 0.3s ease forwards;
-    }
-    
-    .purchase-item:nth-child(1) { animation-delay: 0.1s; }
-    .purchase-item:nth-child(2) { animation-delay: 0.2s; }
-    .purchase-item:nth-child(3) { animation-delay: 0.3s; }
-    .purchase-item:nth-child(4) { animation-delay: 0.4s; }
-    .purchase-item:nth-child(5) { animation-delay: 0.5s; }
-    
-    /* Success states */
-    .success-message {
-        background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
-        color: #2e7d32;
-        padding: 16px 20px;
-        border-radius: 12px;
-        border-left: 4px solid #4caf50;
-        margin: 16px 0;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    
-    .success-message::before {
-        content: "✅";
-        font-size: 20px;
-    }
-    
-    /* Timer styling */
-    #otp-timer {
-        background: linear-gradient(145deg, #fff3e0, #ffe0b2);
-        color: #ef6c00;
-        padding: 12px 16px;
-        border-radius: 8px;
-        border-left: 4px solid #ff9800;
-        font-weight: 600;
-        text-align: center;
-        margin: 16px 0;
-    }
-    
-    /* Resend button styling */
-    #resend-otp-btn {
-        background: linear-gradient(145deg, #e3f2fd, #bbdefb);
-        color: #1976d2;
-        border: 2px solid #2196f3;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: 600;
+
+    /* Enhanced Camera Status */
+    .camera-status {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        z-index: 1000;
         transition: all 0.3s ease;
     }
-    
-    #resend-otp-btn:hover:not(:disabled) {
-        background: linear-gradient(145deg, #bbdefb, #90caf9);
-        transform: translateY(-1px);
+
+    .camera-status.success {
+        background: rgba(40, 167, 69, 0.9);
     }
-    
-    #resend-otp-btn:disabled {
-        background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
-        color: #9e9e9e;
-        border-color: #e0e0e0;
+
+    .camera-status.error {
+        background: rgba(220, 53, 69, 0.9);
     }
 </style>
-<script src="{% static 'js/qr-purchase-handler.js' %}"></script>
-{% endblock %}
-
-{% block koraquest_nav %}
-<div class="koraquest-top-nav">
-    <div class="koraquest-nav-content">
-        <div class="koraquest-nav-title">
-            <i class="bi bi-qr-code-scan"></i>
-            QR Code Scanner
-        </div>
-        <div class="koraquest-nav-actions">
-            <a href="{% url 'koraquest_dashboard' %}" 
-               class="koraquest-nav-btn {% if request.resolver_match.url_name == 'koraquest_dashboard' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-            <a href="{% url 'scan_qr_code' %}" 
-               class="koraquest-nav-btn {% if request.resolver_match.url_name == 'scan_qr_code' %}active{% endif %}">
-                <i class="bi bi-qr-code-scan"></i> QR Scanner
-            </a>
-            <a href="{% url 'koraquest_purchase_history' %}" 
-               class="koraquest-nav-btn {% if request.resolver_match.url_name == 'koraquest_purchase_history' %}active{% endif %}">
-                <i class="bi bi-clock-history"></i> History
-            </a>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block content %}
 <div class="scanner-container">
     <div class="scanner-header">
-        <h1>📱 QR Code Scanner</h1>
-        <p>Scan customer QR codes to verify purchases and initiate pickup process</p>
+        <h1>QR Code Scanner</h1>
+        <button id="toggle-debug" class="btn">Show Debug</button>
+    </div>
+
+    <div id="debug-info" class="debug-info" style="display: none;">
+        <div id="debug-log"></div>
     </div>
 
     <div class="scanner-section">
-        <div class="instruction-box">
-            <h3>📋 How to Use QR Scanner</h3>
-            <ul class="instruction-list">
-                <li>Ask customer to show their QR code from the KoraQuest app</li>
-                <li>Use the camera scanner below or manually enter QR code data</li>
-                <li>Verify purchase details and product information</li>
-                <li>Confirm physical product matches the order</li>
-                <li>Complete pickup process with OTP verification</li>
-            </ul>
-        </div>
-
-        <!-- Library Loading Status -->
         <div id="library-status" class="library-status loading">
-            <div class="loading-spinner"></div>
-            Loading QR Code scanner library...
+            Loading QR scanner...
         </div>
 
-        <!-- Camera Scanner Section -->
+        <div id="camera-status" class="library-status" style="display: none;"></div>
+
         <div class="camera-section">
-            <h3>📷 Camera Scanner</h3>
-            
-            <!-- Debug Information -->
-            <div id="debug-info" class="debug-info" style="display: none;">
-                <strong>Debug Information:</strong><br>
-                <div id="debug-log"></div>
-            </div>
-            
-            <div id="camera-status" style="margin-bottom: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
-            <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto; min-height: 300px;"></div>
-            <div class="camera-placeholder" id="camera-placeholder">
-                <p>🎥 Click "Start Camera" to begin scanning</p>
-                <small style="color: #999;">Make sure to allow camera permissions when prompted</small>
-                <br><br>
-                <small style="color: #666;">
-                    <strong>Requirements:</strong><br>
-                    • Camera access permission<br>
-                    • HTTPS connection (or localhost)<br>
-                    • Modern browser (Chrome, Firefox, Safari)
-                </small>
-            </div>
-            <button id="start-camera" class="btn btn-primary" onclick="startCamera()" disabled>
-                <span class="loading-spinner" style="display: none;"></span>
-                Start Camera
-            </button>
-            <button id="stop-camera" class="btn btn-danger" onclick="stopCamera()" style="display: none;">Stop Camera</button>
-            <button id="toggle-debug" class="btn" onclick="toggleDebug()" style="margin-left: 10px;">Show Debug</button>
-            
-            <div style="margin-top: 15px; font-size: 0.9em; color: #666;">
-                <p><strong>Troubleshooting:</strong></p>
-                <ul style="text-align: left; display: inline-block;">
-                    <li>Ensure camera permissions are allowed</li>
-                    <li>Use HTTPS or localhost for camera access</li>
-                    <li>Try refreshing the page if camera doesn't start</li>
-                    <li>Use manual input as alternative</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Manual Input Section -->
-        <div class="qr-input-section">
-            <h3>⌨️ Manual QR Code Input</h3>
-            <p>If camera scanning isn't working, paste the QR code data here:</p>
-            <form method="post" action="{% url 'scan_qr_code' %}" id="manual-qr-form">
-                {% csrf_token %}
-                <input type="text" name="qr_data" class="qr-input" placeholder="Paste QR code data here..." required id="manual-qr-input">
-                <button type="submit" class="btn btn-primary" id="manual-submit-btn">
-                    <span class="loading-spinner" style="display: none;"></span>
-                    Process QR Code
+            <div id="scanner-container" style="position: relative; display: none;">
+                <video id="qr-video" autoplay playsinline style="width: 100%; max-width: 600px; border-radius: 8px;"></video>
+                <div class="scan-region-highlight"></div>
+                <button id="stop-scanning-btn" class="btn btn-danger" style="position: absolute; top: 10px; right: 10px; display: none;">
+                    Stop Scanner
                 </button>
-            </form>
-            <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
-                <strong>Expected format:</strong> JSON string or purchase order ID
             </div>
+            <button id="start-scanning-btn" class="btn btn-primary">
+                <span class="loading-spinner" style="display: none;"></span>
+                Launch Camera
+            </button>
         </div>
 
-        <!-- Results Section -->
-        <div id="result-section" class="result-section">
-            <h3>✅ QR Code Scanned Successfully</h3>
-            <div id="purchase-details"></div>
-        </div>
-
-        <!-- Error Section -->
         <div id="error-section" class="error-section">
-            <h3>❌ Error Processing QR Code</h3>
             <div id="error-message"></div>
         </div>
 
-        {% if qr_data %}
-        <div class="result-section" style="display: block;">
-            <h3>🔍 Purchase Information</h3>
-            {% if purchase %}
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h4 style="margin: 0; color: #333;">📦 {{ purchase.product.title }}</h4>
-                    <span style="background: #e3f2fd; color: #1976d2; padding: 5px 12px; border-radius: 15px; font-size: 0.9em; font-weight: 500;">
-                        Status: {{ purchase.status|title }}
-                    </span>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <h5 style="margin: 0 0 10px 0; color: #495057;">👤 Customer Details</h5>
-                        <strong>Name:</strong> {{ purchase.buyer.first_name }} {{ purchase.buyer.last_name }}<br>
-                        <strong>Username:</strong> {{ purchase.buyer.username }}<br>
-                        <strong>Email:</strong> {{ purchase.buyer.email }}<br>
-                        <strong>Order ID:</strong> <code>{{ purchase.order_id }}</code>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <h5 style="margin: 0 0 10px 0; color: #495057;">📋 Order Details</h5>
-                        <strong>Quantity:</strong> {{ purchase.quantity }}<br>
-                        <strong>Total Price:</strong> ${{ purchase.purchase_price|floatformat:2 }}<br>
-                        <strong>Purchase Date:</strong> {{ purchase.created_at|date:"M d, Y H:i" }}<br>
-                        <strong>Vendor Payment:</strong> ${{ purchase.vendor_payment_amount|floatformat:2 }}
-                    </div>
-                </div>
-                
-                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                    <h5 style="margin: 0 0 10px 0; color: #856404;">⚠️ Verification Checklist</h5>
-                    <ul style="margin: 0; padding-left: 20px; color: #856404;">
-                        <li>Verify customer identity matches the purchase details above</li>
-                        <li>Confirm physical product matches: <strong>{{ purchase.product.title }}</strong></li>
-                        <li>Check quantity: <strong>{{ purchase.quantity }} item{{ purchase.quantity|pluralize }}</strong></li>
-                        <li>Ensure product condition meets expectations</li>
-                    </ul>
-                </div>
-                
-                <div style="text-align: center; margin-top: 25px;">
-                    <a href="{% url 'confirm_purchase_pickup' purchase.id %}" 
-                       class="btn btn-primary" 
-                       style="font-size: 18px; padding: 15px 30px; background: linear-gradient(45deg, #4CAF50, #45a049);">
-                        ✅ Confirm Pickup & Send OTP
-                    </a>
-                    <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
-                        This will send an OTP to the customer for final verification
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div style="background: #ffebee; padding: 20px; border-radius: 8px; margin-top: 15px; color: #c62828; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h4 style="margin: 0 0 10px 0;">❌ Invalid QR Code</h4>
-                <p style="margin: 0;">{{ error_message|default:"This QR code is not valid, has expired, or has already been processed." }}</p>
-                <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.8); border-radius: 5px;">
-                    <strong>Common issues:</strong>
-                    <ul style="margin: 5px 0 0 0; padding-left: 20px;">
-                        <li>QR code has already been used for pickup</li>
-                        <li>Purchase has been cancelled or refunded</li>
-                        <li>QR code format is incorrect</li>
-                        <li>Purchase does not exist in the system</li>
-                    </ul>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}        <!-- Navigation -->
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="{% url 'koraquest_dashboard' %}" class="btn">Back to Dashboard</a>
+        <div class="qr-input-section">
+            <h3>Manual QR Code Entry</h3>
+            <form id="manual-qr-form">
+                <input type="text" id="manual-qr-input" class="qr-input" placeholder="Enter QR code data manually">
+                <button type="submit" id="manual-submit-btn" class="btn btn-primary">
+                    <div class="loading-spinner" style="display: none;"></div>
+                    Submit
+                </button>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Purchase Popup -->
-<div id="purchase-popup" class="popup-overlay">
+<!-- Unified Dynamic Popup -->
+<div id="dynamic-popup" class="popup-overlay">
     <div class="popup-container">
-        <button class="popup-close" onclick="closePopup('purchase-popup')">&times;</button>
-        <div class="popup-header">
-            <h2 class="popup-title">Available Purchases</h2>
-            <p class="popup-subtitle">Please select a purchase to complete the pickup process</p>
-        </div>
-        <div id="purchase-list-container">
-            <!-- Purchase items will be dynamically inserted here -->
-            <div id="purchase-loading" style="text-align: center; padding: 30px;">
+        <button class="popup-close" data-action="close">&times;</button>
+        
+        <!-- Purchase Selection View -->
+        <div id="purchase-view" class="popup-view" style="display: none;">
+            <div class="popup-header">
+                <h2 class="popup-title">Select Purchase</h2>
+                <p class="popup-subtitle">Please select the purchase you want to verify</p>
+            </div>
+            <div id="purchase-loading" style="text-align: center;">
                 <div class="loading-spinner"></div>
-                <p>Loading purchases...</p>
+                Loading purchases...
             </div>
-            <div id="purchase-empty" style="text-align: center; padding: 30px; display: none;">
-                <p>No purchases found for this user.</p>
+            <div id="purchase-empty" style="display: none;">
+                No purchases found for this QR code.
+            </div>
+            <div id="purchase-list" class="purchase-list"></div>
+            <div class="popup-footer">
+                <button class="popup-btn popup-btn-secondary" data-action="close">Cancel</button>
+                <button id="confirm-purchase-btn" class="popup-btn popup-btn-primary" disabled>Confirm Selection</button>
             </div>
         </div>
-        <div class="popup-footer">
-            <button class="popup-btn" onclick="closePopup('purchase-popup')">Cancel</button>
-            <button id="confirm-purchase-btn" class="popup-btn popup-btn-green" disabled>Confirm Selection</button>
-        </div>
-    </div>
-</div>
 
-<!-- Authentication Popup -->
-<div id="auth-popup" class="popup-overlay">
-    <div class="popup-container">
-        <button class="popup-close" onclick="closePopup('auth-popup')">&times;</button>
-        <div class="popup-header">
-            <h2 class="popup-title">Buyer Verification</h2>
-            <p class="popup-subtitle">Please ask the buyer to enter their KoraQuest credentials</p>
-        </div>
-        <div id="auth-form-container">
-            <div class="auth-form-group">
-                <label class="auth-label" for="auth-username">Username</label>
-                <input type="text" id="auth-username" class="auth-input" placeholder="Enter username" required>
+        <!-- Authentication View -->
+        <div id="auth-view" class="popup-view" style="display: none;">
+            <div class="popup-header">
+                <h2 class="popup-title">Verify Identity</h2>
+                <p class="popup-subtitle">Please enter your credentials to verify your identity</p>
             </div>
-            <div class="auth-form-group">
-                <label class="auth-label" for="auth-password">Password</label>
-                <input type="password" id="auth-password" class="auth-input" placeholder="Enter password" required>
+            <div class="form-group">
+                <label class="form-label" for="auth-username">Username</label>
+                <input type="text" id="auth-username" class="form-input" placeholder="Enter your username">
             </div>
-            <div id="auth-error" style="color: #f44336; margin-top: 10px; display: none;">
-                Invalid username or password. Please try again.
+            <div class="form-group">
+                <label class="form-label" for="auth-password">Password</label>
+                <input type="password" id="auth-password" class="form-input" placeholder="Enter your password">
+            </div>
+            <div id="auth-error" class="error-message"></div>
+            <div class="popup-footer">
+                <button class="popup-btn popup-btn-secondary" data-action="close">Cancel</button>
+                <button id="verify-credentials-btn" class="popup-btn popup-btn-primary">Verify</button>
             </div>
         </div>
-        <div class="popup-footer">
-            <button class="popup-btn" onclick="closePopup('auth-popup')">Cancel</button>
-            <button id="verify-credentials-btn" class="popup-btn popup-btn-green">Verify & Send OTP</button>
-        </div>
-    </div>
-</div>
 
-<!-- OTP Verification Popup -->
-<div id="otp-popup" class="popup-overlay">
-    <div class="popup-container">
-        <button class="popup-close" onclick="closePopup('otp-popup')">&times;</button>
-        <div class="popup-header">
-            <h2 class="popup-title">OTP Verification</h2>
-            <p class="popup-subtitle">Please ask the buyer to enter the OTP sent to their email</p>
-        </div>
-        <div id="otp-container">
-            <p style="text-align: center; margin-bottom: 20px;">
-                A verification code has been sent to <strong id="buyer-email">buyer@example.com</strong>
-            </p>
+        <!-- OTP View -->
+        <div id="otp-view" class="popup-view" style="display: none;">
+            <div class="popup-header">
+                <h2 class="popup-title">Enter OTP</h2>
+                <p class="popup-subtitle">A one-time password has been sent to <span id="buyer-email"></span></p>
+            </div>
             <div class="otp-group">
-                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
-                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
-                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
-                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
-                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
-                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
             </div>
-            <p id="otp-timer" style="text-align: center; margin-top: 10px;">
-                OTP expires in: <span id="timer-countdown">05:00</span>
-            </p>
-            <div id="otp-error" style="color: #f44336; margin-top: 10px; text-align: center; display: none;">
-                Invalid OTP. Please try again.
+            <div class="timer">
+                Time remaining: <span id="timer-countdown">05:00</span>
             </div>
-            <div style="text-align: center; margin-top: 15px;">
-                <button id="resend-otp-btn" class="btn" disabled>
+            <div id="otp-error" class="error-message"></div>
+            <div class="popup-footer">
+                <button id="resend-otp-btn" class="popup-btn popup-btn-secondary" disabled>
                     Resend OTP (<span id="resend-countdown">60</span>s)
                 </button>
+                <button id="verify-otp-btn" class="popup-btn popup-btn-primary" disabled>Verify OTP</button>
             </div>
-        </div>
-        <div class="popup-footer">
-            <button class="popup-btn" onclick="closePopup('otp-popup')">Cancel</button>
-            <button id="verify-otp-btn" class="popup-btn popup-btn-green">Verify & Complete Pickup</button>
         </div>
     </div>
 </div>
 
+{% csrf_token %}
+
+<!-- Change the script tag to load directly from CDN -->
+<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
 <script>
-let html5QrcodeScanner = null;
+// Global variables for QR scanning
+let videoStream = null;
+let scanning = false;
+let lastScanned = '';
+let lastScannedTime = 0;
+const SCAN_DELAY = 500; // ms
 let debugMode = false;
-let libraryLoaded = false;
-let loadingAttempts = 0;
-const MAX_LOADING_ATTEMPTS = 3;
+
+// Initialize UI elements and set up event listeners
+function initializeUI() {
+    debugLog('Initializing UI elements...');
+    
+    // Initialize manual QR form
+    const manualQRForm = document.getElementById('manual-qr-form');
+    if (manualQRForm) {
+        manualQRForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const qrInput = document.getElementById('manual-qr-input');
+            if (qrInput && qrInput.value.trim()) {
+                handleQRScan(qrInput.value.trim());
+            }
+        });
+    }
+
+    // Initialize camera buttons
+    const startButton = document.getElementById('start-scanning-btn');
+    const stopButton = document.getElementById('stop-scanning-btn');
+    
+    if (startButton) {
+        startButton.disabled = false; // Enable by default since we don't need to wait for library
+    }
+    
+    if (stopButton) {
+        stopButton.style.display = 'none';
+    }
+
+    // Initialize debug mode
+    const debugInfo = document.getElementById('debug-info');
+    const toggleDebugButton = document.getElementById('toggle-debug');
+    
+    if (debugInfo && toggleDebugButton) {
+        debugInfo.style.display = debugMode ? 'block' : 'none';
+        toggleDebugButton.textContent = debugMode ? 'Hide Debug' : 'Show Debug';
+    }
+
+    debugLog('UI initialization completed');
+}
+
+// Force HTTPS only in production environments
+function redirectToHttps() {
+    const currentProtocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    
+    // Check if we're in a development environment
+    const isDevelopment = hostname === 'localhost' || 
+                         hostname === '127.0.0.1' ||
+                         hostname.includes('ngrok-free.app');
+
+    debugLog(`Current environment - Protocol: ${currentProtocol}, Hostname: ${hostname}, isDevelopment: ${isDevelopment}`);
+
+    if (isDevelopment) {
+        // Force HTTP in development
+        if (currentProtocol === 'https:') {
+            debugLog('Redirecting to HTTP for development');
+            window.location.href = 'http:' + window.location.href.substring(currentProtocol.length);
+        }
+    } else {
+        // Force HTTPS in production
+        if (currentProtocol !== 'https:') {
+            debugLog('Redirecting to HTTPS for production');
+            window.location.href = 'https:' + window.location.href.substring(currentProtocol.length);
+        }
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    debugLog('Page loaded, starting initialization...');
+    
+    // Check if HTTPS is needed and redirect if necessary
+    redirectToHttps();
+    
+    // Enable debug mode by default during troubleshooting
+    debugMode = true;
+    const debugInfoElement = document.getElementById('debug-info');
+    const toggleDebugButton = document.getElementById('toggle-debug');
+    
+    if (debugInfoElement) {
+        debugInfoElement.style.display = 'block';
+    }
+    
+    if (toggleDebugButton) {
+        toggleDebugButton.textContent = 'Hide Debug';
+    }
+    
+    debugLog('Debug mode enabled by default');
+    
+    // Set up event listeners
+    document.getElementById('toggle-debug').addEventListener('click', toggleDebug);
+    
+    // Add camera button listeners
+    const startButton = document.getElementById('start-scanning-btn');
+    const stopButton = document.getElementById('stop-scanning-btn');
+    
+    if (startButton) {
+        startButton.addEventListener('click', startScanner);
+    }
+    
+    if (stopButton) {
+        stopButton.addEventListener('click', stopScanner);
+    }
+    
+    // Initialize UI elements
+    initializeUI();
+    
+    // Check if jsQR is loaded
+    if (typeof jsQR === 'undefined') {
+        showError('QR scanner library failed to load. Please refresh the page.');
+        debugLog('jsQR library not found');
+    } else {
+        debugLog('jsQR library loaded successfully');
+        updateLibraryStatus('success', 'QR Code scanner ready');
+    }
+});
 
 // Debug logging function
 function debugLog(message) {
@@ -984,6 +753,7 @@ function debugLog(message) {
     }
 }
 
+// Toggle debug mode
 function toggleDebug() {
     debugMode = !debugMode;
     const debugInfo = document.getElementById('debug-info');
@@ -999,109 +769,70 @@ function toggleDebug() {
     }
 }
 
-// Update library status display
+// Update library status display with improved styling
 function updateLibraryStatus(status, message) {
     const statusEl = document.getElementById('library-status');
-    const startBtn = document.getElementById('start-camera');
+    if (!statusEl) return;
     
-    statusEl.className = `library-status ${status}`;
+    // Remove all status classes
+    statusEl.classList.remove('loading', 'success', 'error');
+    // Add new status class
+    statusEl.classList.add(status);
     
+    // Update content with icon
+    let icon = '';
     switch (status) {
         case 'loading':
-            statusEl.innerHTML = `<div class="loading-spinner"></div>${message}`;
-            startBtn.disabled = true;
+            icon = '<div class="loading-spinner"></div>';
             break;
         case 'success':
-            statusEl.innerHTML = `✅ ${message}`;
-            startBtn.disabled = false;
-            libraryLoaded = true;
-            // Hide status after 3 seconds
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, 3000);
+            icon = '✅';
             break;
         case 'error':
-            statusEl.innerHTML = `❌ ${message}`;
-            startBtn.disabled = true;
+            icon = '❌';
             break;
     }
-}
-
-// Load the QR code library
-function loadQRLibrary() {
-    loadingAttempts++;
-    debugLog(`Loading QR library (attempt ${loadingAttempts}/${MAX_LOADING_ATTEMPTS})`);
     
-    // Check if library is already loaded
-    if (typeof Html5Qrcode !== 'undefined' && typeof Html5QrcodeScanner !== 'undefined') {
-        debugLog('QR library already loaded');
-        updateLibraryStatus('success', 'QR Code scanner ready');
-        return Promise.resolve();
+    statusEl.innerHTML = `${icon} ${message}`;
+    
+    // Hide success message after delay
+    if (status === 'success') {
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, 3000);
+    } else {
+        statusEl.style.display = 'block';
     }
-    
-    return new Promise((resolve, reject) => {
-        // Prioritize local file, then try one reliable CDN instead of multiple attempts
-        const script = document.createElement('script');
-        script.src = '{% static "js/html5-qrcode.min.js" %}';
-        script.type = 'text/javascript';
-        
-        script.onload = function() {
-            debugLog('QR library loaded from local file');
-            // Check immediately if library is available
-            if (typeof Html5Qrcode !== 'undefined' && typeof Html5QrcodeScanner !== 'undefined') {
-                updateLibraryStatus('success', 'QR Code scanner ready');
-                resolve();
-            } else {
-                // If local file doesn't work, try CDN immediately
-                tryLoadFromCDN();
-            }
-        };
-        
-        script.onerror = function() {
-            debugLog('Failed to load local QR library, trying CDN');
-            tryLoadFromCDN();
-        };
-        
-        // Function to load from CDN as backup
-        function tryLoadFromCDN() {
-            const cdnScript = document.createElement('script');
-            cdnScript.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-            cdnScript.type = 'text/javascript';
-            
-            cdnScript.onload = function() {
-                debugLog('QR library loaded from CDN');
-                // Check if library is available
-                if (typeof Html5Qrcode !== 'undefined' && typeof Html5QrcodeScanner !== 'undefined') {
-                    updateLibraryStatus('success', 'QR Code scanner ready');
-                    resolve();
-                } else {
-                    reject(new Error('Failed to load QR code library'));
-                }
-            };
-            
-            cdnScript.onerror = function() {
-                updateLibraryStatus('error', 'Failed to load QR scanner library');
-                reject(new Error('Failed to load QR code library from all sources'));
-            };
-            
-            document.head.appendChild(cdnScript);
-        }
-        
-        document.head.appendChild(script);
-    });
 }
 
 // Check browser compatibility
 function checkBrowserCompatibility() {
     debugLog('Checking browser compatibility...');
     
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    const isDevelopment = hostname === 'localhost' || 
+                         hostname === '127.0.0.1' ||
+                         hostname.includes('ngrok-free.app');
+    
+    debugLog(`Compatibility check - Protocol: ${protocol}, Hostname: ${hostname}, isDevelopment: ${isDevelopment}`);
+    
     // Check if required APIs are available
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        return { compatible: false, reason: 'getUserMedia not supported' };
+        debugLog('getUserMedia not supported');
+        return { compatible: false, reason: 'Camera API not supported in this browser' };
     }
     
-    if (!libraryLoaded || typeof Html5Qrcode === 'undefined') {
-        return { compatible: false, reason: 'Html5Qrcode library not loaded' };
+    // In development, allow HTTP
+    if (isDevelopment && protocol === 'http:') {
+        debugLog('Development environment detected, allowing HTTP');
+        return { compatible: true };
+    }
+    
+    // In production, require HTTPS
+    if (!isDevelopment && !window.isSecureContext) {
+        debugLog('Production environment requires HTTPS');
+        return { compatible: false, reason: 'Secure context (HTTPS) required for camera access' };
     }
     
     debugLog('Browser compatibility check passed');
@@ -1146,110 +877,164 @@ function showCameraStatus(message, type = 'info') {
     }
 }
 
-function startCamera() {
-    debugLog('Starting camera...');
-    
-    const startButton = document.getElementById('start-camera');
+function startScanner() {
+    debugLog('Starting scanner...');
+    const startButton = document.getElementById('start-scanning-btn');
+    const stopButton = document.getElementById('stop-scanning-btn');
+    const scannerContainer = document.getElementById('scanner-container');
     const spinner = startButton.querySelector('.loading-spinner');
     
-    startButton.textContent = '';
-    spinner.style.display = 'inline-block';
-    startButton.appendChild(spinner);
-    startButton.appendChild(document.createTextNode(' Starting Camera...'));
+    // Show loading state
     startButton.disabled = true;
+    spinner.style.display = 'inline-block';
+    startButton.textContent = ' Starting Camera...';
+    startButton.prepend(spinner);
     
-    // Check if library is loaded
-    if (!libraryLoaded) {
-        updateLibraryStatus('loading', 'Loading QR scanner library...');
-        loadQRLibrary()
-            .then(() => {
-                startCameraInternal();
-            })
-            .catch(err => {
-                debugLog(`Library loading failed: ${err.message}`);
-                updateLibraryStatus('error', `Failed to load QR scanner: ${err.message}`);
-                resetStartButton();
-            });
-    } else {
-        startCameraInternal();
-    }
-}
-
-function startCameraInternal() {
-    // Check browser compatibility
-    const compatCheck = checkBrowserCompatibility();
-    if (!compatCheck.compatible) {
-        showError(`Browser not compatible: ${compatCheck.reason}`);
-        resetStartButton();
-        return;
-    }
-    
-    showCameraStatus('Initializing camera...', 'info');
-    
-    // Check protocol requirements
-    const isSecure = location.protocol === 'https:' || 
-                    location.hostname === 'localhost' || 
-                    location.hostname === '127.0.0.1' ||
-                    location.hostname === '0.0.0.0' ||
-                    location.hostname.includes('ngrok-free.app'); // Allow ngrok connections
-    
-    debugLog(`Protocol: ${location.protocol}, Hostname: ${location.hostname}, Secure: ${isSecure}`);
-    
-    if (!isSecure) {
-        showError('Camera access requires HTTPS connection. Please use HTTPS or localhost for testing.');
-        resetStartButton();
-        return;
-    }
-    
-    // First request camera permission explicitly
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            debugLog('Camera permission granted');
-            // Stop the stream immediately - we just needed permission
-            const tracks = stream.getTracks();
-            tracks.forEach(track => track.stop());
-            
-            // Now enumerate devices to find available cameras
-            return navigator.mediaDevices.enumerateDevices();
+    // Start the camera
+    startCameraInternal()
+        .then(() => {
+            // Update UI
+            scannerContainer.style.display = 'block';
+            startButton.style.display = 'none';
+            stopButton.style.display = 'block';
+            updateLibraryStatus('success', 'Scanner started');
         })
-        .then(devices => {
-            const videoDevices = devices.filter(device => device.kind === 'videoinput');
-            debugLog(`Found ${videoDevices.length} video devices`);
-            
-            if (videoDevices.length === 0) {
-                throw new Error('No camera devices found');
-            }
-            
-            // Log all available cameras to help with debugging
-            videoDevices.forEach((device, index) => {
-                debugLog(`Camera ${index + 1}: ${device.label || 'Unnamed camera'}`);
-            });
-            
-            return startQRScanner();
-        })
-        .catch(err => {
-            debugLog(`Camera access error: ${err.name} - ${err.message}`);
-            
-            if (err.name === 'NotAllowedError') {
-                showError('Camera permission denied. Please allow camera access in your browser settings and try again.');
-            } else if (err.name === 'NotFoundError') {
-                showError('No cameras found on this device.');
-            } else if (err.name === 'NotReadableError') {
-                showError('Camera is already in use by another application. Please close other apps using the camera.');
-            } else {
-                showError(`Camera error: ${err.message}`);
-            }
-            
+        .catch(error => {
+            debugLog('Failed to start scanner:', error);
+            showError(error.message || 'Failed to start camera');
             resetStartButton();
         });
 }
 
+function scanQRCode() {
+    if (!scanning) return;
+    
+    debugLog('Starting QR code scanning...');
+    const video = document.getElementById('qr-video');
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    function scan() {
+        if (!scanning) {
+            debugLog('Scanning stopped');
+            return;
+        }
+
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            
+            try {
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+
+                if (code) {
+                    debugLog('QR Code found:', code.data);
+                    const now = Date.now();
+                    if (code.data !== lastScanned || (now - lastScannedTime) > SCAN_DELAY) {
+                        lastScanned = code.data;
+                        lastScannedTime = now;
+                        handleQRScan(code.data);
+                    }
+                }
+            } catch (error) {
+                debugLog('Error processing frame:', error);
+            }
+        }
+        requestAnimationFrame(scan);
+    }
+
+    scan();
+    debugLog('QR code scanning loop started');
+}
+
+function startCameraInternal() {
+    return new Promise((resolve, reject) => {
+        debugLog('Starting camera initialization...');
+        
+        // Check browser compatibility first
+        const compatCheck = checkBrowserCompatibility();
+        if (!compatCheck.compatible) {
+            debugLog(`Camera initialization failed: ${compatCheck.reason}`);
+            reject(new Error(compatCheck.reason));
+            return;
+        }
+
+        const video = document.getElementById('qr-video');
+        const scannerContainer = document.getElementById('scanner-container');
+        
+        if (!video || !scannerContainer) {
+            debugLog('Required video elements not found');
+            reject(new Error('Required video elements not found'));
+            return;
+        }
+
+        debugLog('Requesting camera access...');
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { ideal: "environment" },
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 },
+                frameRate: { min: 10, ideal: 15, max: 30 }
+            }
+        })
+        .then(stream => {
+            debugLog('Camera access granted');
+            videoStream = stream;
+            video.srcObject = stream;
+            scannerContainer.style.display = 'block'; // Show the video container
+            return video.play();
+        })
+        .then(() => {
+            debugLog('Video playback started');
+            scanning = true;
+            scanQRCode();
+            resolve();
+        })
+        .catch(err => {
+            debugLog(`Camera error: ${err.message}`);
+            console.error('Camera error:', err);
+            reject(new Error(`Camera error: ${err.message}`));
+        });
+    });
+}
+
+function stopScanner() {
+    debugLog('Stopping scanner...');
+    scanning = false;
+    
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+    }
+    
+    const video = document.getElementById('qr-video');
+    const scannerContainer = document.getElementById('scanner-container');
+    const startButton = document.getElementById('start-scanning-btn');
+    const stopButton = document.getElementById('stop-scanning-btn');
+    
+    if (video) {
+        video.srcObject = null;
+    }
+    
+    // Reset UI
+    scannerContainer.style.display = 'none';
+    startButton.style.display = 'block';
+    stopButton.style.display = 'none';
+    resetStartButton();
+    
+    updateLibraryStatus('success', 'Scanner stopped');
+}
+
 function resetStartButton() {
-    const startButton = document.getElementById('start-camera');
+    const startButton = document.getElementById('start-scanning-btn');
     const spinner = startButton.querySelector('.loading-spinner');
     
-    startButton.textContent = 'Start Camera';
-    startButton.disabled = libraryLoaded ? false : true;
+    startButton.textContent = 'Launch Camera';
+    startButton.disabled = false;
     
     if (spinner) {
         spinner.style.display = 'none';
@@ -1258,119 +1043,101 @@ function resetStartButton() {
 
 function startQRScanner() {
     debugLog('Initializing QR scanner...');
-      const config = { 
-        fps: 30, // Higher frame rate for better detection
-        qrbox: { width: 300, height: 300 }, // Larger scan area
+    const config = { 
+        fps: 10, // Reduced from 30 to save resources
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+            let minEdgePercentage = 0.6; // Slightly smaller scan area for faster processing
+            let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+            let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+            return {
+                width: qrboxSize,
+                height: qrboxSize
+            };
+        },
         aspectRatio: 1.0,
-        disableFlip: false, // Allow image flip for better scanning
-        formatsToSupport: [
-            Html5QrcodeSupportedFormats.QR_CODE,
-            Html5QrcodeSupportedFormats.AZTEC,
-            Html5QrcodeSupportedFormats.DATA_MATRIX
-        ],
+        disableFlip: true, // Disable flip to improve performance
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
         videoConstraints: {
-            facingMode: "environment", // Use rear camera when available
-            width: { min: 640, ideal: 1280, max: 1920 },
-            height: { min: 480, ideal: 720, max: 1080 }
+            facingMode: { ideal: "environment" },
+            width: { min: 640, ideal: 1280, max: 1920 }, // Reduced resolution
+            height: { min: 480, ideal: 720, max: 1080 }, // Reduced resolution
+            frameRate: { min: 10, ideal: 15, max: 30 }, // Reduced frame rate
+            // Removed advanced constraints that might slow down initialization
+        },
+        experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true
         }
     };
-    
-    try {
-        // First check if scanner already exists and clean it up
-        if (html5QrcodeScanner) {
-            try {
-                html5QrcodeScanner.clear();
-            } catch (e) {
-                debugLog('Failed to clear existing scanner: ' + e);
+
+    return new Promise((resolve, reject) => {
+        try {
+            // Clean up existing scanner
+            // No longer need to manage html5QrcodeScanner as it's removed
+            // if (html5QrcodeScanner) {
+            //     try {
+            //         html5QrcodeScanner.clear()
+            //             .then(() => {
+            //                 initializeNewScanner();
+            //             })
+            //             .catch(err => {
+            //                 debugLog('Error clearing existing scanner: ' + err);
+            //                 initializeNewScanner();
+            //             });
+            //     } catch (e) {
+            //         debugLog('Failed to clear existing scanner: ' + e);
+            //         initializeNewScanner();
+            //     }
+            // } else {
+                initializeNewScanner();
+            // }
+
+            function initializeNewScanner() {
+                // Clear and prepare container
+                const qrContainer = document.getElementById("qr-reader");
+                if (!qrContainer) {
+                    throw new Error('QR reader container not found');
+                }
+                qrContainer.innerHTML = '';
+
+                // Create new scanner instance with verbose mode off
+                // No longer need to use Html5QrcodeScanner as it's removed
+                // html5QrcodeScanner = new Html5QrcodeScanner(
+                //     "qr-reader",
+                //     config,
+                //     false // verbose mode off for better performance
+                // );
+
+                debugLog('jsQR instance created');
+
+                // Simplified success callback with shorter debounce
+                let lastScanned = '';
+                let lastScannedTime = 0;
+                const SCAN_DELAY = 500; // Reduced from 1000ms to 500ms
+
+                const debouncedSuccess = (decodedText, decodedResult) => {
+                    const now = Date.now();
+                    if (decodedText !== lastScanned || (now - lastScannedTime) > SCAN_DELAY) {
+                        lastScanned = decodedText;
+                        lastScannedTime = now;
+                        onScanSuccess(decodedText, decodedResult);
+                    }
+                };
+
+                // Start the scanner with optimized settings
+                // No longer need to use Html5QrcodeScanner as it's removed
+                // html5QrcodeScanner.render(debouncedSuccess, onScanFailure);
+
+                // Add visual scanning indicator
+                const scanIndicator = document.createElement('div');
+                scanIndicator.className = 'scan-indicator';
+                qrContainer.appendChild(scanIndicator);
+
+                resolve();
             }
-            html5QrcodeScanner = null;
-        }
-        
-        // Clear the container first to avoid any stacking issues
-        const qrContainer = document.getElementById("qr-reader");
-        qrContainer.innerHTML = '';
-        
-        // Create a new Html5QrcodeScanner instance (NOT Html5Qrcode)
-        // This provides a complete UI and handles permissions better
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader",
-            config,
-            /* verbose= */ false
-        );
-        
-        debugLog('Html5QrcodeScanner instance created');
-    } catch (err) {
-        debugLog(`Failed to create Html5QrcodeScanner: ${err.message}`);
-        showError(`Scanner initialization failed: ${err.message}`);
-        resetStartButton();
-        return Promise.reject(err);
-    }
-    
-    showCameraStatus('Requesting camera permission...', 'info');
-    
-    // Start the scanner with improved configurations
-    const cameraConfig = { 
-        facingMode: { ideal: "environment" }, // Prefer back camera but allow fallback
-        focusMode: "continuous"  // Keep focus continuous for better scanning
-    };
-      // Start the scanner using render method for Html5QrcodeScanner
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    
-    // No promises here since Html5QrcodeScanner doesn't return one
-    debugLog('QR scanner render method called');
-    showCameraStatus('Camera is active. Point at QR code to scan.', 'success');
-    document.getElementById('camera-placeholder').style.display = 'none';
-    document.getElementById('start-camera').style.display = 'none';
-    document.getElementById('stop-camera').style.display = 'inline-block';
-    
-    // Handle potential errors through event listeners
-    window.setTimeout(() => {
-        const errorMessage = document.querySelector("#qr-reader-error");
-        if (errorMessage) {
-            const errorText = errorMessage.innerText || errorMessage.textContent;
-            if (errorText) {
-                debugLog(`Scanner error found: ${errorText}`);
-                showError(errorText);
-                resetStartButton();
-                resetCameraUI();
-            }
-        }
-    }, 2000);
-    
-    // Return a resolved promise to maintain function signature
-    return Promise.resolve()
-        .catch(err => {
-        debugLog(`Camera start error: ${err.name} - ${err.message}`);
-        
-        resetStartButton();
-        
-        let errorMessage = 'Unable to access camera. ';
-        
-        switch (err.name) {
-            case 'NotAllowedError':
-                errorMessage += 'Camera permission denied. Please allow camera access and try again.';
-                break;
-            case 'NotFoundError':
-                errorMessage += 'No camera found. Please ensure a camera is connected.';
-                break;
-            case 'NotSupportedError':
-                errorMessage += 'Camera not supported on this device/browser.';
-                break;
-            case 'NotReadableError':
-                errorMessage += 'Camera is already in use by another application.';
-                break;
-            case 'OverconstrainedError':
-                errorMessage += 'Camera constraints not supported.';
-                break;
-            default:
-                errorMessage += `Error: ${err.message}`;
-        }
-        
-        showError(errorMessage);
-        
-        // Clean up
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner = null;
+        } catch (err) {
+            debugLog(`Failed to create jsQR instance: ${err.message}`);
+            showError(`Scanner initialization failed: ${err.message}`);
+            reject(err);
         }
     });
 }
@@ -1378,815 +1145,487 @@ function startQRScanner() {
 function stopCamera() {
     debugLog('Stopping camera...');
     
-    if (html5QrcodeScanner) {
-        try {
-            // The correct method for Html5QrcodeScanner is clear(), not stop()
-            html5QrcodeScanner.clear();
-            debugLog('Camera stopped successfully');
-        } catch (err) {
-            debugLog(`Error stopping camera: ${err.message}`);
-            console.error('Error stopping camera:', err);
-        } finally {
-            resetCameraUI(); // Always reset UI regardless of stop result
-        }
-    } else {
+    // No longer need to manage html5QrcodeScanner as it's removed
+    // if (html5QrcodeScanner) {
+    //     try {
+    //         html5QrcodeScanner.clear()
+    //             .then(() => {
+    //                 debugLog('Camera stopped successfully');
+    //                 resetCameraUI();
+    //             })
+    //             .catch(err => {
+    //                 debugLog(`Error stopping camera: ${err.message}`);
+    //                 console.error('Error stopping camera:', err);
+    //                 resetCameraUI(); // Still reset UI even if there's an error
+    //             });
+    //     } catch (err) {
+    //         debugLog(`Error stopping camera: ${err.message}`);
+    //         console.error('Error stopping camera:', err);
+    //         resetCameraUI(); // Still reset UI even if there's an error
+    //     }
+    // } else {
         debugLog('No scanner instance to stop');
         resetCameraUI();
-    }
+    // }
 }
 
 function resetCameraUI() {
-    html5QrcodeScanner = null;
-    document.getElementById('camera-placeholder').style.display = 'block';
-    document.getElementById('start-camera').style.display = 'inline-block';
-    document.getElementById('stop-camera').style.display = 'none';
+    // No longer need to manage html5QrcodeScanner as it's removed
+    // html5QrcodeScanner = null;
+    
+    const placeholder = document.getElementById('camera-placeholder');
+    const startButton = document.getElementById('start-scanning-btn');
+    const stopButton = document.getElementById('stop-scanning-btn');
+    const qrReader = document.getElementById('qr-reader');
+    
+    if (placeholder) placeholder.style.display = 'block';
+    if (startButton) startButton.style.display = 'inline-block';
+    if (stopButton) stopButton.style.display = 'none';
+    if (qrReader) qrReader.innerHTML = '';
     
     resetStartButton();
     
     // Hide camera status
-    document.getElementById('camera-status').style.display = 'none';
+    const cameraStatus = document.getElementById('camera-status');
+    if (cameraStatus) cameraStatus.style.display = 'none';
 }
 
+// Function to handle QR scan results
+function handleQRScan(qrData) {
+    debugLog('Processing QR scan result:', qrData);
+    
+    try {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Create form data instead of JSON
+        const formData = new FormData();
+        formData.append('qr_data', qrData);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        // Send QR data to server
+        fetch('/auth/scan-qr/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    throw new Error('Server returned an error page. Please refresh and try again.');
+                }
+                throw new Error(`Server error: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                currentQRData = data;
+                PopupManager.showView('purchase', {
+                    purchases: data.purchases || []
+                });
+            } else {
+                showError(data.error || 'Failed to process QR code');
+                restartScanner();
+            }
+        })
+        .catch(error => {
+            console.error('Error processing QR code:', error);
+            showError(error.message || 'Failed to process QR code. Please try again.');
+            restartScanner();
+        });
+    } catch (error) {
+        console.error('Error handling QR scan:', error);
+        showError('An error occurred while processing the QR code.');
+        restartScanner();
+    }
+}
+
+// Helper function to restart scanner
+function restartScanner() {
+    // No longer need to manage html5QrcodeScanner as it's removed
+    // if (html5QrcodeScanner) {
+    //     // First try to resume if only paused
+    //     try {
+    //         html5QrcodeScanner.resume()
+    //             .catch(() => {
+    //                 // If resume fails, do a full restart
+    //                 startQRScanner().catch(err => {
+    //                     debugLog('Failed to restart scanner: ' + err);
+    //                 });
+    //             });
+    //     } catch (err) {
+    //         // If resume throws, do a full restart
+    //         startQRScanner().catch(err => {
+    //             debugLog('Failed to restart scanner: ' + err);
+    //         });
+    //     }
+    // } else {
+        // If no scanner instance, start fresh
+        startQRScanner().catch(err => {
+            debugLog('Failed to restart scanner: ' + err);
+        });
+    // }
+}
+
+// Modify onScanSuccess to use the new restart mechanism
 function onScanSuccess(decodedText, decodedResult) {
     debugLog(`QR Code detected: ${decodedText}`);
-    console.log(`QR Code detected: ${decodedText}`, decodedResult);
     
-    // Play a success sound (beep) to indicate successful scan
+    // Play a success sound
     try {
-        // Create a simple beep sound
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
+        const gainNode = audioContext.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        gainNode.gain.value = 0.3; // Lower volume to 30%
+        gainNode.gain.value = 0.3;
         oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.2); // Short 200ms beep
+        oscillator.stop(audioContext.currentTime + 0.2);
     } catch (e) {
         debugLog("Could not play sound: " + e.message);
     }
     
     showCameraStatus('QR Code detected! Processing...', 'success');
     
-    // Stop the scanner - important to clear scanner completely
-    if (html5QrcodeScanner) {
-        try {
-            html5QrcodeScanner.clear();
-        } catch (err) {
-            debugLog(`Error stopping scanner: ${err.message}`);
-        }
-    }
+    // Pause scanner while processing
+    // No longer need to manage html5QrcodeScanner as it's removed
+    // if (html5QrcodeScanner) {
+    //     try {
+    //         html5QrcodeScanner.pause();
+    //     } catch (err) {
+    //         debugLog(`Error pausing scanner: ${err.message}`);
+    //     }
+    // }
     
-    // Accept any QR code format - no validation
-    debugLog("Processing QR code without format validation");
-      // Reset UI before showing purchase popup
-    resetCameraUI();
-    
-    // Use our new handler function that can process JWT tokens and start verification flow
+    // Process the QR code
     handleQRScan(decodedText);
 }
 
+// Modify onScanFailure to reduce console noise
 function onScanFailure(error) {
-    // Handle scan failure - these are usually frequent and normal
-    // Only log to debug, don't show to user unless debug mode is on
-    if (debugMode && error && !error.includes('QR code parse error')) {
+    // Only log significant errors, ignore common scan failures
+    if (debugMode && error && 
+        !error.includes('QR code parse error') && 
+        !error.includes('No QR code found')) {
         debugLog(`Scan attempt: ${error}`);
     }
 }
 
-// Global variables for the QR scanning process
-let selectedPurchaseId = null;
-let selectedPurchase = null;
-let currentPurchaser = null;
-let currentQRData = null;
-let otpSessionId = null;
-let otpTimer = null;
-let resendTimer = null;
+// Popup Management System
+const PopupManager = {
+    currentView: null,
+    popup: document.getElementById('dynamic-popup'),
+    views: {
+        purchase: document.getElementById('purchase-view'),
+        auth: document.getElementById('auth-view'),
+        otp: document.getElementById('otp-view')
+    },
 
-// Handle QR scan result and start the purchase verification flow
-function handleQRScan(qrData) {
-    debugLog(`Handling QR scan: ${qrData}`);
-    currentQRData = qrData;
-    
-    // Call API to get purchase details from QR code
-    fetchPurchaseDetails(qrData);
-}
-
-// Fetch purchase details from QR code
-function fetchPurchaseDetails(qrData) {
-    showCameraStatus('Processing QR code...', 'info');
-    
-    fetch('/auth/api/purchases/by-qr/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            qr_data: qrData
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            showError(data.error);
-        } else {
-            // Store purchaser info
-            currentPurchaser = data.buyer;
+    showView: function(viewName, data = {}) {
+        // Hide all views first
+        Object.values(this.views).forEach(view => view.style.display = 'none');
+        
+        // Show the requested view
+        const view = this.views[viewName];
+        if (view) {
+            view.style.display = 'block';
+            this.currentView = viewName;
+            this.popup.style.display = 'block';
             
-            // Show purchase selection popup
-            updatePurchaseList(data);
-            openPopup('purchase-popup');
-            
-            // Set up confirm button click handler
-            document.getElementById('confirm-purchase-btn').onclick = () => {
-                if (selectedPurchaseId) {
-                    closePopup('purchase-popup');
-                    openAuthenticationPopup();
-                }
-            };
+            // Initialize view-specific content
+            switch(viewName) {
+                case 'purchase':
+                    this.initializePurchaseView(data);
+                    break;
+                case 'auth':
+                    this.initializeAuthView(data);
+                    break;
+                case 'otp':
+                    this.initializeOTPView(data);
+                    break;
+            }
         }
-    })
-    .catch(error => {
-        console.error('Error fetching purchase details:', error);
-        showError('Failed to process QR code. Please try again.');
-    });
-}
+    },
 
-// Open authentication popup for buyer credentials
-function openAuthenticationPopup() {
-    // Clear previous values
-    document.getElementById('auth-username').value = '';
-    document.getElementById('auth-password').value = '';
-    document.getElementById('auth-error').style.display = 'none';
-    
-    // Set up verify button click handler
-    document.getElementById('verify-credentials-btn').onclick = () => {
-        verifyBuyerCredentials();
-    };
-    
-    openPopup('auth-popup');
-}
+    close: function() {
+        this.popup.style.display = 'none';
+        this.currentView = null;
+        // Reset forms and clear data
+        this.resetForms();
+        
+        // Restart scanner after popup closes
+        restartScanner();
+    },
 
-// Verify buyer credentials
-function verifyBuyerCredentials() {
-    const username = document.getElementById('auth-username').value;
-    const password = document.getElementById('auth-password').value;
-    
-    if (!username || !password) {
-        document.getElementById('auth-error').textContent = 'Please enter both username and password';
-        document.getElementById('auth-error').style.display = 'block';
-        return;
-    }
-    
-    // Add loading state to button
-    const verifyBtn = document.getElementById('verify-credentials-btn');
-    const originalText = verifyBtn.textContent;
-    verifyBtn.disabled = true;
-    verifyBtn.innerHTML = '<div class="loading-spinner"></div> Verifying...';
-    
-    // Make API call to verify credentials
-    fetch('/auth/api/verify-credentials/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            username: username,
-            password: password,
-            user_id: currentPurchaser.id
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            document.getElementById('auth-error').textContent = data.error;
-            document.getElementById('auth-error').style.display = 'block';
-            
-            // Reset button
-            verifyBtn.disabled = false;
-            verifyBtn.textContent = originalText;
-        } else if (data.success) {
-            closePopup('auth-popup');
-            sendOTPToUser();
+    resetForms: function() {
+        // Reset purchase selection
+        const purchaseList = document.getElementById('purchase-list');
+        if (purchaseList) purchaseList.innerHTML = '';
+        document.getElementById('confirm-purchase-btn').disabled = true;
+        
+        // Reset auth form
+        const authForm = document.getElementById('auth-view');
+        if (authForm) {
+            authForm.querySelector('#auth-username').value = '';
+            authForm.querySelector('#auth-password').value = '';
+            authForm.querySelector('#auth-error').style.display = 'none';
         }
-    })
-    .catch(error => {
-        document.getElementById('auth-error').textContent = 'Error verifying credentials. Please try again.';
-        document.getElementById('auth-error').style.display = 'block';
         
-        debugLog(`Error verifying credentials: ${error.message}`);
-        
-        // Reset button
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = originalText;
-    });
-}
+        // Reset OTP form
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach(input => input.value = '');
+        document.getElementById('verify-otp-btn').disabled = true;
+        document.getElementById('otp-error').style.display = 'none';
+    },
 
-// Function to update the purchase list in the popup
-function updatePurchaseList(data) {
-    document.getElementById('purchase-loading').style.display = 'none';
-    
-    if (!data || data.error || !data.purchases || data.purchases.length === 0) {
-        document.getElementById('purchase-empty').style.display = 'block';
-        return;
-    }
-    
-    // Update popup title with username
-    const popupTitle = document.querySelector('#purchase-popup .popup-title');
-    if (popupTitle) {
-        popupTitle.textContent = `Purchases for ${data.username}`;
-    }
-    
-    // Create purchase list
-    const purchaseList = document.createElement('ul');
-    purchaseList.className = 'purchase-list';
-    
-    data.purchases.forEach(purchase => {
-        const purchaseItem = document.createElement('li');
-        purchaseItem.className = 'purchase-item';
-        purchaseItem.dataset.orderId = purchase.order_id;
+    initializePurchaseView: function(data) {
+        const purchaseList = document.getElementById('purchase-list');
+        const loadingElement = document.getElementById('purchase-loading');
+        const emptyElement = document.getElementById('purchase-empty');
         
-        purchaseItem.innerHTML = `
-            <div class="purchase-title">${purchase.product_name}</div>
-            <div class="purchase-details">
-                <div><strong>Order ID:</strong> ${purchase.order_id}</div>
-                <div><strong>Quantity:</strong> ${purchase.quantity}</div>
-                <div><strong>Vendor:</strong> ${purchase.vendor_name}</div>
-            </div>
-            <div class="purchase-meta">
-                <div class="purchase-price">$${purchase.price}</div>
-            </div>
-        `;
+        loadingElement.style.display = 'block';
+        emptyElement.style.display = 'none';
+        purchaseList.innerHTML = '';
         
-        // Add click event to select this purchase
-        purchaseItem.addEventListener('click', () => {
-            // Remove selected class from all items
-            document.querySelectorAll('.purchase-item').forEach(item => {
-                item.classList.remove('selected');
+        if (data.purchases && data.purchases.length > 0) {
+            loadingElement.style.display = 'none';
+            data.purchases.forEach(purchase => {
+                const purchaseElement = document.createElement('div');
+                purchaseElement.className = 'purchase-item';
+                purchaseElement.dataset.purchaseId = purchase.id;
+                purchaseElement.innerHTML = `
+                    <strong>${purchase.product_name}</strong><br>
+                    Order ID: ${purchase.order_id}<br>
+                    Quantity: ${purchase.quantity}<br>
+                    Price: ${purchase.price}<br>
+                    Vendor: ${purchase.vendor_name}
+                `;
+                purchaseElement.addEventListener('click', () => this.selectPurchase(purchase.id));
+                purchaseList.appendChild(purchaseElement);
             });
-            
-            // Add selected class to this item
-            purchaseItem.classList.add('selected');
-            
-            // Store the selected purchase database ID and purchase object
-            selectedPurchaseId = purchase.id;
-            selectedPurchase = purchase;
-            
-            // Enable the confirm button
+        } else {
+            loadingElement.style.display = 'none';
+            emptyElement.style.display = 'block';
+        }
+    },
+
+    selectPurchase: function(purchaseId) {
+        const items = document.querySelectorAll('.purchase-item');
+        items.forEach(item => item.classList.remove('selected'));
+        
+        const selectedItem = document.querySelector(`.purchase-item[data-purchase-id="${purchaseId}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
             document.getElementById('confirm-purchase-btn').disabled = false;
-            
-            debugLog(`Selected purchase: ${purchase.product_name} (Order ID: ${purchase.order_id}, DB ID: ${purchase.id})`);
-        });
-        
-        purchaseList.appendChild(purchaseItem);
-    });
-    
-    // Replace the loading indicator with the purchase list
-    const purchaseListContainer = document.getElementById('purchase-list-container');
-    purchaseListContainer.appendChild(purchaseList);
-}
-
-// Popup management functions
-function openPopup(popupId) {
-    const popup = document.getElementById(popupId);
-    if (popup) {
-        popup.classList.add('active');
-    }
-}
-
-function closePopup(popupId) {
-    const popup = document.getElementById(popupId);
-    if (popup) {
-        popup.classList.remove('active');
-    }
-}
-
-// Function to send OTP to the buyer's email
-function sendOTPToUser() {
-    debugLog(`Sending OTP to user: ${currentPurchaser.username}`);
-    
-    // First, set up the OTP popup
-    document.getElementById('buyer-email').textContent = currentPurchaser.username;
-    document.getElementById('otp-error').style.display = 'none';
-    
-    // Clear any previous OTP inputs
-    const otpInputs = document.querySelectorAll('.otp-input');
-    otpInputs.forEach(input => {
-        input.value = '';
-    });
-    
-    // Set up OTP input behavior
-    setupOTPInputs();
-    
-    // Set up the verify OTP button
-    document.getElementById('verify-otp-btn').onclick = () => {
-        verifyOTP(currentPurchaser);
-    };
-    
-    // Reset and start timers
-    setupOTPTimers();
-    
-    // Set up resend button
-    document.getElementById('resend-otp-btn').onclick = () => {
-        resendOTP();
-    };
-    
-    // Open the OTP popup
-    openPopup('otp-popup');
-    
-    // Make API call to send OTP
-    fetch('/auth/api/send-otp/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            user_id: currentPurchaser.id,
-            purchase_id: selectedPurchaseId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            otpSessionId = data.session_id;
-            debugLog(`OTP sent successfully, session ID: ${otpSessionId}`);
-        } else {
-            // Handle error
-            closePopup('otp-popup');
-            showError(data.error || 'Failed to send OTP');
+            selectedPurchaseId = purchaseId;
         }
-    })
-    .catch(error => {
-        console.error('Error sending OTP:', error);
-        closePopup('otp-popup');
-        showError('Failed to send OTP. Please try again.');
-    });
-}
+    },
 
-// Function to resend OTP
-function resendOTP() {
-    debugLog('Resending OTP...');
-    
-    // Reset resend button
-    const resendButton = document.getElementById('resend-otp-btn');
-    resendButton.disabled = true;
-    resendButton.textContent = 'Sending...';
-    
-    // Make API call to send OTP again
-    fetch('/auth/api/send-otp/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            user_id: currentPurchaser.id,
-            purchase_id: selectedPurchaseId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            otpSessionId = data.session_id;
-            debugLog(`OTP resent successfully, session ID: ${otpSessionId}`);
-            
-            // Clear OTP inputs
-            const otpInputs = document.querySelectorAll('.otp-input');
-            otpInputs.forEach(input => {
-                input.value = '';
-            });
-            
-            // Reset timers
-            setupOTPTimers();
-            
-            // Hide any previous errors
-            document.getElementById('otp-error').style.display = 'none';
+    initializeAuthView: function(data) {
+        const usernameInput = document.getElementById('auth-username');
+        if (data.username) {
+            usernameInput.value = data.username;
+            usernameInput.disabled = true;
         } else {
-            // Handle error
-            document.getElementById('otp-error').textContent = data.error || 'Failed to resend OTP';
-            document.getElementById('otp-error').style.display = 'block';
-            
-            // Reset button
-            resendButton.disabled = false;
-            resendButton.textContent = 'Resend OTP';
+            usernameInput.disabled = false;
         }
-    })
-    .catch(error => {
-        console.error('Error resending OTP:', error);
-        document.getElementById('otp-error').textContent = 'Failed to resend OTP. Please try again.';
-        document.getElementById('otp-error').style.display = 'block';
-        
-        // Reset button
-        resendButton.disabled = false;
-        resendButton.textContent = 'Resend OTP';
-    });
-}
+        document.getElementById('auth-password').focus();
+    },
 
-// Set up OTP input behavior
-function setupOTPInputs() {
-    const otpInputs = document.querySelectorAll('.otp-input');
-    
-    otpInputs.forEach((input, index) => {
-        // Clear previous event listeners (if any)
-        input.replaceWith(input.cloneNode(true));
-    });
-    
-    // Get fresh references after cloning
-    const freshInputs = document.querySelectorAll('.otp-input');
-    
-    freshInputs.forEach((input, index) => {
-        // Handle input
-        input.addEventListener('input', function() {
-            // Only allow digits
-            this.value = this.value.replace(/[^0-9]/g, '');
+    initializeOTPView: function(data) {
+        if (data.email) {
+            document.getElementById('buyer-email').textContent = data.email;
+        }
+        
+        // Focus first OTP input
+        const firstInput = document.querySelector('.otp-input');
+        if (firstInput) firstInput.focus();
+        
+        // Start timers
+        this.startOTPTimer();
+        this.startResendTimer();
+    },
+
+    startOTPTimer: function() {
+        let timeLeft = 300; // 5 minutes in seconds
+        const timerDisplay = document.getElementById('timer-countdown');
+        
+        if (otpTimer) clearInterval(otpTimer);
+        
+        otpTimer = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             
-            // Auto-focus next input
-            if (this.value && index < freshInputs.length - 1) {
-                freshInputs[index + 1].focus();
+            if (timeLeft <= 0) {
+                clearInterval(otpTimer);
+                this.showView('auth'); // Go back to auth view when OTP expires
             }
-            
-            // Check if all inputs are filled
-            checkOTPCompletion();
-        });
+            timeLeft--;
+        }, 1000);
+    },
+
+    startResendTimer: function() {
+        let timeLeft = 60;
+        const resendButton = document.getElementById('resend-otp-btn');
+        const countdownDisplay = document.getElementById('resend-countdown');
         
-        // Handle backspace
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Backspace' && !this.value && index > 0) {
-                freshInputs[index - 1].focus();
+        if (resendTimer) clearInterval(resendTimer);
+        
+        resendButton.disabled = true;
+        
+        resendTimer = setInterval(() => {
+            countdownDisplay.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(resendTimer);
+                resendButton.disabled = false;
+                countdownDisplay.textContent = '60';
             }
-        });
-        
-        // Handle paste
-        input.addEventListener('paste', function(e) {
-            e.preventDefault();
-            
-            const pasteData = (e.clipboardData || window.clipboardData).getData('text');
-            const digits = pasteData.match(/\d/g);
-            
-            if (digits) {
-                // Fill inputs with pasted digits
-                freshInputs.forEach((input, idx) => {
-                    if (idx < digits.length) {
-                        input.value = digits[idx];
-                    }
-                });
-                
-                // Focus the next empty input or the last input
-                for (let i = 0; i < freshInputs.length; i++) {
-                    if (!freshInputs[i].value) {
-                        freshInputs[i].focus();
-                        break;
-                    }
-                    
-                    if (i === freshInputs.length - 1) {
-                        freshInputs[i].focus();
-                    }
-                }
-                
-                // Check if all inputs are filled
-                checkOTPCompletion();
-            }
-        });
-    });
-    
-    // Focus the first input
-    if (freshInputs.length > 0) {
-        freshInputs[0].focus();
+            timeLeft--;
+        }, 1000);
     }
-}
+};
 
-// Check if all OTP inputs are filled
-function checkOTPCompletion() {
-    const otpInputs = document.querySelectorAll('.otp-input');
-    let isComplete = true;
-    
-    otpInputs.forEach(input => {
-        if (!input.value) {
-            isComplete = false;
-        }
-    });
-    
-    document.getElementById('verify-otp-btn').disabled = !isComplete;
-}
-
-// Set up OTP timers
-function setupOTPTimers() {
-    // Clear any existing timers
-    if (otpTimer) clearInterval(otpTimer);
-    if (resendTimer) clearInterval(resendTimer);
-    
-    // Set up OTP expiration timer - 5 minutes
-    let otpTimeLeft = 5 * 60; // 5 minutes in seconds
-    const timerElement = document.getElementById('timer-countdown');
-    
-    updateTimerDisplay(otpTimeLeft, timerElement);
-    
-    otpTimer = setInterval(() => {
-        otpTimeLeft--;
-        updateTimerDisplay(otpTimeLeft, timerElement);
-        
-        if (otpTimeLeft <= 0) {
-            clearInterval(otpTimer);
-            document.getElementById('otp-error').textContent = 'OTP expired. Please request a new one.';
-            document.getElementById('otp-error').style.display = 'block';
-            document.getElementById('verify-otp-btn').disabled = true;
-        }
-    }, 1000);
-    
-    // Set up resend timer - 60 seconds
-    let resendTimeLeft = 60; // 60 seconds
-    const resendButton = document.getElementById('resend-otp-btn');
-    const resendCountdown = document.getElementById('resend-countdown');
-    
-    resendButton.disabled = true;
-    resendCountdown.textContent = resendTimeLeft;
-    
-    resendTimer = setInterval(() => {
-        resendTimeLeft--;
-        resendCountdown.textContent = resendTimeLeft;
-        
-        if (resendTimeLeft <= 0) {
-            clearInterval(resendTimer);
-            resendButton.disabled = false;
-            resendButton.textContent = 'Resend OTP';
-        }
-    }, 1000);
-}
-
-// Helper to update timer display
-function updateTimerDisplay(seconds, element) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    element.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
-// Function to verify OTP
-function verifyOTP(buyer) {
-    // Collect OTP from inputs
-    const otpInputs = document.querySelectorAll('.otp-input');
-    let otp = '';
-    
-    otpInputs.forEach(input => {
-        otp += input.value;
-    });
-    
-    if (otp.length !== 6) {
-        document.getElementById('otp-error').textContent = 'Please enter all 6 digits';
-        document.getElementById('otp-error').style.display = 'block';
-        return;
-    }
-    
-    // Add loading state to button
-    const verifyBtn = document.getElementById('verify-otp-btn');
-    const originalText = verifyBtn.textContent;
-    verifyBtn.disabled = true;
-    verifyBtn.innerHTML = '<div class="loading-spinner"></div> Verifying...';
-      // Make API call to verify OTP
-    fetch('/auth/api/verify-otp/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            user_id: buyer.id,
-            otp_code: otp,
-            purchase_id: selectedPurchaseId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            completePurchasePickup();
-        } else {
-            document.getElementById('otp-error').textContent = data.error || 'Invalid OTP. Please try again.';
-            document.getElementById('otp-error').style.display = 'block';
-            
-            // Reset button
-            verifyBtn.disabled = false;
-            verifyBtn.textContent = originalText;
-        }
-    })
-    .catch(error => {
-        console.error('Error verifying OTP:', error);
-        document.getElementById('otp-error').textContent = 'Error verifying OTP. Please try again.';
-        document.getElementById('otp-error').style.display = 'block';
-        
-        // Reset button
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = originalText;
-    });
-}
-
-// Function to complete the purchase pickup
-function completePurchasePickup() {
-    // Clear any timers
-    if (otpTimer) clearInterval(otpTimer);
-    if (resendTimer) clearInterval(resendTimer);
-    
-    // Close the OTP popup
-    closePopup('otp-popup');
-    
-    // Display a success message and redirect
-    showCameraStatus('Purchase pickup verified successfully! Redirecting...', 'success');
-      // Make API call to complete the purchase pickup process
-    fetch('/auth/api/complete-purchase/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            purchase_id: selectedPurchaseId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            debugLog('Purchase pickup completed successfully!');
-            
-            // Show success message with payment details
-            const successMessage = `Purchase confirmed! Vendor payment: $${data.vendor_payment}, KoraQuest commission: $${data.koraquest_commission}`;
-            showCameraStatus(successMessage, 'success');
-            
-            // Redirect to dashboard after a short delay
-            setTimeout(() => {
-                window.location.href = '{% url "koraquest_dashboard" %}';
-            }, 3000);
-        } else {
-            showError(data.error || 'Failed to complete purchase pickup');
-            // Fall back to traditional form submission
-            submitQRCode(currentQRData, selectedPurchaseId);
-        }
-    })
-    .catch(error => {
-        console.error('Error completing purchase pickup:', error);
-        showError('Failed to complete purchase pickup. Trying alternative method...');
-        // Fall back to traditional form submission
-        submitQRCode(currentQRData, selectedPurchaseId);
-    });
-}
-
-// Updated submitQRCode function to include purchase ID
-function submitQRCode(qrData, purchaseId = null) {
-    debugLog(`Submitting QR code: ${qrData}`);
-    
-    // Show status message
-    showCameraStatus('Processing QR code...', 'info');
-    
-    // Create and submit form with QR data
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/auth/scan-qr/';
-    
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = 'csrfmiddlewaretoken';
-    csrfInput.value = csrfToken;
-    
-    const qrInput = document.createElement('input');
-    qrInput.type = 'hidden';
-    qrInput.name = 'qr_data';
-    qrInput.value = qrData.trim();
-    
-    form.appendChild(csrfInput);
-    form.appendChild(qrInput);
-    
-    // Add purchase ID if available
-    if (purchaseId) {
-        const purchaseInput = document.createElement('input');
-        purchaseInput.type = 'hidden';
-        purchaseInput.name = 'purchase_id';
-        purchaseInput.value = purchaseId;
-        form.appendChild(purchaseInput);
-        
-        debugLog(`Submitting with purchase ID: ${purchaseId}`);
-    }
-    
-    // Log the submission
-    debugLog('Submitting form to traditional endpoint as fallback');
-    document.body.appendChild(form);
-    form.submit();
-}
-
-// Handle manual form submission with loading state
-function handleManualSubmission() {
-    const form = document.getElementById('manual-qr-form');
-    const submitBtn = document.getElementById('manual-submit-btn');
-    const spinner = submitBtn.querySelector('.loading-spinner');
-    const input = document.getElementById('manual-qr-input');
-    
-    form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent default submission to use our new flow
-        
-        const qrData = input.value.trim();
-        
-        if (!qrData) {
-            showError('Please enter QR code data');
-            return;
-        }
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        spinner.style.display = 'inline-block';
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = '';
-        submitBtn.appendChild(spinner);
-        submitBtn.appendChild(document.createTextNode(' Processing...'));
-        
-        debugLog(`Manual QR submission: ${qrData}`);
-        
-        // Use our new flow instead of traditional form submission
-        fetchPurchaseDetails(qrData);
-        
-        // Reset button state after a delay
-        setTimeout(() => {
-            submitBtn.disabled = false;
-            spinner.style.display = 'none';
-            submitBtn.textContent = originalText;
-        }, 2000);
-    });
-}
-
-// Force HTTPS
-function redirectToHttps() {
-    if (location.protocol !== 'https:' && 
-        location.hostname !== 'localhost' && 
-        !location.hostname.match(/^127\.\d+\.\d+\.\d+$/) &&
-        !location.hostname.includes('ngrok-free.app')) {
-        location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
-    }
-}
-
-// Initialize when page loads
+// Event Listeners for Popup
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if HTTPS is needed and redirect if necessary
-    redirectToHttps();
+    // Close button handlers
+    document.querySelectorAll('[data-action="close"]').forEach(button => {
+        button.addEventListener('click', () => PopupManager.close());
+    });
     
-    debugLog('Page loaded, initializing QR scanner...');
+    // Verify credentials button
+    document.getElementById('verify-credentials-btn').addEventListener('click', () => {
+        const username = document.getElementById('auth-username').value;
+        const password = document.getElementById('auth-password').value;
+        
+        // Add your verification logic here
+        verifyCredentials(username, password);
+    });
     
-    // Set up confirm button for purchase popup
-    document.getElementById('confirm-purchase-btn').disabled = true;
-    
-    // Set up verify button for OTP popup
-    document.getElementById('verify-otp-btn').disabled = true;
-    
-    // Pre-check camera permissions to avoid issues
-    if (navigator.permissions && navigator.permissions.query) {
-        navigator.permissions.query({ name: 'camera' })
-            .then(permissionStatus => {
-                debugLog(`Camera permission status: ${permissionStatus.state}`);
-                if (permissionStatus.state === 'granted') {
-                    debugLog('Camera permission already granted');
-                } else if (permissionStatus.state === 'denied') {
-                    showError('Camera permission denied. Please enable camera access in your browser settings.');
-                }
-            })
-            .catch(error => {
-                debugLog(`Permission query error: ${error.message}`);
+    // Confirm purchase button
+    document.getElementById('confirm-purchase-btn').addEventListener('click', () => {
+        if (selectedPurchaseId) {
+            PopupManager.showView('auth', {
+                username: currentPurchaser
             });
-    }
+        }
+    });
     
-    // Initialize manual form handling
-    handleManualSubmission();
+    // Resend OTP button
+    document.getElementById('resend-otp-btn').addEventListener('click', () => {
+        // Add your resend OTP logic here
+        requestNewOTP();
+        PopupManager.startResendTimer();
+    });
     
-    // Start loading the library immediately
-    updateLibraryStatus('loading', 'Loading QR Code scanner library...');
-    
-    loadQRLibrary()
-        .then(() => {
-            debugLog('QR scanner initialization completed successfully');
-        })
-        .catch(err => {
-            debugLog(`QR scanner initialization failed: ${err.message}`);
-            
-            if (loadingAttempts < MAX_LOADING_ATTEMPTS) {
-                debugLog('Retrying library load...');
-                setTimeout(() => {
-                    updateLibraryStatus('loading', `Retrying library load (${loadingAttempts + 1}/${MAX_LOADING_ATTEMPTS})...`);
-                    loadQRLibrary().catch(() => {
-                        updateLibraryStatus('error', 'Failed to load QR scanner library. Please refresh the page or use manual input.');
-                    });
-                }, 2000);
-            } else {
-                updateLibraryStatus('error', 'Failed to load QR scanner library. Please refresh the page or use manual input.');
-            }
-        });
+    // Verify OTP button
+    document.getElementById('verify-otp-btn').addEventListener('click', () => {
+        const otpValue = Array.from(otpInputs).map(input => input.value).join('');
+        verifyOTP(otpValue);
+    });
 });
 
-// Auto-hide messages after 15 seconds
-document.addEventListener('DOMContentLoaded', function() {
-    const resultSection = document.querySelector('.result-section[style*="display: block"]');
-    if (resultSection) {
-        setTimeout(() => {
-            resultSection.style.display = 'none';
-        }, 15000);
-    }
-});
+// Add these functions to your existing code
+function verifyCredentials(username, password) {
+    // Example implementation
+    fetch('/auth/verify-credentials/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ username, password, purchase_id: selectedPurchaseId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            PopupManager.showView('otp', {
+                email: data.email
+            });
+        } else {
+            const errorElement = document.getElementById('auth-error');
+            errorElement.textContent = data.error || 'Invalid credentials';
+            errorElement.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const errorElement = document.getElementById('auth-error');
+        errorElement.textContent = 'An error occurred. Please try again.';
+        errorElement.style.display = 'block';
+    });
+}
+
+function verifyOTP(otp) {
+    // Example implementation
+    fetch('/auth/verify-otp/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ 
+            otp,
+            purchase_id: selectedPurchaseId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            PopupManager.close();
+            // Show success message and redirect
+            window.location.href = '/auth/koraquest-dashboard/';
+        } else {
+            const errorElement = document.getElementById('otp-error');
+            errorElement.textContent = data.error || 'Invalid OTP';
+            errorElement.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const errorElement = document.getElementById('otp-error');
+        errorElement.textContent = 'An error occurred. Please try again.';
+        errorElement.style.display = 'block';
+    });
+}
+
+function requestNewOTP() {
+    // Example implementation
+    fetch('/auth/request-otp/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ purchase_id: selectedPurchaseId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // OTP sent successfully, start the timer
+            PopupManager.startOTPTimer();
+        } else {
+            const errorElement = document.getElementById('otp-error');
+            errorElement.textContent = data.error || 'Failed to send OTP';
+            errorElement.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const errorElement = document.getElementById('otp-error');
+        errorElement.textContent = 'An error occurred. Please try again.';
+        errorElement.style.display = 'block';
+    });
+}
+
+// ... rest of your existing JavaScript code ...
 </script>
 {% endblock %}

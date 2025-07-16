@@ -20,13 +20,9 @@
 
 /* Search and filter enhancements */
 .search-section {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background-color: white;
     border: 1px solid rgba(37, 99, 235, 0.1);
     transition: all 0.3s ease;
-}
-
-.search-section:hover {
-    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
 }
 
 .search-input:focus {

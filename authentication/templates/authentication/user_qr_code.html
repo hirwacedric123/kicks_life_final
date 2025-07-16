@@ -3,161 +3,616 @@
 
 {% block title %}My QR Code - KoraQuest{% endblock %}
 
-{% block extra_head %}
+{% block content %}
 <style>
-    .qr-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 20px;
+    ::-webkit-scrollbar{
+        display: none;
     }
-    
-    .qr-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        overflow: hidden;
-        max-width: 400px;
-        margin: 0 auto;
-    }
-    
-    .qr-header {
-        background: linear-gradient(45deg, #4CAF50, #45a049);
-        color: white;
-        padding: 30px 20px;
-        text-align: center;
-    }
-    
-    .qr-code-section {
-        padding: 30px;
-        text-align: center;
-    }
-    
-    .qr-code-image {
-        border: 3px solid #f0f0f0;
-        border-radius: 15px;
-        padding: 15px;
-        background: white;
-        display: inline-block;
-        margin-bottom: 20px;
-    }
-    
-    .refresh-btn {
-        background: #4CAF50;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .refresh-btn:hover {
-        background: #45a049;
-        transform: translateY(-2px);
-    }
-    
-    .purchase-item {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-left: 4px solid #4CAF50;
-    }
-    
-    .expires-timer {
-        font-size: 0.9em;
-        color: #666;
-        margin-top: 10px;
-    }
-    
-    .status-badge {
-        background: #4CAF50;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.8em;
+    .marketplace-container{
+        width: 100%;
     }
 </style>
-{% endblock %}
-
-{% block content %}
-<div class="qr-container">
-    <div class="qr-card">
-        <div class="qr-header">
-            <h2><i class="bi bi-qr-code"></i> My QR Code</h2>
-            <p>Show this to KoraQuest for pickup verification</p>
-        </div>
-        
-        <div class="qr-code-section">
-            {% if user_qr.qr_image %}
-                <div class="qr-code-image">
-                    <img src="{{ user_qr.qr_image.url }}" alt="User QR Code" style="max-width: 200px; max-height: 200px;">
-                </div>
-            {% else %}
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle"></i> QR Code not available
-                </div>
-            {% endif %}
-            
-            <div class="expires-timer">
-                <i class="bi bi-clock"></i> 
-                Expires: <span id="expiry-time">{{ qr_expires_at|date:"M d, Y H:i" }}</span>
-            </div>
-            
-            <button class="refresh-btn" onclick="refreshQRCode()">
-                <i class="bi bi-arrow-clockwise"></i> Refresh Code
-            </button>
-        </div>
-          {% if pending_purchases %}
-        <div style="padding: 0 30px 30px;">
-            <h6 style="margin-bottom: 15px; color: #333;">Items Ready for Pickup/Delivery:</h6>
-            {% for purchase in pending_purchases %}
-            <div class="purchase-item">
-                <div style="display: flex; justify-content: between; align-items: center;">
-                    <div>
-                        <strong>{{ purchase.product.title }}</strong><br>
-                        <small>Qty: {{ purchase.quantity }} | Total: ${{ purchase.purchase_price|floatformat:2 }}</small><br>
-                        <span class="status-badge">
-                            {% if purchase.status == 'awaiting_pickup' %}
-                                Awaiting Pickup
-                            {% elif purchase.status == 'awaiting_delivery' %}
-                                Awaiting Delivery
-                            {% else %}
-                                {{ purchase.status|title }}
-                            {% endif %}
-                        </span>
-                        {% if purchase.delivery_method == 'delivery' %}
-                            <small style="display: block; color: #666; margin-top: 5px;">
-                                <i class="bi bi-truck"></i> Delivery to: {{ purchase.delivery_address|truncatechars:30 }}
-                            </small>
-                        {% endif %}
+<div class="marketplace-container">
+    <div class="qr-page-grid">
+        <!-- QR Code Section -->
+        <div class="qr-main-section">
+            <div class="qr-card">
+                <div class="qr-header">
+                    <div class="header-content">
+                        <h1>My QR Code</h1>
+                        <p>Show this to KoraQuest for pickup verification</p>
+                    </div>
+                    <div class="header-icon">
+                        <i class="bi bi-qr-code"></i>
                     </div>
                 </div>
+                
+                <div class="qr-code-section">
+                    {% if user_qr.qr_image %}
+                    <div class="qr-code-container">
+                        <div class="qr-code-frame">
+                            <img src="{{ user_qr.qr_image.url }}" alt="User QR Code">
+                        </div>
+                        <div class="qr-meta">
+                            <div class="expiry-timer">
+                                <i class="bi bi-clock"></i>
+                                <span>Expires: <span id="expiry-time">{{ qr_expires_at|date:"M d, Y H:i" }}</span></span>
+                            </div>
+                            <button class="btn-refresh" onclick="refreshQRCode()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                <span>Refresh Code</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="qr-empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <h3>QR Code Not Available</h3>
+                        <p>There might be an issue generating your QR code</p>
+                        <button class="btn-refresh" onclick="refreshQRCode()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            <span>Try Again</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="qr-info">
+                    <i class="bi bi-info-circle"></i>
+                    <span>QR code updates automatically every 10 minutes</span>
+                </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div style="padding: 0 30px 30px; text-align: center;">
-            <p style="color: #666; margin-bottom: 20px;">No items awaiting pickup or delivery</p>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
-                <i class="bi bi-shop"></i> Browse Products
-            </a>
-        </div>
-        {% endif %}
-        
-        <div style="padding: 20px; background: #f8f9fa; text-align: center;">
-            <small style="color: #666;">
-                <i class="bi bi-info-circle"></i> 
-                QR code updates automatically every 10 minutes
-            </small>
+
+        <!-- Pending Items Section -->
+        <div class="pending-items-section">
+            <div class="pending-card">
+                <div class="pending-header">
+                    <h2>Items Ready for Pickup/Delivery</h2>
+                    <span class="pending-count">{{ pending_purchases|length }} items</span>
+                </div>
+                
+                <div class="pending-items">
+                    {% if pending_purchases %}
+                    <div class="table-container">
+                        <table class="pending-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Delivery Info</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for purchase in pending_purchases %}
+                                <tr class="table-row">
+                                    <td class="product-cell">
+                                        <span class="product-title">{{ purchase.product.title }}</span>
+                                    </td>
+                                    <td class="quantity-cell">
+                                        <span class="quantity-badge">{{ purchase.quantity }}</span>
+                                    </td>
+                                    <td class="price-cell">
+                                        <span class="price-amount">RWF{{ purchase.purchase_price|floatformat:2 }}</span>
+                                    </td>
+                                    <td class="status-cell">
+                                        <span class="status-badge status-{{ purchase.status }}">
+                                            {% if purchase.status == 'awaiting_pickup' %}
+                                                Awaiting Pickup
+                                            {% elif purchase.status == 'awaiting_delivery' %}
+                                                Awaiting Delivery
+                                            {% else %}
+                                                {{ purchase.status|title }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="delivery-cell">
+                                        {% if purchase.delivery_method == 'delivery' %}
+                                        <div class="delivery-info">
+                                            <i class="bi bi-truck"></i>
+                                            <span>{{ purchase.delivery_address|truncatechars:25 }}</span>
+                                        </div>
+                                        {% else %}
+                                        <span class="pickup-info">
+                                            <i class="bi bi-shop"></i>
+                                            Pickup
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <h3>No Pending Items</h3>
+                        <p>No items awaiting pickup or delivery</p>
+                        <a href="{% url 'dashboard' %}" class="btn-primary">
+                            <i class="bi bi-shop"></i>
+                            <span>Browse Products</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+<style>
+    .marketplace-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 40px;
+    }
+
+    .qr-page-grid {
+        display: grid;
+        grid-template-columns: minmax(300px, 400px) 1fr;
+        gap: 40px;
+        align-items: start;
+    }
+
+    /* QR Code Section */
+    .qr-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .qr-header {
+        background: rgb(0, 0, 0);
+        color: white;
+        padding: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .header-content p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .header-icon {
+        font-size: 2rem;
+        opacity: 0.9;
+    }
+
+    .qr-code-section {
+        padding: 30px;
+        background-color: black;
+    }
+
+    .qr-code-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .qr-code-frame {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        border: 2px solid #f3f4f6;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .qr-code-frame:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .qr-code-frame img {
+        width: 200px;
+        height: 200px;
+        object-fit: contain;
+    }
+
+    .qr-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .expiry-timer {
+        color: #ffffff;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-refresh {
+        padding: 12px 24px;
+        background: #f3f4f6;
+        color: #4b5563;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .btn-refresh:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        transform: translateY(-2px);
+    }
+
+    .btn-refresh:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .qr-info {
+        padding: 15px;
+        background: #ffffff;
+        color: #000000;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* Empty States */
+    .qr-empty-state, .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        font-size: 1.25rem;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+
+    /* Pending Items Section */
+    .pending-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .pending-header {
+        padding: 25px 30px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pending-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .pending-count {
+        background: #f3f4f6;
+        color: #4b5563;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .pending-items {
+        padding: 20px;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .pending-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        font-size: 14px;
+    }
+
+    .pending-table thead {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    }
+
+    .pending-table th {
+        padding: 16px 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .pending-table td {
+        padding: 16px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+    }
+
+    .table-row {
+        transition: all 0.2s ease;
+    }
+
+    .table-row:hover {
+        background: #f8f9fa;
+    }
+
+    .table-row:last-child td {
+        border-bottom: none;
+    }
+
+    .product-cell {
+        min-width: 200px;
+    }
+
+    .product-title {
+        font-weight: 600;
+        color: #1f2937;
+        display: block;
+    }
+
+    .quantity-cell {
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .quantity-badge {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .price-cell {
+        text-align: right;
+        min-width: 100px;
+    }
+
+    .price-amount {
+        font-weight: 600;
+        color: #059669;
+        font-size: 15px;
+    }
+
+    .status-cell {
+        min-width: 140px;
+    }
+
+    .delivery-cell {
+        min-width: 160px;
+    }
+
+    .pickup-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .status-awaiting_pickup {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-awaiting_delivery {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .delivery-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .marketplace-container {
+            padding: 30px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .qr-page-grid {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .qr-main-section {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .marketplace-container {
+            padding: 20px;
+        }
+
+        .pending-header {
+            padding: 20px;
+        }
+
+        .pending-items {
+            padding: 15px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .pending-table {
+            min-width: 600px;
+        }
+
+        .pending-table th,
+        .pending-table td {
+            padding: 12px 8px;
+            font-size: 13px;
+        }
+
+        .product-cell {
+            min-width: 150px;
+        }
+
+        .delivery-cell {
+            min-width: 140px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .marketplace-container {
+            padding: 15px;
+        }
+
+        .qr-header {
+            padding: 20px;
+        }
+
+        .qr-code-frame {
+            padding: 15px;
+        }
+
+        .qr-code-frame img {
+            width: 180px;
+            height: 180px;
+        }
+
+        .table-container {
+            margin: 0 -15px;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+        }
+
+        .pending-table {
+            min-width: 500px;
+            font-size: 12px;
+        }
+
+        .pending-table th,
+        .pending-table td {
+            padding: 10px 6px;
+        }
+
+        .product-cell {
+            min-width: 120px;
+        }
+
+        .quantity-cell {
+            min-width: 60px;
+        }
+
+        .price-cell {
+            min-width: 80px;
+        }
+
+        .status-cell {
+            min-width: 100px;
+        }
+
+        .delivery-cell {
+            min-width: 120px;
+        }
+
+        .pending-header {
+            padding: 15px;
+        }
+
+        .pending-items {
+            padding: 0;
+        }
+    }
+</style>
+
 <script>
 function refreshQRCode() {
-    const btn = document.querySelector('.refresh-btn');
-    btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refreshing...';
+    const btn = document.querySelector('.btn-refresh');
+    const originalContent = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i><span>Refreshing...</span>';
     btn.disabled = true;
     
     fetch('{% url "update_qr_code_ajax" %}', {
@@ -170,16 +625,50 @@ function refreshQRCode() {
     .then(response => response.json())
     .then(data => {
         if (data.success && data.qr_image_url) {
-            document.querySelector('.qr-code-image img').src = data.qr_image_url + '?t=' + new Date().getTime();
+            const qrImage = document.querySelector('.qr-code-frame img');
+            if (qrImage) {
+                qrImage.src = data.qr_image_url + '?t=' + new Date().getTime();
+            }
             document.getElementById('expiry-time').textContent = new Date(data.expires_at).toLocaleString();
+            
+            // Show success feedback
+            btn.innerHTML = '<i class="bi bi-check-circle"></i><span>Updated!</span>';
+            btn.style.background = '#dcfce7';
+            btn.style.color = '#166534';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.disabled = false;
+            }, 2000);
+        } else {
+            // Show error feedback
+            btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i><span>Failed to Update</span>';
+            btn.style.background = '#fee2e2';
+            btn.style.color = '#991b1b';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.disabled = false;
+            }, 2000);
         }
-        btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Code';
-        btn.disabled = false;
     })
     .catch(error => {
         console.error('Error:', error);
-        btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Code';
-        btn.disabled = false;
+        // Show error feedback
+        btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i><span>Failed to Update</span>';
+        btn.style.background = '#fee2e2';
+        btn.style.color = '#991b1b';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.disabled = false;
+        }, 2000);
     });
 }
 

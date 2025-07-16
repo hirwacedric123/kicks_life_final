@@ -316,15 +316,15 @@
                 <div class="stat-label">Pending</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">${{ total_commission|floatformat:2 }}</div>
+                <div class="stat-value">RWF{{ total_commission|floatformat:2 }}</div>
                 <div class="stat-label">Total Commission</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">${{ total_vendor_payments|floatformat:2 }}</div>
+                <div class="stat-value">RWF{{ total_vendor_payments|floatformat:2 }}</div>
                 <div class="stat-label">Vendor Payments</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">${{ total_transaction_value|floatformat:2 }}</div>
+                <div class="stat-value">RWF{{ total_transaction_value|floatformat:2 }}</div>
                 <div class="stat-label">Total Value</div>
             </div>
         </div>
@@ -394,7 +394,7 @@
                     </div>
                     <div class="detail-group">
                         <div class="detail-label">Total Price</div>
-                        <div class="detail-value">${{ purchase.purchase_price|floatformat:2 }}</div>
+                        <div class="detail-value">RWF{{ purchase.purchase_price|floatformat:2 }}</div>
                     </div>
                     <div class="detail-group">
                         <div class="detail-label">Purchase Date</div>
@@ -412,11 +412,11 @@
                 <div class="commission-highlight">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span><strong>Vendor Payment (80%):</strong></span>
-                        <span><strong>${{ purchase.vendor_payment_amount|floatformat:2 }}</strong></span>
+                        <span><strong>RWF{{ purchase.vendor_payment_amount|floatformat:2 }}</strong></span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span><strong>KoraQuest Commission (20%):</strong></span>
-                        <span><strong>${{ purchase.koraquest_commission_amount|floatformat:2 }}</strong></span>
+                        <span><strong>RWF{{ purchase.koraquest_commission_amount|floatformat:2 }}</strong></span>
                     </div>
                 </div>
                 {% endif %}

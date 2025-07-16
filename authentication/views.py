@@ -1,16 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, Http404
 from .forms import SignUpForm
 from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
-from django.core.files.storage import FileSystemStorage
 from django.db.models import Sum, Count, Q
 import os
-import decimal
+from decimal import Decimal
 from django.utils import timezone
 from .qr_utils import update_user_qr_code, decode_qr_data, get_user_purchases_from_qr
 from .otp_utils import create_otp, verify_otp
@@ -42,6 +42,11 @@ def login_view(request):
     
     return render(request, 'authentication/login.html', {'form': form})
 
+def logout_view(request):
+    auth_logout(request)
+    messages.success(request, 'You have been successfully logged out.')
+    return redirect('login')
+
 @login_required
 def dashboard(request):
     # Get filter parameters from the request
@@ -54,7 +59,7 @@ def dashboard(request):
     # Start with all products (no job posts anymore)
     posts = Post.objects.all()
     
-    # Filter out sold-out products
+    # Filter out sold-out products (inventory must be greater than 0)
     posts = posts.filter(inventory__gt=0)
     
     # Filter out the user's own products if they are a vendor
@@ -135,12 +140,13 @@ def post_detail(request, post_id):
     # Get auxiliary images for the product
     auxiliary_images = ProductImage.objects.filter(product=post).order_by('display_order')
     
-    # Check if the user has purchased this product
-    has_purchased = Purchase.objects.filter(
-        buyer=request.user, 
-        product=post, 
-        status__in=['completed', 'processing']
-    ).exists()
+    # Allow repeat purchases - remove the restriction
+    # has_purchased = Purchase.objects.filter(
+    #     buyer=request.user, 
+    #     product=post, 
+    #     status__in=['completed', 'processing']
+    # ).exists()
+    has_purchased = False  # Always allow purchases
     
     # Get product reviews
     reviews = ProductReview.objects.filter(product=post).order_by('-created_at')
@@ -177,6 +183,12 @@ def purchase_product(request, post_id):
             messages.error(request, f'Unable to purchase {product.title}. The product does not have a valid price.')
             return redirect('post_detail', post_id=post_id)
         
+
+        # Check if product is out of stock
+        if product.inventory <= 0:
+            messages.error(request, f'Sorry, {product.title} is currently out of stock.')
+            return redirect('post_detail', post_id=post_id)
+        
         # Get quantity from form
         try:
             quantity = int(request.POST.get('quantity', 1))
@@ -186,9 +198,13 @@ def purchase_product(request, post_id):
             messages.error(request, "Please enter a valid quantity.")
             return redirect('post_detail', post_id=post_id)
         
-        # Check if enough inventory
+        # Check if enough inventory (with fresh data to prevent race conditions)
+        product.refresh_from_db()  # Get latest inventory data
         if product.inventory < quantity:
-            messages.error(request, f'Sorry, there are only {product.inventory} items available.')
+            if product.inventory == 0:
+                messages.error(request, f'Sorry, {product.title} is now out of stock.')
+            else:
+                messages.error(request, f'Sorry, there are only {product.inventory} items available.')
             return redirect('post_detail', post_id=post_id)
         
         # Get delivery method and details
@@ -199,7 +215,6 @@ def purchase_product(request, post_id):
         payment_method = request.POST.get('payment_method', 'momo')  # New payment method field
         
         # Calculate total price
-        from decimal import Decimal
         total_price = product.price * quantity
         delivery_fee = Decimal('5.00') if delivery_method == 'delivery' else Decimal('0.00')
         
@@ -235,7 +250,7 @@ def purchase_product(request, post_id):
         
         purchase.save()
         
-        # Update inventory
+        # Update inventory immediately after successful purchase
         product.inventory -= quantity
         
         # Update statistics
@@ -248,7 +263,7 @@ def purchase_product(request, post_id):
         
         # Success message based on delivery method
         if delivery_method == 'delivery':
-            messages.success(request, f'You have successfully purchased {quantity} {product.title}! Total: ${total_price + delivery_fee:.2f} (including ${delivery_fee:.2f} delivery fee). KoraQuest will deliver to your address.')
+            messages.success(request, f'You have successfully purchased {quantity} {product.title}! Total: RWF{total_price + delivery_fee:.2f} (including RWF{delivery_fee:.2f} delivery fee). KoraQuest will deliver to your address.')
         else:
             messages.success(request, f'You have successfully purchased {quantity} {product.title}! Please go to KoraQuest to collect your items.')
         
@@ -661,31 +676,30 @@ def koraquest_dashboard(request):
 @login_required
 def scan_qr_code(request):
     """QR code scanner interface for KoraQuest users"""
-    print('Scan Called')
-    if not request.user.is_koraquest():
-        messages.error(request, 'Access denied. KoraQuest role required.')
-        return redirect('dashboard')
-    
-    print('User is Koraquest')
-    # Create context for rendering
-    context = {
-        'page_title': 'QR Code Scanner',
-        'error_message': None,
-        'success_message': None,
-    }
-    
-    if request.method == 'POST':
-        print('Request Made')
-        qr_data = request.POST.get('qr_data')
-        print(qr_data)
-        purchase_id = request.POST.get('purchase_id')
+    try:
+        if not request.user.is_koraquest():
+            messages.error(request, 'Access denied. KoraQuest role required.')
+            return redirect('dashboard')
         
-        if qr_data:
+        # Create context for rendering
+        context = {
+            'page_title': 'QR Code Scanner',
+            'error_message': None,
+            'success_message': None,
+        }
+        
+        if request.method == 'POST':
+            qr_data = request.POST.get('qr_data')
+            purchase_id = request.POST.get('purchase_id')
+            
+            if not qr_data:
+                context['error_message'] = 'No QR data provided'
+                messages.error(request, context['error_message'])
+                return render(request, 'authentication/scan_qr_code.html', context)
+            
             try:
                 # Decode QR data
                 decoded_data = decode_qr_data(qr_data.strip())
-                print("============================= Decoded QR Data:")
-                print(decoded_data)
                 
                 if isinstance(decoded_data, dict) and 'error' in decoded_data:
                     context['error_message'] = decoded_data['error']
@@ -729,13 +743,17 @@ def scan_qr_code(request):
                         buyer.save()
                         
                         # Success message
-                        context['success_message'] = f'Purchase {purchase.order_id} confirmed successfully! Vendor payment: ${purchase.vendor_payment_amount}, KoraQuest commission: ${purchase.koraquest_commission_amount}'
+                        context['success_message'] = f'Purchase {purchase.order_id} confirmed successfully! Vendor payment: RWF{purchase.vendor_payment_amount}, KoraQuest commission: RWF{purchase.koraquest_commission_amount}'
                         messages.success(request, context['success_message'])
                         
                         # Redirect to dashboard after successful completion
                         return redirect('koraquest_dashboard')
                     except Purchase.DoesNotExist:
                         context['error_message'] = f'Purchase not found with ID: {purchase_id}'
+                        messages.error(request, context['error_message'])
+                        return render(request, 'authentication/scan_qr_code.html', context)
+                    except Exception as e:
+                        context['error_message'] = f'Error processing purchase: {str(e)}'
                         messages.error(request, context['error_message'])
                         return render(request, 'authentication/scan_qr_code.html', context)
                 
@@ -752,18 +770,23 @@ def scan_qr_code(request):
                 messages.success(request, context['success_message'])
                 return render(request, 'authentication/scan_qr_code.html', context)
                 
-            except Exception as e:
-                context['error_message'] = f"Error processing QR code: {str(e)}"
-                messages.error(request, context['error_message'])
+            except IOError as e:
+                error_msg = f"QR code processing error: {str(e)}"
+                context['error_message'] = error_msg
+                messages.error(request, error_msg)
                 return render(request, 'authentication/scan_qr_code.html', context)
-        else:
-            context['error_message'] = 'No QR data provided'
-            messages.error(request, context['error_message'])
-            return render(request, 'authentication/scan_qr_code.html', context)
-    
-    # For GET requests, just render the scan page
-    print("nothing kweri")
-    return render(request, 'authentication/scan_qr_code.html', context)
+            except Exception as e:
+                error_msg = f"Unexpected error: {str(e)}"
+                context['error_message'] = error_msg
+                messages.error(request, error_msg)
+                return render(request, 'authentication/scan_qr_code.html', context)
+        
+        # For GET requests, just render the scan page
+        return render(request, 'authentication/scan_qr_code.html', context)
+        
+    except Exception as e:
+        messages.error(request, f"System error: {str(e)}")
+        return redirect('koraquest_dashboard')
 
 @login_required
 def confirm_purchase_pickup(request, purchase_id):
@@ -822,9 +845,8 @@ def confirm_purchase_pickup(request, purchase_id):
             buyer.total_purchases += (purchase.purchase_price * purchase.quantity)
             buyer.save()
             
-            # Update product inventory and sales
+            # Update product sales count only (inventory was already decremented during purchase)
             product = purchase.product
-            product.inventory -= purchase.quantity
             product.total_purchases += purchase.quantity
             product.save()
             
@@ -909,7 +931,7 @@ def confirm_delivery(request, purchase_id):
             buyer.total_purchases += purchase.purchase_price
             buyer.save()
             
-            # Update product sales (inventory already reduced during purchase)
+            # Update product sales count only (inventory was already decremented during purchase)
             product = purchase.product
             product.total_purchases += purchase.quantity
             product.save()

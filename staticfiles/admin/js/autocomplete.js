@@ -1,10 +1,10 @@
 'use strict';
 {
-    const $ = django.jQuery;
+    const RWF = django.jQuery;
 
-    $.fn.djangoAdminSelect2 = function() {
-        $.each(this, function(i, element) {
-            $(element).select2({
+    RWF.fn.djangoAdminSelect2 = function() {
+        RWF.each(this, function(i, element) {
+            RWF(element).select2({
                 ajax: {
                     data: (params) => {
                         return {
@@ -21,13 +21,13 @@
         return this;
     };
 
-    $(function() {
+    RWF(function() {
         // Initialize all autocomplete widgets except the one in the template
         // form used when a new formset is added.
-        $('.admin-autocomplete').not('[name*=__prefix__]').djangoAdminSelect2();
+        RWF('.admin-autocomplete').not('[name*=__prefix__]').djangoAdminSelect2();
     });
 
     document.addEventListener('formset:added', (event) => {
-        $(event.target).find('.admin-autocomplete').djangoAdminSelect2();
+        RWF(event.target).find('.admin-autocomplete').djangoAdminSelect2();
     });
 }

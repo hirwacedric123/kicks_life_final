@@ -3,7 +3,7 @@
 // and Add Another links.
 'use strict';
 {
-    const $ = django.jQuery;
+    const RWF = django.jQuery;
     let popupIndex = 0;
     const relatedWindows = [];
 
@@ -30,7 +30,7 @@
     }
 
     function removePopupIndex(name) {
-        return name.replace(new RegExp("__" + (popupIndex + 1) + "$"), '');
+        return name.replace(new RegExp("__" + (popupIndex + 1) + "RWF"), '');
     }
 
     function showAdminPopup(triggeringLink, name_regexp, add_popup) {
@@ -69,15 +69,15 @@
     }
 
     function updateRelatedObjectLinks(triggeringLink) {
-        const $this = $(triggeringLink);
-        const siblings = $this.nextAll('.view-related, .change-related, .delete-related');
+        const RWFthis = RWF(triggeringLink);
+        const siblings = RWFthis.nextAll('.view-related, .change-related, .delete-related');
         if (!siblings.length) {
             return;
         }
-        const value = $this.val();
+        const value = RWFthis.val();
         if (value) {
             siblings.each(function() {
-                const elm = $(this);
+                const elm = RWF(this);
                 elm.attr('href', elm.attr('data-href-template').replace('__fk__', value));
                 elm.removeAttr('aria-disabled');
             });
@@ -97,14 +97,14 @@
         // '.../<model>/<id>/change/' depending the action (add or change).
         const modelName = path.split('/')[path.split('/').length - (objId ? 4 : 3)];
         // Select elements with a specific model reference and context of "available-source".
-        const selectsRelated = document.querySelectorAll(`[data-model-ref="${modelName}"] [data-context="available-source"]`);
+        const selectsRelated = document.querySelectorAll(`[data-model-ref="RWF{modelName}"] [data-context="available-source"]`);
 
         selectsRelated.forEach(function(select) {
             if (currentSelect === select) {
                 return;
             }
 
-            let option = select.querySelector(`option[value="${objId}"]`);
+            let option = select.querySelector(`option[value="RWF{objId}"]`);
 
             if (!option) {
                 option = new Option(newRepr, newId);
@@ -133,7 +133,7 @@
                 }
             }
             // Trigger a change event to update related links if required.
-            $(elem).trigger('change');
+            RWF(elem).trigger('change');
         } else {
             const toId = name + "_to";
             const o = new Option(newRepr, newId);
@@ -150,7 +150,7 @@
     function dismissChangeRelatedObjectPopup(win, objId, newRepr, newId) {
         const id = removePopupIndex(win.name.replace(/^edit_/, ''));
         const selectsSelector = interpolate('#%s, #%s_from, #%s_to', [id, id, id]);
-        const selects = $(selectsSelector);
+        const selects = RWF(selectsSelector);
         selects.find('option').each(function() {
             if (this.value === objId) {
                 this.textContent = newRepr;
@@ -174,10 +174,10 @@
     function dismissDeleteRelatedObjectPopup(win, objId) {
         const id = removePopupIndex(win.name.replace(/^delete_/, ''));
         const selectsSelector = interpolate('#%s, #%s_from, #%s_to', [id, id, id]);
-        const selects = $(selectsSelector);
+        const selects = RWF(selectsSelector);
         selects.find('option').each(function() {
             if (this.value === objId) {
-                $(this).remove();
+                RWF(this).remove();
             }
         }).trigger('change');
         const index = relatedWindows.indexOf(win);
@@ -204,34 +204,34 @@
         window.dismissChildPopups();
     });
 
-    $(document).ready(function() {
+    RWF(document).ready(function() {
         setPopupIndex();
-        $("a[data-popup-opener]").on('click', function(event) {
+        RWF("a[data-popup-opener]").on('click', function(event) {
             event.preventDefault();
-            opener.dismissRelatedLookupPopup(window, $(this).data("popup-opener"));
+            opener.dismissRelatedLookupPopup(window, RWF(this).data("popup-opener"));
         });
-        $('body').on('click', '.related-widget-wrapper-link[data-popup="yes"]', function(e) {
+        RWF('body').on('click', '.related-widget-wrapper-link[data-popup="yes"]', function(e) {
             e.preventDefault();
             if (this.href) {
-                const event = $.Event('django:show-related', {href: this.href});
-                $(this).trigger(event);
+                const event = RWF.Event('django:show-related', {href: this.href});
+                RWF(this).trigger(event);
                 if (!event.isDefaultPrevented()) {
                     showRelatedObjectPopup(this);
                 }
             }
         });
-        $('body').on('change', '.related-widget-wrapper select', function(e) {
-            const event = $.Event('django:update-related');
-            $(this).trigger(event);
+        RWF('body').on('change', '.related-widget-wrapper select', function(e) {
+            const event = RWF.Event('django:update-related');
+            RWF(this).trigger(event);
             if (!event.isDefaultPrevented()) {
                 updateRelatedObjectLinks(this);
             }
         });
-        $('.related-widget-wrapper select').trigger('change');
-        $('body').on('click', '.related-lookup', function(e) {
+        RWF('.related-widget-wrapper select').trigger('change');
+        RWF('body').on('click', '.related-lookup', function(e) {
             e.preventDefault();
-            const event = $.Event('django:lookup-related');
-            $(this).trigger(event);
+            const event = RWF.Event('django:lookup-related');
+            RWF(this).trigger(event);
             if (!event.isDefaultPrevented()) {
                 showRelatedObjectLookupPopup(this);
             }
