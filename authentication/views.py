@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, Http404
 from .forms import SignUpForm
 from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Avg, Q
 import os
 from decimal import Decimal
 from django.utils import timezone
@@ -986,3 +986,239 @@ def koraquest_purchase_history(request):
     }
     
     return render(request, 'authentication/koraquest_purchase_history.html', context)
+
+@login_required
+def sales_statistics(request):
+    """Sales statistics view showing detailed financial breakdown for vendors and KoraQuest agents"""
+    
+    if request.user.is_vendor_role:
+        # Vendor statistics - show their earnings (80% of product price)
+        purchases = Purchase.objects.filter(
+            product__user=request.user,
+            status='completed'
+        ).select_related('product', 'buyer')
+        
+        # Calculate vendor statistics
+        total_sales = purchases.count()
+        total_revenue = purchases.aggregate(
+            total=Sum('vendor_payment_amount')
+        )['total'] or 0
+        
+        # Monthly statistics
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        monthly_purchases = purchases.filter(
+            pickup_confirmed_at__month=current_month,
+            pickup_confirmed_at__year=current_year
+        )
+        monthly_revenue = monthly_purchases.aggregate(
+            total=Sum('vendor_payment_amount')
+        )['total'] or 0
+        
+        # Product-wise breakdown
+        product_stats = purchases.values('product__title').annotate(
+            total_sales=Count('id'),
+            total_revenue=Sum('vendor_payment_amount'),
+            avg_price=Avg('vendor_payment_amount')
+        ).order_by('-total_revenue')
+        
+        # Recent transactions
+        recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+        
+        context = {
+            'user_type': 'vendor',
+            'total_sales': total_sales,
+            'total_revenue': total_revenue,
+            'monthly_revenue': monthly_revenue,
+            'monthly_sales': monthly_purchases.count(),
+            'product_stats': product_stats,
+            'recent_transactions': recent_transactions,
+            'commission_rate': 80,  # Vendor gets 80%
+            'koraquest_rate': 20,   # KoraQuest gets 20%
+        }
+        
+    elif request.user.is_koraquest():
+        # KoraQuest agent statistics - show their commission (20% of product price + delivery fees)
+        purchases = Purchase.objects.filter(
+            koraquest_user=request.user,
+            status='completed'
+        ).select_related('product', 'buyer', 'product__user')
+        
+        # Calculate KoraQuest statistics
+        total_transactions = purchases.count()
+        total_commission = purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+        
+        # Monthly statistics
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        monthly_purchases = purchases.filter(
+            pickup_confirmed_at__month=current_month,
+            pickup_confirmed_at__year=current_year
+        )
+        monthly_commission = monthly_purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+        
+        # Breakdown by commission type
+        total_product_price = purchases.aggregate(total=Sum('purchase_price'))['total'] or 0
+        total_delivery_fees = purchases.aggregate(total=Sum('delivery_fee'))['total'] or 0
+        total_commission_amount = purchases.aggregate(total=Sum('koraquest_commission_amount'))['total'] or 0
+        
+        commission_breakdown = {
+            'product_commission': total_product_price * Decimal('0.2'),
+            'delivery_fees': total_delivery_fees,
+            'total_commission': total_commission_amount
+        }
+        
+        # Vendor-wise breakdown - get unique vendors with their stats
+        vendor_stats = []
+        vendor_ids = purchases.values_list('product__user__id', flat=True).distinct()
+        
+        for vendor_id in vendor_ids:
+            vendor_purchases = purchases.filter(product__user__id=vendor_id)
+            vendor_user = vendor_purchases.first().product.user
+            
+            vendor_stats.append({
+                'vendor_id': vendor_id,
+                'vendor_username': vendor_user.username,
+                'total_transactions': vendor_purchases.count(),
+                'total_commission': vendor_purchases.aggregate(
+                    total=Sum('koraquest_commission_amount')
+                )['total'] or 0,
+                'avg_commission': vendor_purchases.aggregate(
+                    avg=Avg('koraquest_commission_amount')
+                )['avg'] or 0
+            })
+        
+        # Sort by total commission
+        vendor_stats.sort(key=lambda x: x['total_commission'], reverse=True)
+        
+        # Recent transactions
+        recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+        
+        context = {
+            'user_type': 'koraquest',
+            'total_transactions': total_transactions,
+            'total_commission': total_commission,
+            'monthly_commission': monthly_commission,
+            'monthly_transactions': monthly_purchases.count(),
+            'commission_breakdown': commission_breakdown,
+            'vendor_stats': vendor_stats,
+            'recent_transactions': recent_transactions,
+            'commission_rate': 20,  # KoraQuest gets 20%
+            'vendor_rate': 80,      # Vendor gets 80%
+        }
+        
+    else:
+        # Regular user - show their purchase history
+        purchases = Purchase.objects.filter(
+            buyer=request.user,
+            status='completed'
+        ).select_related('product', 'product__user')
+        
+        total_spent = purchases.aggregate(
+            total=Sum('purchase_price')
+        )['total'] or 0
+        
+        monthly_purchases = purchases.filter(
+            created_at__month=timezone.now().month,
+            created_at__year=timezone.now().year
+        )
+        monthly_spent = monthly_purchases.aggregate(
+            total=Sum('purchase_price')
+        )['total'] or 0
+        
+        context = {
+            'user_type': 'customer',
+            'total_purchases': purchases.count(),
+            'total_spent': total_spent,
+            'monthly_spent': monthly_spent,
+            'monthly_purchases': monthly_purchases.count(),
+            'recent_transactions': purchases.order_by('-created_at')[:10],
+        }
+    
+    return render(request, 'authentication/sales_statistics.html', context)
+
+@login_required
+def vendor_statistics_for_koraquest(request, vendor_id):
+    """KoraQuest users can view detailed statistics for a specific vendor"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    # Get the vendor
+    vendor = get_object_or_404(User, id=vendor_id, is_vendor_role=True)
+    
+    # Get all purchases for this vendor
+    purchases = Purchase.objects.filter(
+        product__user=vendor,
+        status='completed'
+    ).select_related('product', 'buyer', 'koraquest_user')
+    
+    # Calculate vendor statistics (as if KoraQuest is viewing the vendor's dashboard)
+    total_sales = purchases.count()
+    total_revenue = purchases.aggregate(
+        total=Sum('vendor_payment_amount')
+    )['total'] or 0
+    
+    # Monthly statistics
+    current_month = timezone.now().month
+    current_year = timezone.now().year
+    monthly_purchases = purchases.filter(
+        pickup_confirmed_at__month=current_month,
+        pickup_confirmed_at__year=current_year
+    )
+    monthly_revenue = monthly_purchases.aggregate(
+        total=Sum('vendor_payment_amount')
+    )['total'] or 0
+    
+    # Product-wise breakdown
+    product_stats = purchases.values('product__title').annotate(
+        total_sales=Count('id'),
+        total_revenue=Sum('vendor_payment_amount'),
+        avg_price=Avg('vendor_payment_amount')
+    ).order_by('-total_revenue')
+    
+    # KoraQuest commission from this vendor
+    koraquest_commission = purchases.aggregate(
+        total=Sum('koraquest_commission_amount')
+    )['total'] or 0
+    
+    # Monthly KoraQuest commission
+    monthly_koraquest_commission = monthly_purchases.aggregate(
+        total=Sum('koraquest_commission_amount')
+    )['total'] or 0
+    
+    # Recent transactions
+    recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+    
+    # Commission breakdown
+    total_product_price = purchases.aggregate(total=Sum('purchase_price'))['total'] or 0
+    total_delivery_fees = purchases.aggregate(total=Sum('delivery_fee'))['total'] or 0
+    
+    commission_breakdown = {
+        'vendor_earnings': total_revenue,
+        'koraquest_commission': koraquest_commission,
+        'product_commission': total_product_price * Decimal('0.2'),
+        'delivery_fees': total_delivery_fees,
+        'total_transaction_value': total_product_price + total_delivery_fees
+    }
+    
+    context = {
+        'vendor': vendor,
+        'total_sales': total_sales,
+        'total_revenue': total_revenue,
+        'monthly_revenue': monthly_revenue,
+        'monthly_sales': monthly_purchases.count(),
+        'product_stats': product_stats,
+        'recent_transactions': recent_transactions,
+        'koraquest_commission': koraquest_commission,
+        'monthly_koraquest_commission': monthly_koraquest_commission,
+        'commission_breakdown': commission_breakdown,
+        'commission_rate': 80,  # Vendor gets 80%
+        'koraquest_rate': 20,   # KoraQuest gets 20%
+    }
+    
+    return render(request, 'authentication/vendor_statistics_for_koraquest.html', context)

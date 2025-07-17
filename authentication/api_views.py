@@ -8,6 +8,8 @@ from .models import Purchase, User
 from .qr_utils import decode_qr_data, get_user_purchases_from_qr
 from .otp_utils import create_otp, verify_otp as verify_otp_util
 import json
+from django.db.models import Sum, Count, Avg
+from decimal import Decimal
 
 @login_required
 @require_POST
@@ -227,3 +229,110 @@ def complete_purchase_pickup(request):
         })
     except Exception as e:
         return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
+
+@csrf_exempt
+def get_vendor_statistics_modal(request, vendor_id):
+    """API endpoint to get vendor statistics for modal popup"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    if not request.user.is_authenticated or not request.user.is_koraquest():
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    try:
+        # Get the vendor
+        vendor = User.objects.get(id=vendor_id, is_vendor_role=True)
+        
+        # Get all purchases for this vendor
+        purchases = Purchase.objects.filter(
+            product__user=vendor,
+            status='completed'
+        ).select_related('product', 'buyer', 'koraquest_user')
+        
+        # Calculate vendor statistics
+        total_sales = purchases.count()
+        total_revenue = purchases.aggregate(
+            total=Sum('vendor_payment_amount')
+        )['total'] or 0
+        
+        # Monthly statistics
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        monthly_purchases = purchases.filter(
+            pickup_confirmed_at__month=current_month,
+            pickup_confirmed_at__year=current_year
+        )
+        monthly_revenue = monthly_purchases.aggregate(
+            total=Sum('vendor_payment_amount')
+        )['total'] or 0
+        
+        # Product-wise breakdown
+        product_stats = list(purchases.values('product__title').annotate(
+            total_sales=Count('id'),
+            total_revenue=Sum('vendor_payment_amount'),
+            avg_price=Avg('vendor_payment_amount')
+        ).order_by('-total_revenue')[:5])  # Limit to top 5 products
+        
+        # KoraQuest commission from this vendor
+        koraquest_commission = purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+        
+        # Monthly KoraQuest commission
+        monthly_koraquest_commission = monthly_purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+        
+        # Recent transactions
+        recent_transactions = list(purchases.order_by('-pickup_confirmed_at')[:5].values(
+            'product__title', 'buyer__username', 'order_id', 'quantity', 
+            'vendor_payment_amount', 'pickup_confirmed_at', 'created_at'
+        ))
+        
+        # Commission breakdown
+        total_product_price = purchases.aggregate(total=Sum('purchase_price'))['total'] or 0
+        total_delivery_fees = purchases.aggregate(total=Sum('delivery_fee'))['total'] or 0
+        
+        commission_breakdown = {
+            'vendor_earnings': float(total_revenue),
+            'koraquest_commission': float(koraquest_commission),
+            'product_commission': float(total_product_price * Decimal('0.2')),
+            'delivery_fees': float(total_delivery_fees),
+            'total_transaction_value': float(total_product_price + total_delivery_fees)
+        }
+        
+        # Format dates for JSON serialization
+        for transaction in recent_transactions:
+            if transaction['pickup_confirmed_at']:
+                transaction['pickup_confirmed_at'] = transaction['pickup_confirmed_at'].strftime('%b %d, %H:%M')
+            else:
+                transaction['pickup_confirmed_at'] = transaction['created_at'].strftime('%b %d, %H:%M')
+            transaction['created_at'] = transaction['created_at'].strftime('%b %d, %H:%M')
+        
+        data = {
+            'vendor': {
+                'id': vendor.id,
+                'username': vendor.username,
+                'email': vendor.email
+            },
+            'statistics': {
+                'total_sales': total_sales,
+                'total_revenue': float(total_revenue),
+                'monthly_revenue': float(monthly_revenue),
+                'monthly_sales': monthly_purchases.count(),
+                'koraquest_commission': float(koraquest_commission),
+                'monthly_koraquest_commission': float(monthly_koraquest_commission),
+                'commission_rate': 80,
+                'koraquest_rate': 20
+            },
+            'product_stats': product_stats,
+            'recent_transactions': recent_transactions,
+            'commission_breakdown': commission_breakdown
+        }
+        
+        return JsonResponse(data)
+        
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Vendor not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

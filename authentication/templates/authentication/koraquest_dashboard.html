@@ -172,6 +172,14 @@
     <div class="dashboard-header">
         <h1>🏪 KoraQuest Dashboard</h1>
         <p>Managing marketplace transactions and verifications</p>
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'sales_statistics' %}" class="btn" style="background: #4caf50; margin-right: 1rem;">
+                📊 Commission Statistics
+            </a>
+            <a href="{% url 'scan_qr_code' %}" class="btn" style="background: #2196f3;">
+                📱 QR Scanner
+            </a>
+        </div>
     </div>    <!-- Statistics -->
     <div class="stats-grid">
         <div class="stat-card">

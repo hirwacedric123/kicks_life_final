@@ -39,6 +39,8 @@ urlpatterns = [
     path('confirm-delivery/<int:purchase_id>/', views.confirm_delivery, name='confirm_delivery'),
     path('update-qr-ajax/', views.update_qr_code_ajax, name='update_qr_code_ajax'),
     path('koraquest-history/', views.koraquest_purchase_history, name='koraquest_purchase_history'),
+    path('sales-statistics/', views.sales_statistics, name='sales_statistics'),
+    path('vendor-statistics/<int:vendor_id>/', views.vendor_statistics_for_koraquest, name='vendor_statistics_for_koraquest'),
     
     # API endpoints for QR code scanning and verification flow
     path('api/purchases/by-qr/', api_views.get_purchases_by_qr, name='api_get_purchases_by_qr'),
@@ -46,4 +48,5 @@ urlpatterns = [
     path('api/send-otp/', api_views.send_otp, name='api_send_otp'),
     path('api/verify-otp/', api_views.verify_otp_view, name='api_verify_otp'),
     path('api/complete-purchase/', api_views.complete_purchase_pickup, name='api_complete_purchase'),
+    path('api/vendor-statistics/<int:vendor_id>/', api_views.get_vendor_statistics_modal, name='api_vendor_statistics_modal'),
 ]

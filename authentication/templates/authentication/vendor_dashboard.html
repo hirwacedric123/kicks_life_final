@@ -15,9 +15,14 @@
             <h2 class="fw-bold mb-1">Vendor Dashboard</h2>
             <p class="text-muted">Manage your products and track your sales</p>
         </div>
-        <a href="{% url 'create_product' %}" class="btn-create">
-            <i class="bi bi-plus-circle me-2"></i>Add New Product
-        </a>
+        <div class="header-actions">
+            <a href="{% url 'sales_statistics' %}" class="btn-create" style="margin-right: 1rem;">
+                <i class="bi bi-graph-up me-2"></i>Sales Statistics
+            </a>
+            <a href="{% url 'create_product' %}" class="btn-create">
+                <i class="bi bi-plus-circle me-2"></i>Add New Product
+            </a>
+        </div>
     </div>
     
     <!-- Stats Grid -->

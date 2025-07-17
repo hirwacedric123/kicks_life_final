@@ -210,6 +210,9 @@
             <a href="{% url 'create_product' %}" class="nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}">
                 <i class="bi bi-plus-circle"></i>
             </a>
+            <a href="{% url 'sales_statistics' %}" class="nav-tab {% if request.resolver_match.url_name == 'sales_statistics' %}active{% endif %}">
+                <i class="bi bi-bar-chart"></i>
+            </a>
             {% endif %}
             <a href="{% url 'purchase_history' %}" class="nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
                 <i class="bi bi-clock-history"></i>
@@ -224,6 +227,9 @@
             {% else %}
             <a href="{% url 'scan_qr_code' %}" class="nav-tab {% if request.resolver_match.url_name == 'scan_qr_code' %}active{% endif %}">
                 <i class="bi bi-qr-code-scan"></i>
+            </a>
+            <a href="{% url 'sales_statistics' %}" class="nav-tab {% if request.resolver_match.url_name == 'sales_statistics' %}active{% endif %}">
+                <i class="bi bi-graph-up"></i>
             </a>
             {% endif %}
             <a href="{% url 'user_settings' %}" class="nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
