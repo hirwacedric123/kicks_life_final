@@ -924,7 +924,7 @@
     
     // Navigate to product detail
     function navigateToProduct(postId) {
-        window.location.href = `/auth/post/RWF{postId}/`;
+        window.location.href = `/auth/post/${postId}/`;
     }
     
     // Stop event propagation
@@ -938,7 +938,7 @@
             event.stopPropagation();
         }
         
-        fetch(`/auth/bookmark/RWF{postId}/`, {
+        fetch(`/auth/bookmark/${postId}/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -949,7 +949,7 @@
         .then(data => {
             if (data.success) {
                 // Update UI without page reload
-                const bookmarkBtn = document.querySelector(`[data-bookmark="RWF{postId}"]`);
+                const bookmarkBtn = document.querySelector(`[data-bookmark="${postId}"]`);
                 const bookmarkIcon = bookmarkBtn.querySelector('i');
                 
                 if (data.status === 'bookmarked') {
