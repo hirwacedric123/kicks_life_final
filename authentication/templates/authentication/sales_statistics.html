@@ -385,16 +385,18 @@
                         <th>Average Price</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for product in product_stats %}
-                    <tr>
-                        <td>{{ product.product__title|truncatechars:30 }}</td>
-                        <td>{{ product.total_sales }}</td>
-                        <td>RWF {{ product.total_revenue|floatformat:2 }}</td>
-                        <td>RWF {{ product.avg_price|floatformat:2 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                <div class="row-stats-table">
+                    <tbody>
+                        {% for product in product_stats %}
+                        <tr>
+                            <td>{{ product.product__title|truncatechars:30 }}</td>
+                            <td>{{ product.total_sales }}</td>
+                            <td>RWF {{ product.total_revenue|floatformat:2 }}</td>
+                            <td>RWF {{ product.avg_price|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </div>
             </table>
         </div>
     </div>

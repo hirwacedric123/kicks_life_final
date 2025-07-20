@@ -26,11 +26,11 @@ SECRET_KEY = 'django-insecure-yg!+2gbi#185v4j8r!qg&@+%mrl*qti5&1c!7y-sx0d)n(yj&@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['9aef-105-178-46-181.ngrok-free.app','127.0.0.1', 'd419c4494ec3.ngrok-free.app']
+ALLOWED_HOSTS = ['9aef-105-178-46-181.ngrok-free.app','127.0.0.1', 'b2df54a25843.ngrok-free.app']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://9aef-105-178-46-181.ngrok-free.app',
-    'https://d419c4494ec3.ngrok-free.app'
+    'https://b2df54a25843.ngrok-free.app'
 ]
 
 
@@ -145,15 +145,15 @@ LOGOUT_REDIRECT_URL = 'login'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # For production, uncomment these lines and comment out the console backend above:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'b.uteramaho@alustudent.com'
-# EMAIL_HOST_PASSWORD = 'tglb sxys nmfq wxgc'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'b.uteramaho@alustudent.com'
+EMAIL_HOST_PASSWORD = 'tglb sxys nmfq wxgc'
 
 # Default from email (required for sending emails)
-DEFAULT_FROM_EMAIL = 'KoraQuest <noreply@koraquest.com>'
+# DEFAULT_FROM_EMAIL = 'KoraQuest <noreply@koraquest.com>'
 
 # QR Code Settings
 QR_CODE_UPDATE_INTERVAL = 600  # 10 minutes in seconds

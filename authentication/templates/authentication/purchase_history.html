@@ -5,24 +5,41 @@
 
 {% block content %}
 <style>
+    /* Reset and base styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        overflow: hidden;
+    }
+
     ::-webkit-scrollbar{
         display: none;
     }
+    
     .marketplace-container{
         width: 100%;
         padding: 20px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 </style>
 <div class="marketplace-container">
-    <div class="row mb-4">
+    <div class="row mb-4" style="flex-shrink: 0;">
         <div class="col-12">
             <h2 class="fw-bold mb-1">Purchase History</h2>
             <p class="text-muted">Track and manage your product purchases</p>
         </div>
     </div>
     
-    <div class="orders-card">
-        <div class="orders-header">
+    <div class="orders-card" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <div class="orders-header" style="flex-shrink: 0;">
             <h5 class="mb-0">Your Orders</h5>
             <div class="dropdown">
                 <button class="btn btn-filter dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -38,7 +55,7 @@
             </div>
         </div>
         
-        <div class="orders-body">
+        <div class="orders-body" style="flex: 1; overflow-y: auto; min-height: 0;">
             {% if purchases %}
             <div class="table-responsive">
                 <table class="table">
@@ -52,42 +69,44 @@
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for purchase in purchases %}
-                        <tr>
-                            <td>
-                                <span class="order-id">{{ purchase.order_id }}</span>
-                            </td>
-                            <td>
-                                <div class="product-info">
-                                    {% if purchase.product.image %}
-                                    <img src="{{ purchase.product.image.url }}" alt="{{ purchase.product.title }}" class="product-image">
-                                    {% endif %}
-                                    <a href="{% url 'post_detail' purchase.product.id %}" class="product-title">{{ purchase.product.title|truncatechars:30 }}</a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="seller-info">
-                                    {% if purchase.product.user.profile_picture %}
-                                    <img src="{{ purchase.product.user.profile_picture.url }}" alt="{{ purchase.product.user.username }}" class="seller-avatar">
-                                    {% else %}
-                                    <div class="seller-avatar-placeholder">
-                                        <span>{{ purchase.product.user.first_name|first|upper }}{{ purchase.product.user.last_name|first|upper }}</span>
+                    <div class="orders-list">
+                        <tbody>
+                            {% for purchase in purchases %}
+                            <tr>
+                                <td>
+                                    <span class="order-id">{{ purchase.order_id }}</span>
+                                </td>
+                                <td>
+                                    <div class="product-info">
+                                        {% if purchase.product.image %}
+                                        <img src="{{ purchase.product.image.url }}" alt="{{ purchase.product.title }}" class="product-image">
+                                        {% endif %}
+                                        <a href="{% url 'post_detail' purchase.product.id %}" class="product-title">{{ purchase.product.title|truncatechars:30 }}</a>
                                     </div>
-                                    {% endif %}
-                                    <span class="seller-name">{{ purchase.product.user.first_name }} {{ purchase.product.user.last_name }}</span>
-                                </div>
-                            </td>
-                            <td>{{ purchase.created_at|date:"M d, Y" }}</td>
-                            <td class="price">RWF{{ purchase.purchase_price }}</td>
-                            <td>
-                                <span class="status-badge status-{{ purchase.status }}">
-                                    {{ purchase.status|title }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                                </td>
+                                <td>
+                                    <div class="seller-info">
+                                        {% if purchase.product.user.profile_picture %}
+                                        <img src="{{ purchase.product.user.profile_picture.url }}" alt="{{ purchase.product.user.username }}" class="seller-avatar">
+                                        {% else %}
+                                        <div class="seller-avatar-placeholder">
+                                            <span>{{ purchase.product.user.first_name|first|upper }}{{ purchase.product.user.last_name|first|upper }}</span>
+                                        </div>
+                                        {% endif %}
+                                        <span class="seller-name">{{ purchase.product.user.first_name }} {{ purchase.product.user.last_name }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ purchase.created_at|date:"M d, Y" }}</td>
+                                <td class="price">RWF{{ purchase.purchase_price }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ purchase.status }}">
+                                        {{ purchase.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </div>
                 </table>
             </div>
             {% else %}
@@ -110,6 +129,10 @@
     .marketplace-container {
         max-width: 100%;
         margin: 0 auto;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     .orders-card {
@@ -117,6 +140,9 @@
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     .orders-header {
@@ -126,6 +152,7 @@
         align-items: center;
         border-bottom: 1px solid rgba(0,0,0,0.05);
         background: #fff;
+        flex-shrink: 0;
     }
 
     .btn-filter {
@@ -274,6 +301,7 @@
     @media (max-width: 768px) {
         .marketplace-container {
             padding: 15px;
+            height: 100vh;
         }
         
         .orders-header {
@@ -288,6 +316,7 @@
     @media (max-width: 480px) {
         .marketplace-container {
             padding: 10px;
+            height: 100vh;
         }
 
         .empty-state {

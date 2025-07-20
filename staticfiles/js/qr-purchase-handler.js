@@ -41,7 +41,7 @@ function parseJWTFromQRCode(token) {
     } catch (error) {
         console.error('Error parsing JWT token from QR code:', error);
         // Show an error message in UI
-        showError(`Could not parse QR code: RWF{error.message}`);
+        showError(`Could not parse QR code: ${error.message}`);
         return null;
     }
 }
@@ -91,7 +91,7 @@ function handleQRScan(qrCodeData) {
 
 // Function to fetch purchase details using the QR code data
 function fetchPurchaseDetails(qrData) {
-    console.log(`Fetching purchase details for QR data: RWF{qrData}`);
+    console.log(`Fetching purchase details for QR data: ${qrData}`);
     currentQRData = qrData;
     
     // Show loading in the purchase list
@@ -125,9 +125,9 @@ function fetchPurchaseDetails(qrData) {
             document.getElementById('purchase-empty').style.display = 'block';
             document.getElementById('purchase-empty').innerHTML = `
                 <p>❌ Error retrieving purchases:</p>
-                <p>RWF{error.message || 'Failed to retrieve purchase data'}</p>
+                <p>${error.message || 'Failed to retrieve purchase data'}</p>
             `;
-            console.log(`Error fetching purchases: RWF{error.message}`);
+            console.log(`Error fetching purchases: ${error.message}`);
         });
 }
 
@@ -178,7 +178,7 @@ function fetchPurchasesFromAPI(qrData) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: RWF{response.status}`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
         return response.json();
     })
@@ -199,7 +199,7 @@ function updatePurchaseList(data) {
         document.getElementById('purchase-empty').style.display = 'block';
         document.getElementById('purchase-empty').innerHTML = `
             <p>❌ Error retrieving purchases:</p>
-            <p>RWF{data && data.error ? data.error : 'No purchase data available'}</p>
+            <p>${data && data.error ? data.error : 'No purchase data available'}</p>
         `;
         return;
     }
@@ -215,12 +215,12 @@ function updatePurchaseList(data) {
         return;
     }
     
-    console.log(`Found RWF{purchases.length} purchases for user RWF{username}`);
+    console.log(`Found ${purchases.length} purchases for user ${username}`);
     
     // Update popup title with username
     const popupTitle = document.querySelector('#purchase-popup .popup-title');
     if (popupTitle) {
-        popupTitle.textContent = `Purchases for RWF{username}`;
+        popupTitle.textContent = `Purchases for ${username}`;
     }
       // Create purchase list
     const purchaseList = document.createElement('ul');
@@ -233,14 +233,14 @@ function updatePurchaseList(data) {
         purchaseItem.dataset.orderId = purchase.order_id;
         
         purchaseItem.innerHTML = `
-            <div class="purchase-title">RWF{purchase.product_name}</div>
+            <div class="purchase-title">${purchase.product_name}</div>
             <div class="purchase-details">
-                <div><strong>Order ID:</strong> RWF{purchase.order_id}</div>
-                <div><strong>Quantity:</strong> RWF{purchase.quantity}</div>
-                <div><strong>Vendor:</strong> RWF{purchase.vendor_name}</div>
+                <div><strong>Order ID:</strong> ${purchase.order_id}</div>
+                <div><strong>Quantity:</strong> ${purchase.quantity}</div>
+                <div><strong>Vendor:</strong> ${purchase.vendor_name}</div>
             </div>
             <div class="purchase-meta">
-                <div class="purchase-price">RWFRWF{purchase.price}</div>
+                <div class="purchase-price">RWF${purchase.price}</div>
             </div>
         `;
         
@@ -261,7 +261,7 @@ function updatePurchaseList(data) {
             // Enable the confirm button
             document.getElementById('confirm-purchase-btn').disabled = false;
             
-            console.log(`Selected purchase: RWF{purchase.product_name} (Order ID: RWF{purchase.order_id})`);
+            console.log(`Selected purchase: ${purchase.product_name} (Order ID: ${purchase.order_id})`);
         });
         
         purchaseList.appendChild(purchaseItem);
@@ -348,7 +348,7 @@ function verifyCredentials() {
         document.getElementById('auth-error').textContent = 'Error verifying credentials. Please try again.';
         document.getElementById('auth-error').style.display = 'block';
         
-        console.log(`Error verifying credentials: RWF{error.message}`);
+        console.log(`Error verifying credentials: ${error.message}`);
         
         // Reset button
         verifyBtn.disabled = false;
@@ -358,7 +358,7 @@ function verifyCredentials() {
 
 // Function to send OTP to the buyer's email
 function sendOTPToUser() {
-    console.log(`Sending OTP to user: RWF{currentPurchaser.username}`);
+    console.log(`Sending OTP to user: ${currentPurchaser.username}`);
     
     // First, set up the OTP popup
     document.getElementById('buyer-email').textContent = currentPurchaser.email || currentPurchaser.username;
@@ -405,7 +405,7 @@ function sendOTPToUser() {
     .then(data => {
         if (data.success) {
             otpSessionId = data.session_id;
-            console.log(`OTP sent successfully, session ID: RWF{otpSessionId}`);
+            console.log(`OTP sent successfully, session ID: ${otpSessionId}`);
         } else {
             // Handle error
             closePopup('otp-popup');
@@ -457,6 +457,10 @@ function verifyOTP() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Store purchase_id from response if available
+            if (data.purchase_id) {
+                selectedOrderId = data.purchase_id;
+            }
             completePurchasePickup();
         } else {
             document.getElementById('otp-error').textContent = data.error || 'Invalid OTP. Please try again.';
@@ -533,6 +537,11 @@ function completePurchasePickup() {
     showCameraStatus('Purchase pickup verified successfully! Processing...', 'success');
     
     // Make API call to complete the purchase pickup process
+    const purchaseId = selectedPurchase.id || selectedOrderId;
+    console.log('Completing purchase with ID:', purchaseId);
+    console.log('selectedPurchase:', selectedPurchase);
+    console.log('selectedOrderId:', selectedOrderId);
+    
     fetch('/auth/api/complete-purchase/', {
         method: 'POST',
         headers: {
@@ -540,7 +549,7 @@ function completePurchasePickup() {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
         },
         body: JSON.stringify({
-            purchase_id: selectedPurchase.id || selectedOrderId
+            purchase_id: purchaseId
         })
     })
     .then(response => response.json())
@@ -549,7 +558,7 @@ function completePurchasePickup() {
             console.log('Purchase pickup completed successfully!');
             
             // Show success message with payment details
-            const successMessage = `Purchase confirmed! Vendor payment: RWFRWF{data.vendor_payment}, KoraQuest commission: RWFRWF{data.koraquest_commission}`;
+            const successMessage = `Purchase confirmed! Vendor payment: RWF${data.vendor_payment}, KoraQuest commission: RWF${data.koraquest_commission}`;
             showCameraStatus(successMessage, 'success');
             
             // Show success section
@@ -560,7 +569,7 @@ function completePurchasePickup() {
                     <h3>✅ Purchase Completed Successfully!</h3>
                     <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h4 style="margin: 0; color: #333;">📦 RWF{selectedPurchase.product_name}</h4>
+                            <h4 style="margin: 0; color: #333;">📦 ${selectedPurchase.product_name}</h4>
                             <span style="background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 15px; font-size: 0.9em; font-weight: 500;">
                                 Status: Completed
                             </span>
@@ -569,14 +578,14 @@ function completePurchasePickup() {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <h5 style="margin: 0 0 10px 0; color: #495057;">👤 Customer Details</h5>
-                                <strong>Username:</strong> RWF{currentPurchaser.username}<br>
-                                <strong>Order ID:</strong> <code>RWF{selectedOrderId}</code>
+                                <strong>Username:</strong> ${currentPurchaser.username}<br>
+                                <strong>Order ID:</strong> <code>${selectedOrderId}</code>
                             </div>
                             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <h5 style="margin: 0 0 10px 0; color: #495057;">📋 Payment Details</h5>
-                                <strong>Total Price:</strong> RWFRWF{selectedPurchase.price}<br>
-                                <strong>Vendor Payment:</strong> RWFRWF{data.vendor_payment}<br>
-                                <strong>KoraQuest Commission:</strong> RWFRWF{data.koraquest_commission}
+                                <strong>Total Price:</strong> RWF${selectedPurchase.price}<br>
+                                <strong>Vendor Payment:</strong> RWF${data.vendor_payment}<br>
+                                <strong>KoraQuest Commission:</strong> RWF${data.koraquest_commission}
                             </div>
                         </div>
                     </div>
@@ -736,7 +745,7 @@ function setupOTPTimers() {
 function updateTimerDisplay(seconds, element) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    element.textContent = `RWF{minutes.toString().padStart(2, '0')}:RWF{remainingSeconds.toString().padStart(2, '0')}`;
+    element.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 /**

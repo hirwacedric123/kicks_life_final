@@ -356,7 +356,7 @@
             
             const postId = this.getAttribute('data-post-id');
             
-            fetch(`/auth/bookmark/RWF{postId}/`, {
+            fetch(`/auth/bookmark/${postId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
@@ -390,7 +390,7 @@
             const postId = this.getAttribute('data-post-id');
             const icon = this.querySelector('i');
             
-            fetch(`/auth/like/RWF{postId}/`, {
+            fetch(`/auth/like-post/${postId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),

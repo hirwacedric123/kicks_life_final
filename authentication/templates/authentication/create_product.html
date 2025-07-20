@@ -575,13 +575,13 @@
                 const preview = document.createElement('div');
                 preview.classList.add('main-preview');
                 preview.innerHTML = `
-                    <img src="RWF{e.target.result}" alt="Main image preview" style="width: 100%; height: 300px; object-fit: contain; border-radius: 12px;">
+                    <img src="${e.target.result}" alt="Main image preview" style="width: 100%; height: 300px; object-fit: contain; border-radius: 12px;">
                 `;
                 previewContainer.appendChild(preview);
                 
                 // Update live preview
                 previewImage.innerHTML = `
-                    <img src="RWF{e.target.result}" alt="Product preview" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="${e.target.result}" alt="Product preview" style="width: 100%; height: 100%; object-fit: contain;">
                 `;
             };
             
@@ -609,7 +609,7 @@
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     `;
                     preview.innerHTML = `
-                        <img src="RWF{e.target.result}" alt="Gallery preview" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="${e.target.result}" alt="Gallery preview" style="width: 100%; height: 100%; object-fit: cover;">
                     `;
                     previewContainer.appendChild(preview);
                 };
@@ -623,15 +623,15 @@
     function updatePreview() {
         const title = document.getElementById('title').value || 'Product Name';
         const category = document.getElementById('category').value || 'Category';
-        const price = document.getElementById('price').value || '0.00';
+        const price = document.getElementById('price').value || '0';
         const description = document.getElementById('description').value || 'Your product description will appear here...';
         const inventory = document.getElementById('inventory').value || '0';
         
         document.querySelector('.preview-title').textContent = title;
         document.querySelector('.preview-category').textContent = category;
-        document.querySelector('.preview-price').textContent = `RWFRWF{parseFloat(price).toFixed(2)}`;
+        document.querySelector('.preview-price').textContent = `RWF${parseFloat(price).toLocaleString()}`;
         document.querySelector('.preview-description').textContent = description;
-        document.querySelector('.preview-stock').textContent = `RWF{inventory} in stock`;
+        document.querySelector('.preview-stock').textContent = `${inventory} in stock`;
     }
     
     // Initialize components when DOM is loaded

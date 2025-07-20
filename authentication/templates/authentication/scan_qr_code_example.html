@@ -978,7 +978,7 @@ function debugLog(message) {
         const debugDiv = document.getElementById('debug-log');
         if (debugDiv) {
             const timestamp = new Date().toLocaleTimeString();
-            debugDiv.innerHTML += `[RWF{timestamp}] RWF{message}<br>`;
+            debugDiv.innerHTML += `[${timestamp}] ${message}<br>`;
             debugDiv.scrollTop = debugDiv.scrollHeight;
         }
     }
@@ -1004,15 +1004,15 @@ function updateLibraryStatus(status, message) {
     const statusEl = document.getElementById('library-status');
     const startBtn = document.getElementById('start-camera');
     
-    statusEl.className = `library-status RWF{status}`;
+    statusEl.className = `library-status ${status}`;
     
     switch (status) {
         case 'loading':
-            statusEl.innerHTML = `<div class="loading-spinner"></div>RWF{message}`;
+            statusEl.innerHTML = `<div class="loading-spinner"></div>${message}`;
             startBtn.disabled = true;
             break;
         case 'success':
-            statusEl.innerHTML = `✅ RWF{message}`;
+            statusEl.innerHTML = `✅ ${message}`;
             startBtn.disabled = false;
             libraryLoaded = true;
             // Hide status after 3 seconds
@@ -1021,7 +1021,7 @@ function updateLibraryStatus(status, message) {
             }, 3000);
             break;
         case 'error':
-            statusEl.innerHTML = `❌ RWF{message}`;
+            statusEl.innerHTML = `❌ ${message}`;
             startBtn.disabled = true;
             break;
     }
@@ -1030,7 +1030,7 @@ function updateLibraryStatus(status, message) {
 // Load the QR code library
 function loadQRLibrary() {
     loadingAttempts++;
-    debugLog(`Loading QR library (attempt RWF{loadingAttempts}/RWF{MAX_LOADING_ATTEMPTS})`);
+    debugLog(`Loading QR library (attempt ${loadingAttempts}/${MAX_LOADING_ATTEMPTS})`);
     
     // Check if library is already loaded
     if (typeof Html5Qrcode !== 'undefined' && typeof Html5QrcodeScanner !== 'undefined') {
@@ -1131,17 +1131,17 @@ function showCameraStatus(message, type = 'info') {
             cameraStatus.style.background = '#e8f5e8';
             cameraStatus.style.color = '#2e7d32';
             cameraStatus.style.border = '1px solid #4caf50';
-            cameraStatus.textContent = `✅ RWF{message}`;
+            cameraStatus.textContent = `✅ ${message}`;
         } else if (type === 'error') {
             cameraStatus.style.background = '#ffebee';
             cameraStatus.style.color = '#c62828';
             cameraStatus.style.border = '1px solid #f44336';
-            cameraStatus.textContent = `❌ RWF{message}`;
+            cameraStatus.textContent = `❌ ${message}`;
         } else {
             cameraStatus.style.background = '#e3f2fd';
             cameraStatus.style.color = '#1976d2';
             cameraStatus.style.border = '1px solid #2196f3';
-            cameraStatus.textContent = `ℹ️ RWF{message}`;
+            cameraStatus.textContent = `ℹ️ ${message}`;
         }
     }
 }
@@ -1166,8 +1166,8 @@ function startCamera() {
                 startCameraInternal();
             })
             .catch(err => {
-                debugLog(`Library loading failed: RWF{err.message}`);
-                updateLibraryStatus('error', `Failed to load QR scanner: RWF{err.message}`);
+                debugLog(`Library loading failed: ${err.message}`);
+                updateLibraryStatus('error', `Failed to load QR scanner: ${err.message}`);
                 resetStartButton();
             });
     } else {
@@ -1179,7 +1179,7 @@ function startCameraInternal() {
     // Check browser compatibility
     const compatCheck = checkBrowserCompatibility();
     if (!compatCheck.compatible) {
-        showError(`Browser not compatible: RWF{compatCheck.reason}`);
+        showError(`Browser not compatible: ${compatCheck.reason}`);
         resetStartButton();
         return;
     }
@@ -1193,7 +1193,7 @@ function startCameraInternal() {
                     location.hostname === '0.0.0.0' ||
                     location.hostname.includes('ngrok-free.app'); // Allow ngrok connections
     
-    debugLog(`Protocol: RWF{location.protocol}, Hostname: RWF{location.hostname}, Secure: RWF{isSecure}`);
+    debugLog(`Protocol: ${location.protocol}, Hostname: ${location.hostname}, Secure: ${isSecure}`);
     
     if (!isSecure) {
         showError('Camera access requires HTTPS connection. Please use HTTPS or localhost for testing.');
@@ -1214,7 +1214,7 @@ function startCameraInternal() {
         })
         .then(devices => {
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
-            debugLog(`Found RWF{videoDevices.length} video devices`);
+            debugLog(`Found ${videoDevices.length} video devices`);
             
             if (videoDevices.length === 0) {
                 throw new Error('No camera devices found');
@@ -1222,13 +1222,13 @@ function startCameraInternal() {
             
             // Log all available cameras to help with debugging
             videoDevices.forEach((device, index) => {
-                debugLog(`Camera RWF{index + 1}: RWF{device.label || 'Unnamed camera'}`);
+                debugLog(`Camera ${index + 1}: ${device.label || 'Unnamed camera'}`);
             });
             
             return startQRScanner();
         })
         .catch(err => {
-            debugLog(`Camera access error: RWF{err.name} - RWF{err.message}`);
+            debugLog(`Camera access error: ${err.name} - ${err.message}`);
             
             if (err.name === 'NotAllowedError') {
                 showError('Camera permission denied. Please allow camera access in your browser settings and try again.');
@@ -1237,7 +1237,7 @@ function startCameraInternal() {
             } else if (err.name === 'NotReadableError') {
                 showError('Camera is already in use by another application. Please close other apps using the camera.');
             } else {
-                showError(`Camera error: RWF{err.message}`);
+                showError(`Camera error: ${err.message}`);
             }
             
             resetStartButton();
@@ -1300,8 +1300,8 @@ function startQRScanner() {
         
         debugLog('Html5QrcodeScanner instance created');
     } catch (err) {
-        debugLog(`Failed to create Html5QrcodeScanner: RWF{err.message}`);
-        showError(`Scanner initialization failed: RWF{err.message}`);
+        debugLog(`Failed to create Html5QrcodeScanner: ${err.message}`);
+        showError(`Scanner initialization failed: ${err.message}`);
         resetStartButton();
         return Promise.reject(err);
     }
@@ -1329,7 +1329,7 @@ function startQRScanner() {
         if (errorMessage) {
             const errorText = errorMessage.innerText || errorMessage.textContent;
             if (errorText) {
-                debugLog(`Scanner error found: RWF{errorText}`);
+                debugLog(`Scanner error found: ${errorText}`);
                 showError(errorText);
                 resetStartButton();
                 resetCameraUI();
@@ -1340,7 +1340,7 @@ function startQRScanner() {
     // Return a resolved promise to maintain function signature
     return Promise.resolve()
         .catch(err => {
-        debugLog(`Camera start error: RWF{err.name} - RWF{err.message}`);
+        debugLog(`Camera start error: ${err.name} - ${err.message}`);
         
         resetStartButton();
         
@@ -1363,7 +1363,7 @@ function startQRScanner() {
                 errorMessage += 'Camera constraints not supported.';
                 break;
             default:
-                errorMessage += `Error: RWF{err.message}`;
+                errorMessage += `Error: ${err.message}`;
         }
         
         showError(errorMessage);
@@ -1384,7 +1384,7 @@ function stopCamera() {
             html5QrcodeScanner.clear();
             debugLog('Camera stopped successfully');
         } catch (err) {
-            debugLog(`Error stopping camera: RWF{err.message}`);
+            debugLog(`Error stopping camera: ${err.message}`);
             console.error('Error stopping camera:', err);
         } finally {
             resetCameraUI(); // Always reset UI regardless of stop result
@@ -1408,8 +1408,8 @@ function resetCameraUI() {
 }
 
 function onScanSuccess(decodedText, decodedResult) {
-    debugLog(`QR Code detected: RWF{decodedText}`);
-    console.log(`QR Code detected: RWF{decodedText}`, decodedResult);
+    debugLog(`QR Code detected: ${decodedText}`);
+    console.log(`QR Code detected: ${decodedText}`, decodedResult);
     
     // Play a success sound (beep) to indicate successful scan
     try {
@@ -1434,7 +1434,7 @@ function onScanSuccess(decodedText, decodedResult) {
         try {
             html5QrcodeScanner.clear();
         } catch (err) {
-            debugLog(`Error stopping scanner: RWF{err.message}`);
+            debugLog(`Error stopping scanner: ${err.message}`);
         }
     }
     
@@ -1451,7 +1451,7 @@ function onScanFailure(error) {
     // Handle scan failure - these are usually frequent and normal
     // Only log to debug, don't show to user unless debug mode is on
     if (debugMode && error && !error.includes('QR code parse error')) {
-        debugLog(`Scan attempt: RWF{error}`);
+        debugLog(`Scan attempt: ${error}`);
     }
 }
 
@@ -1466,7 +1466,7 @@ let resendTimer = null;
 
 // Handle QR scan result and start the purchase verification flow
 function handleQRScan(qrData) {
-    debugLog(`Handling QR scan: RWF{qrData}`);
+    debugLog(`Handling QR scan: ${qrData}`);
     currentQRData = qrData;
     
     // Call API to get purchase details from QR code
@@ -1577,7 +1577,7 @@ function verifyBuyerCredentials() {
         document.getElementById('auth-error').textContent = 'Error verifying credentials. Please try again.';
         document.getElementById('auth-error').style.display = 'block';
         
-        debugLog(`Error verifying credentials: RWF{error.message}`);
+        debugLog(`Error verifying credentials: ${error.message}`);
         
         // Reset button
         verifyBtn.disabled = false;
@@ -1597,7 +1597,7 @@ function updatePurchaseList(data) {
     // Update popup title with username
     const popupTitle = document.querySelector('#purchase-popup .popup-title');
     if (popupTitle) {
-        popupTitle.textContent = `Purchases for RWF{data.username}`;
+        popupTitle.textContent = `Purchases for ${data.username}`;
     }
     
     // Create purchase list
@@ -1610,14 +1610,14 @@ function updatePurchaseList(data) {
         purchaseItem.dataset.orderId = purchase.order_id;
         
         purchaseItem.innerHTML = `
-            <div class="purchase-title">RWF{purchase.product_name}</div>
+            <div class="purchase-title">${purchase.product_name}</div>
             <div class="purchase-details">
-                <div><strong>Order ID:</strong> RWF{purchase.order_id}</div>
-                <div><strong>Quantity:</strong> RWF{purchase.quantity}</div>
-                <div><strong>Vendor:</strong> RWF{purchase.vendor_name}</div>
+                <div><strong>Order ID:</strong> ${purchase.order_id}</div>
+                <div><strong>Quantity:</strong> ${purchase.quantity}</div>
+                <div><strong>Vendor:</strong> ${purchase.vendor_name}</div>
             </div>
             <div class="purchase-meta">
-                <div class="purchase-price">RWFRWF{purchase.price}</div>
+                <div class="purchase-price">RWF ${purchase.price}</div>
             </div>
         `;
         
@@ -1638,7 +1638,7 @@ function updatePurchaseList(data) {
             // Enable the confirm button
             document.getElementById('confirm-purchase-btn').disabled = false;
             
-            debugLog(`Selected purchase: RWF{purchase.product_name} (Order ID: RWF{purchase.order_id}, DB ID: RWF{purchase.id})`);
+            debugLog(`Selected purchase: ${purchase.product_name} (Order ID: ${purchase.order_id}, DB ID: ${purchase.id})`);
         });
         
         purchaseList.appendChild(purchaseItem);
@@ -1666,7 +1666,7 @@ function closePopup(popupId) {
 
 // Function to send OTP to the buyer's email
 function sendOTPToUser() {
-    debugLog(`Sending OTP to user: RWF{currentPurchaser.username}`);
+    debugLog(`Sending OTP to user: ${currentPurchaser.username}`);
     
     // First, set up the OTP popup
     document.getElementById('buyer-email').textContent = currentPurchaser.username;
@@ -1713,7 +1713,7 @@ function sendOTPToUser() {
     .then(data => {
         if (data.success) {
             otpSessionId = data.session_id;
-            debugLog(`OTP sent successfully, session ID: RWF{otpSessionId}`);
+            debugLog(`OTP sent successfully, session ID: ${otpSessionId}`);
         } else {
             // Handle error
             closePopup('otp-popup');
@@ -1752,7 +1752,7 @@ function resendOTP() {
     .then(data => {
         if (data.success) {
             otpSessionId = data.session_id;
-            debugLog(`OTP resent successfully, session ID: RWF{otpSessionId}`);
+            debugLog(`OTP resent successfully, session ID: ${otpSessionId}`);
             
             // Clear OTP inputs
             const otpInputs = document.querySelectorAll('.otp-input');
@@ -1921,7 +1921,7 @@ function setupOTPTimers() {
 function updateTimerDisplay(seconds, element) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    element.textContent = `RWF{minutes.toString().padStart(2, '0')}:RWF{remainingSeconds.toString().padStart(2, '0')}`;
+    element.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 // Function to verify OTP
@@ -2010,7 +2010,7 @@ function completePurchasePickup() {
             debugLog('Purchase pickup completed successfully!');
             
             // Show success message with payment details
-            const successMessage = `Purchase confirmed! Vendor payment: RWFRWF{data.vendor_payment}, KoraQuest commission: RWFRWF{data.koraquest_commission}`;
+            const successMessage = `Purchase confirmed! Vendor payment: RWF ${data.vendor_payment}, KoraQuest commission: RWF${data.koraquest_commission}`;
             showCameraStatus(successMessage, 'success');
             
             // Redirect to dashboard after a short delay
@@ -2033,7 +2033,7 @@ function completePurchasePickup() {
 
 // Updated submitQRCode function to include purchase ID
 function submitQRCode(qrData, purchaseId = null) {
-    debugLog(`Submitting QR code: RWF{qrData}`);
+    debugLog(`Submitting QR code: ${qrData}`);
     
     // Show status message
     showCameraStatus('Processing QR code...', 'info');
@@ -2065,7 +2065,7 @@ function submitQRCode(qrData, purchaseId = null) {
         purchaseInput.value = purchaseId;
         form.appendChild(purchaseInput);
         
-        debugLog(`Submitting with purchase ID: RWF{purchaseId}`);
+        debugLog(`Submitting with purchase ID: ${purchaseId}`);
     }
     
     // Log the submission
@@ -2099,7 +2099,7 @@ function handleManualSubmission() {
         submitBtn.appendChild(spinner);
         submitBtn.appendChild(document.createTextNode(' Processing...'));
         
-        debugLog(`Manual QR submission: RWF{qrData}`);
+        debugLog(`Manual QR submission: ${qrData}`);
         
         // Use our new flow instead of traditional form submission
         fetchPurchaseDetails(qrData);
@@ -2140,7 +2140,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (navigator.permissions && navigator.permissions.query) {
         navigator.permissions.query({ name: 'camera' })
             .then(permissionStatus => {
-                debugLog(`Camera permission status: RWF{permissionStatus.state}`);
+                debugLog(`Camera permission status: ${permissionStatus.state}`);
                 if (permissionStatus.state === 'granted') {
                     debugLog('Camera permission already granted');
                 } else if (permissionStatus.state === 'denied') {
@@ -2148,7 +2148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                debugLog(`Permission query error: RWF{error.message}`);
+                debugLog(`Permission query error: ${error.message}`);
             });
     }
     
@@ -2163,12 +2163,12 @@ document.addEventListener('DOMContentLoaded', function() {
             debugLog('QR scanner initialization completed successfully');
         })
         .catch(err => {
-            debugLog(`QR scanner initialization failed: RWF{err.message}`);
+            debugLog(`QR scanner initialization failed: ${err.message}`);
             
             if (loadingAttempts < MAX_LOADING_ATTEMPTS) {
                 debugLog('Retrying library load...');
                 setTimeout(() => {
-                    updateLibraryStatus('loading', `Retrying library load (RWF{loadingAttempts + 1}/RWF{MAX_LOADING_ATTEMPTS})...`);
+                    updateLibraryStatus('loading', `Retrying library load (${loadingAttempts + 1}/${MAX_LOADING_ATTEMPTS})...`);
                     loadQRLibrary().catch(() => {
                         updateLibraryStatus('error', 'Failed to load QR scanner library. Please refresh the page or use manual input.');
                     });

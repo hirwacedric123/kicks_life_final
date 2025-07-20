@@ -137,6 +137,7 @@ def send_otp(request):
         
         # Create and send OTP
         otp_result = create_otp(user, 'purchase_confirmation')
+        print(otp_result)
         
         if not otp_result.get('email_sent'):
             return JsonResponse({'error': 'Failed to send OTP email'}, status=500)
@@ -178,7 +179,8 @@ def verify_otp_view(request):
         
         return JsonResponse({
             'success': True,
-            'message': 'OTP verified successfully'
+            'message': 'OTP verified successfully',
+            'purchase_id': purchase_id  # Include purchase_id in response for frontend
         })
     except Exception as e:
         return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
@@ -194,17 +196,26 @@ def complete_purchase_pickup(request):
         data = json.loads(request.body)
         purchase_id = data.get('purchase_id')
         
+        print(f"DEBUG: Received purchase completion request with purchase_id: {purchase_id}")
+        print(f"DEBUG: Request data: {data}")
+        
         if not purchase_id:
+            print("DEBUG: Missing purchase_id in request")
             return JsonResponse({'error': 'Missing purchase_id'}, status=400)
         
         try:
             purchase = Purchase.objects.get(id=purchase_id)
+            print(f"DEBUG: Found purchase with ID {purchase_id}")
+            print(f"DEBUG: Purchase status: {purchase.status}")
+            print(f"DEBUG: Purchase details: Order ID: {purchase.order_id}, Product: {purchase.product.title}")
         except Purchase.DoesNotExist:
+            print(f"DEBUG: Purchase with ID {purchase_id} not found")
             return JsonResponse({'error': 'Purchase not found'}, status=404)
         
-        # Check if purchase is awaiting pickup
-        if purchase.status != 'awaiting_pickup':
-            return JsonResponse({'error': 'Invalid purchase status'}, status=400)
+        # Check if purchase is awaiting pickup or delivery
+        if purchase.status not in ['awaiting_pickup', 'awaiting_delivery']:
+            print(f"DEBUG: Invalid purchase status. Expected 'awaiting_pickup' or 'awaiting_delivery', got '{purchase.status}'")
+            return JsonResponse({'error': f'Invalid purchase status: {purchase.status}. Expected: awaiting_pickup or awaiting_delivery'}, status=400)
         
         # Complete the purchase
         purchase.status = 'completed'
@@ -220,6 +231,14 @@ def complete_purchase_pickup(request):
         buyer = purchase.buyer
         buyer.total_purchases += (purchase.purchase_price * purchase.quantity)
         buyer.save()
+        
+        # Regenerate buyer's QR code to remove completed purchase
+        try:
+            from .qr_utils import update_user_qr_code
+            update_user_qr_code(buyer)
+            print(f"DEBUG: Updated QR code for buyer {buyer.username}")
+        except Exception as e:
+            print(f"DEBUG: Failed to update QR code for buyer: {str(e)}")
         
         return JsonResponse({
             'success': True,

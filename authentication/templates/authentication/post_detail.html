@@ -874,7 +874,7 @@
             const postId = this.getAttribute('data-post-id');
             const bookmarkBtn = this;
             
-            fetch(`/auth/bookmark/RWF{postId}/`, {
+            fetch(`/auth/bookmark/${postId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}',
@@ -901,7 +901,7 @@
             const postId = this.getAttribute('data-post-id');
             const likeBtn = this;
             
-            fetch(`/auth/like-post/RWF{postId}/`, {
+            fetch(`/auth/like-post/${postId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}',
@@ -912,9 +912,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.liked) {
-                    likeBtn.innerHTML = `<i class="bi bi-heart-fill me-2"></i> Like (RWF{data.total_likes})`;
+                    likeBtn.innerHTML = `<i class="bi bi-heart-fill me-2"></i> Like (${data.total_likes})`;
                 } else {
-                    likeBtn.innerHTML = `<i class="bi bi-heart me-2"></i> Like (RWF{data.total_likes})`;
+                    likeBtn.innerHTML = `<i class="bi bi-heart me-2"></i> Like (${data.total_likes})`;
                 }
             });
         });
@@ -1088,7 +1088,7 @@
                             // Update address field
                             const addressField = document.getElementById('modal-delivery-address');
                             if (!addressField.value.trim()) {
-                                addressField.value = `Location shared (RWF{lat.toFixed(6)}, RWF{lng.toFixed(6)})`;
+                                addressField.value = `Location shared (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
                             }
                             
                             btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Location Shared';

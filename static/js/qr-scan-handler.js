@@ -11,7 +11,7 @@ let currentPurchaser = null;  // Store purchaser information
 
 // Function to fetch purchase details using the QR code data
 function fetchPurchaseDetails(qrData) {
-    debugLog(`Fetching purchase details for QR data: RWF{qrData}`);
+    debugLog(`Fetching purchase details for QR data: ${qrData}`);
     currentQRData = qrData;
     
     // Show loading in the purchase list
@@ -45,9 +45,9 @@ function fetchPurchaseDetails(qrData) {
             document.getElementById('purchase-empty').style.display = 'block';
             document.getElementById('purchase-empty').innerHTML = `
                 <p>❌ Error retrieving purchases:</p>
-                <p>RWF{error.message || 'Failed to retrieve purchase data'}</p>
+                <p>${error.message || 'Failed to retrieve purchase data'}</p>
             `;
-            debugLog(`Error fetching purchases: RWF{error.message}`);
+            debugLog(`Error fetching purchases: ${error.message}`);
         });
 }
 
@@ -63,7 +63,7 @@ function fetchPurchasesFromAPI(qrData) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: RWF{response.status}`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
         return response.json();
     })
@@ -85,7 +85,7 @@ function updatePurchaseList(data) {
     // Update popup title with username
     const popupTitle = document.querySelector('#purchase-popup .popup-title');
     if (popupTitle) {
-        popupTitle.textContent = `Purchases for RWF{data.username}`;
+        popupTitle.textContent = `Purchases for ${data.username}`;
     }
     
     // Create purchase list
@@ -98,14 +98,14 @@ function updatePurchaseList(data) {
         purchaseItem.dataset.orderId = purchase.order_id;
         
         purchaseItem.innerHTML = `
-            <div class="purchase-title">RWF{purchase.product_name}</div>
+            <div class="purchase-title">${purchase.product_name}</div>
             <div class="purchase-details">
-                <div><strong>Order ID:</strong> RWF{purchase.order_id}</div>
-                <div><strong>Quantity:</strong> RWF{purchase.quantity}</div>
-                <div><strong>Vendor:</strong> RWF{purchase.vendor_name}</div>
+                <div><strong>Order ID:</strong> ${purchase.order_id}</div>
+                <div><strong>Quantity:</strong> ${purchase.quantity}</div>
+                <div><strong>Vendor:</strong> ${purchase.vendor_name}</div>
             </div>
             <div class="purchase-meta">
-                <div class="purchase-price">RWFRWF{purchase.price}</div>
+                <div class="purchase-price">RWF${purchase.price}</div>
             </div>
         `;
         
@@ -126,7 +126,7 @@ function updatePurchaseList(data) {
             // Enable the confirm button
             document.getElementById('confirm-purchase-btn').disabled = false;
             
-            debugLog(`Selected purchase: RWF{purchase.product_name} (Order ID: RWF{purchase.order_id})`);
+            debugLog(`Selected purchase: ${purchase.product_name} (Order ID: ${purchase.order_id})`);
         });
         
         purchaseList.appendChild(purchaseItem);
@@ -216,7 +216,7 @@ function verifyCredentials() {
         document.getElementById('auth-error').textContent = 'Error verifying credentials. Please try again.';
         document.getElementById('auth-error').style.display = 'block';
         
-        debugLog(`Error verifying credentials: RWF{error.message}`);
+        debugLog(`Error verifying credentials: ${error.message}`);
         
         // Reset button
         verifyBtn.disabled = false;
@@ -226,7 +226,7 @@ function verifyCredentials() {
 
 // Function to send OTP to the buyer's email
 function sendOTPToUser() {
-    debugLog(`Sending OTP to user: RWF{currentPurchaser.username}`);
+    debugLog(`Sending OTP to user: ${currentPurchaser.username}`);
     
     // First, set up the OTP popup
     document.getElementById('buyer-email').textContent = currentPurchaser.username;
@@ -273,7 +273,7 @@ function sendOTPToUser() {
     .then(data => {
         if (data.success) {
             otpSessionId = data.session_id;
-            debugLog(`OTP sent successfully, session ID: RWF{otpSessionId}`);
+            debugLog(`OTP sent successfully, session ID: ${otpSessionId}`);
         } else {
             // Handle error
             closePopup('otp-popup');
@@ -417,7 +417,7 @@ function completePurchasePickup() {
             debugLog('Purchase pickup completed successfully!');
             
             // Show success message with payment details
-            const successMessage = `Purchase confirmed! Vendor payment: RWFRWF{data.vendor_payment}, KoraQuest commission: RWFRWF{data.koraquest_commission}`;
+            const successMessage = `Purchase confirmed! Vendor payment: RWF${data.vendor_payment}, KoraQuest commission: RWF${data.koraquest_commission}`;
             showCameraStatus(successMessage, 'success');
             
             // Redirect to dashboard after a short delay

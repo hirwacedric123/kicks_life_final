@@ -283,7 +283,7 @@
 
             // Send to server
             const csrfToken = '{{ csrf_token }}';
-            fetch(`/scan/RWF{qrData}/`, {
+            fetch(`/scan/${qrData}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

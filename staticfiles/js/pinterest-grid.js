@@ -25,7 +25,7 @@ function submitForm() {
 
 // Toggle functions
 function toggleLike(postId) {
-    fetch(`/auth/like-toggle/RWF{postId}/`, {
+    fetch(`/auth/like-post/${postId}/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
@@ -42,7 +42,7 @@ function toggleLike(postId) {
 }
 
 function toggleBookmark(postId) {
-    fetch(`/auth/bookmark-toggle/RWF{postId}/`, {
+    fetch(`/auth/bookmark-toggle/${postId}/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,

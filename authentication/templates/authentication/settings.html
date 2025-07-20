@@ -929,7 +929,7 @@
                         // Update the preview in the profile section
                         const imagePreview = document.querySelector('.image-preview');
                         if (imagePreview) {
-                            imagePreview.innerHTML = `<img src="RWF{e.target.result}" alt="Profile preview" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; animation: fadeIn 0.3s ease-out;">`;
+                            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Profile preview" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; animation: fadeIn 0.3s ease-out;">`;
                         }
                         
                         // Show success feedback
@@ -969,7 +969,7 @@
                     const placeholder = this.closest('.file-upload-container').querySelector('.upload-placeholder');
                     placeholder.innerHTML = `
                         <i class="bi bi-file-earmark-check" style="color: #10b981;"></i>
-                        <span style="color: #10b981;">RWF{fileName}</span>
+                        <span style="color: #10b981;">${fileName}</span>
                         <small>Click to change file</small>
                     `;
                     placeholder.style.borderColor = '#10b981';

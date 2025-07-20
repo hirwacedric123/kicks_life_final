@@ -160,7 +160,7 @@
                 preview.classList.add('main-preview');
                 preview.innerHTML = `
                     <p class="text-success mb-1"><i class="bi bi-check-circle"></i> New main image preview:</p>
-                    <img src="RWF{e.target.result}" alt="Main image preview" style="max-height: 150px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                    <img src="${e.target.result}" alt="Main image preview" style="max-height: 150px; max-width: 100%; object-fit: contain; border-radius: 4px;">
                 `;
                 previewContainer.appendChild(preview);
             };

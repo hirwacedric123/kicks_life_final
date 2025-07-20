@@ -110,6 +110,9 @@ def dashboard(request):
     # Get user's bookmarked posts for easier template rendering
     bookmarked_posts = [bookmark.post.id for bookmark in Bookmark.objects.filter(user=request.user)]
     
+    # Get user's liked posts for easier template rendering
+    liked_posts = [post.id for post in Post.objects.filter(likes=request.user)]
+    
     # Pagination
     paginator = Paginator(posts, 20)  # 20 products per page
     page_number = request.GET.get('page')
@@ -124,6 +127,7 @@ def dashboard(request):
         'sort_by': sort_by,
         'categories': categories,
         'bookmarked_posts': bookmarked_posts,
+        'liked_posts': liked_posts,
         'total_products': posts.count(),
     }
     
@@ -481,19 +485,24 @@ def create_product(request):
 @login_required
 def like_post(request, post_id):
     if request.method == 'POST':
-        post = get_object_or_404(Post, id=post_id)
-        
-        if request.user in post.likes.all():
-            post.likes.remove(request.user)
-            liked = False
-        else:
-            post.likes.add(request.user)
-            liked = True
+        try:
+            post = get_object_or_404(Post, id=post_id)
             
-        return JsonResponse({
-            'liked': liked,
-            'total_likes': post.total_likes()
-        })
+            if request.user in post.likes.all():
+                post.likes.remove(request.user)
+                liked = False
+            else:
+                post.likes.add(request.user)
+                liked = True
+                
+            return JsonResponse({
+                'liked': liked,
+                'total_likes': post.total_likes()
+            })
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
