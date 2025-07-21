@@ -276,6 +276,13 @@
             margin-bottom: 20px;
         }
 
+        /* New: Reduce columns at 1450px */
+        @media (max-width: 1450px) {
+            .pinterest-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
         @media (max-width: 1200px) {
             .pinterest-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -305,71 +312,121 @@
         /* Product Cards */
         .pinterest-card {
             position: relative;
-            border-radius: 20px;
+            border-radius: 16px;
             overflow: hidden;
             cursor: pointer;
             background: #ffffff;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid #e5e7eb;
-            aspect-ratio: 3/4;
             display: flex;
             flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            padding: 0.5rem;
         }
 
-        @media (max-width: 768px) {
-            .pinterest-card {
-                aspect-ratio: 3/4;
-                border-radius: 12px;
-                flex-direction: column;
-                height: auto;
-                min-height: 200px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .pinterest-card {
-                height: 100px;
-                border-radius: 12px;
-            }
-        }
-    
-        .pinterest-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 25px 50px rgba(37, 99, 235, 0.3);
-        }
-    
         .card-image-container {
             position: relative;
             width: 100%;
             flex: 1;
             overflow: hidden;
+            min-height: 160px;
+            max-height: 220px;
         }
 
-        @media (max-width: 768px) {
-            .card-image-container {
-                width: 100%;
-                flex: 1;
-                height: auto;
-                min-height: 120px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .card-image-container {
-                width: 100px;
-            }
-        }
-    
         .card-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-    
-        .pinterest-card:hover .card-image {
-            transform: scale(1.05);
+
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(5, 5, 5, 0.95) 0%, rgba(0, 0, 0, 0.85) 50%, rgba(255, 255, 255, 0) 100%);
+            padding: 16px 12px 12px;
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+
+        .pinterest-card:hover .card-overlay {
+            transform: translateY(0);
+        }
+
+        /* Reduce card size for medium screens */
+        @media (max-width: 1200px) {
+            .pinterest-card {
+                border-radius: 12px;
+                padding: 0.3rem;
+            }
+            .card-image-container {
+                min-height: 110px;
+                max-height: 150px;
+            }
+        }
+        @media (max-width: 900px) {
+            .card-image-container {
+                min-height: 80px;
+                max-height: 110px;
+            }
+        }
+
+        /* Mobile layout: info below image, always visible from 700px and below */
+        @media (max-width: 700px) {
+            .pinterest-card {
+                flex-direction: column;
+                border-radius: 10px;
+                padding: 0.2rem;
+                min-width: 0;
+                min-height: 0;
+            }
+            .card-image-container {
+                min-height: 60px;
+                max-height: 90px;
+                display: block;
+            }
+            .card-overlay {
+                position: static !important;
+                background: none !important;
+                color: #222 !important;
+                padding: 8px 4px 4px;
+                transform: none !important;
+                transition: none !important;
+                box-shadow: none !important;
+                z-index: 1;
+                width: 100%;
+                display: block;
+                margin-top: 4px;
+            }
+            .pinterest-card:hover .card-overlay {
+                transform: none !important;
+            }
+            .card-title, .card-price, .card-meta, .card-vendor, .card-actions {
+                color: #222 !important;
+                text-shadow: none !important;
+            }
+            .card-title {
+                font-size: 12px;
+                margin-bottom: 2px;
+            }
+            .card-price {
+                font-size: 13px;
+                margin-bottom: 2px;
+            }
+            .card-meta, .card-vendor {
+                font-size: 10px;
+                margin-bottom: 2px;
+            }
+            .card-actions {
+                margin-top: 4px;
+                gap: 2px;
+            }
         }
     
         /* Category Badge */
@@ -785,10 +842,34 @@
             overflow-x: auto;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            /* New: allow horizontal scroll always */
+            white-space: nowrap;
+            max-width: 100%;
         }
 
         .category-buttons::-webkit-scrollbar {
             display: none;
+        }
+        /* Responsive max-widths for category-buttons */
+        @media (max-width: 1450px) {
+            .category-buttons {
+                max-width: 900px;
+            }
+        }
+        @media (max-width: 1200px) {
+            .category-buttons {
+                max-width: 600px;
+            }
+        }
+        @media (max-width: 768px) {
+            .category-buttons {
+                max-width: 350px;
+            }
+        }
+        @media (max-width: 480px) {
+            .category-buttons {
+                max-width: 200px;
+            }
         }
 
         .category-btn {
@@ -842,7 +923,7 @@
 
         .category-filter{
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 5px;
         }
 
@@ -921,7 +1002,7 @@
             }
 
             .filters-actions {
-                justify-content: space-between;
+                justify-content: flex-start;
                 width: 100%;
                 gap: 8px;
             }
@@ -941,7 +1022,7 @@
             .filters-container {
                 gap: 12px;
                 grid-template-columns: 1fr;
-                display: grid !important; /* Force display for mobile */
+                display: grid;
             }
             
             .filter-select, .filter-input {
@@ -1140,6 +1221,22 @@
                 min-height: 0;
             }
         }
+
+        /* New: Make filters-container horizontally scrollable on small screens */
+        @media (max-width: 1450px) {
+            .filters-container {
+                overflow-x: auto;
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 20px;
+                width: 100%;
+                padding-bottom: 8px;
+            }
+            .filter-group {
+                min-width: 220px;
+                flex: 0 0 auto;
+            }
+        }
     </style>
     <div class="search-section">
         <form method="get" id="search-form">
@@ -1227,22 +1324,14 @@
             const filtersContainer = document.querySelector('.filters-container');
             const isMobile = window.innerWidth <= 768;
             
-            if (isMobile) {
-                // On mobile, always show advanced filters
-                filtersContainer.style.display = 'grid';
-            } else {
-                // On desktop, toggle as before
-                filtersContainer.style.display = filtersContainer.style.display === 'none' ? 'grid' : 'none';
-            }
+            // Toggle display regardless of screen size
+            filtersContainer.style.display = (filtersContainer.style.display === 'none' || !filtersContainer.style.display) ? 'grid' : 'none';
         }
         
-        // On page load, show advanced filters on mobile
+        // On page load, always hide advanced filters
         document.addEventListener('DOMContentLoaded', function() {
-            const isMobile = window.innerWidth <= 768;
-            if (isMobile) {
-                const filtersContainer = document.querySelector('.filters-container');
-                filtersContainer.style.display = 'grid';
-            }
+            const filtersContainer = document.querySelector('.filters-container');
+            filtersContainer.style.display = 'none';
         });
     </script>
     <div class="listing-container">

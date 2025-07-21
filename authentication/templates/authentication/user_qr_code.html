@@ -156,20 +156,32 @@
 
     .qr-page-grid {
         display: grid;
-        grid-template-columns: minmax(300px, 400px) 1fr;
+        grid-template-columns: minmax(300px, 1fr) 1fr;
         gap: 40px;
         align-items: start;
     }
-
-    /* QR Code Section */
+    .qr-main-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
     .qr-card {
-        background: white;
+        background: #000;
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         border: 1px solid rgba(0,0,0,0.05);
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
-
+    .qr-card, .qr-card * {
+        color: #fff;
+    }
     .qr-header {
         background: rgb(0, 0, 0);
         color: white;
@@ -208,12 +220,18 @@
     }
 
     .qr-code-frame {
-        background: white;
+        background: #ffffff;
         padding: 20px;
         border-radius: 15px;
         border: 2px solid #f3f4f6;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
     }
 
     .qr-code-frame:hover {
@@ -222,9 +240,12 @@
     }
 
     .qr-code-frame img {
-        width: 200px;
-        height: 200px;
+        width: min(80vw, 400px);
+        height: min(80vw, 400px);
+        max-width: 100%;
+        max-height: 100%;
         object-fit: contain;
+        display: block;
     }
 
     .qr-meta {
@@ -245,8 +266,8 @@
 
     .btn-refresh {
         padding: 12px 24px;
-        background: #f3f4f6;
-        color: #4b5563;
+        background: #222;
+        color: #fff;
         border: none;
         border-radius: 12px;
         font-weight: 500;
@@ -260,8 +281,8 @@
     }
 
     .btn-refresh:hover {
-        background: #e5e7eb;
-        color: #1f2937;
+        background: #333;
+        color: #fff;
         transform: translateY(-2px);
     }
 
@@ -272,8 +293,8 @@
 
     .qr-info {
         padding: 15px;
-        background: #ffffff;
-        color: #000000;
+        background: #111;
+        color: #fff;
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -489,7 +510,11 @@
     /* Responsive Design */
     @media (max-width: 1200px) {
         .marketplace-container {
-            padding: 30px;
+            padding: 20px;
+        }
+        .qr-code-frame img {
+            width: min(90vw, 320px);
+            height: min(90vw, 320px);
         }
     }
 
@@ -498,111 +523,48 @@
             grid-template-columns: 1fr;
             gap: 30px;
         }
-
         .qr-main-section {
-            max-width: 500px;
-            margin: 0 auto;
+            max-width: 100%;
+        }
+        .qr-card {
+            max-width: 100%;
+        }
+        .qr-code-frame {
+            max-width: 100%;
         }
     }
 
     @media (max-width: 768px) {
         .marketplace-container {
-            padding: 20px;
+            padding: 10px;
         }
-
-        .pending-header {
-            padding: 20px;
+        .qr-code-frame img {
+            width: min(95vw, 250px);
+            height: min(95vw, 250px);
         }
-
-        .pending-items {
-            padding: 15px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
         .pending-table {
-            min-width: 600px;
+            min-width: 100%;
+            font-size: 12px;
         }
-
-        .pending-table th,
-        .pending-table td {
-            padding: 12px 8px;
-            font-size: 13px;
+        .pending-table th, .pending-table td {
+            padding: 8px 4px;
         }
-
-        .product-cell {
-            min-width: 150px;
+        .product-cell, .delivery-cell, .status-cell, .price-cell, .quantity-cell {
+            min-width: 0;
         }
-
-        .delivery-cell {
-            min-width: 140px;
+        .table-container {
+            margin: 0;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            overflow-x: auto;
         }
     }
 
     @media (max-width: 480px) {
-        .marketplace-container {
-            padding: 15px;
-        }
-
-        .qr-header {
-            padding: 20px;
-        }
-
-        .qr-code-frame {
-            padding: 15px;
-        }
-
         .qr-code-frame img {
-            width: 180px;
-            height: 180px;
-        }
-
-        .table-container {
-            margin: 0 -15px;
-            border-radius: 0;
-            border-left: none;
-            border-right: none;
-        }
-
-        .pending-table {
-            min-width: 500px;
-            font-size: 12px;
-        }
-
-        .pending-table th,
-        .pending-table td {
-            padding: 10px 6px;
-        }
-
-        .product-cell {
-            min-width: 120px;
-        }
-
-        .quantity-cell {
-            min-width: 60px;
-        }
-
-        .price-cell {
-            min-width: 80px;
-        }
-
-        .status-cell {
-            min-width: 100px;
-        }
-
-        .delivery-cell {
-            min-width: 120px;
-        }
-
-        .pending-header {
-            padding: 15px;
-        }
-
-        .pending-items {
-            padding: 0;
+            width: min(98vw, 180px);
+            height: min(98vw, 180px);
         }
     }
 </style>
