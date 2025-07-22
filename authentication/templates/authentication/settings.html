@@ -704,12 +704,10 @@
                         <div class="user-avatar-container" onclick="document.getElementById('profile_picture').click();" title="Click to change profile picture">
                             <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="user-avatar">
                         </div>
-                        <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="hidden-input">
                         {% else %}
                         <div class="user-avatar-placeholder" onclick="document.getElementById('profile_picture').click();" title="Click to upload profile picture" style="cursor: pointer;">
                             {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
                         </div>
-                        <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="hidden-input">
                         {% endif %}
                         <div class="user-details">
                             <h2>{{ user.first_name }} {{ user.last_name }}</h2>
@@ -718,9 +716,24 @@
                     </div>
                     </div>
                     
-                    <form method="POST" enctype="multipart/form-data" class="settings-form">
+                    <form method="POST" enctype="multipart/form-data" class="settings-form" id="profile-form">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="profile">
+                        
+                        <div class="form-section">
+                            <h3>Profile Picture</h3>
+                            <div class="profile-image-section">
+                                <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="hidden-input">
+                                <div class="upload-info">
+                                    <p>Click on your profile picture above to change it, or use the button below.</p>
+                                    <label for="profile_picture" class="upload-label">
+                                        <i class="bi bi-camera"></i>
+                                        Choose New Picture
+                                    </label>
+                                    <div class="field-hint">Maximum file size: 5MB. Supported formats: JPG, PNG, GIF</div>
+                                </div>
+                            </div>
+                        </div>
                         
                         <div class="form-section">
                             <h3>Personal Information</h3>
@@ -944,9 +957,11 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Profile Picture Preview and Upload
+        // Profile Picture Preview and Auto-Submit
         const profilePicInput = document.getElementById('profile_picture');
-        if (profilePicInput) {
+        const profileForm = document.getElementById('profile-form');
+        
+        if (profilePicInput && profileForm) {
             profilePicInput.addEventListener('change', function() {
                 if (this.files && this.files[0]) {
                     const file = this.files[0];
@@ -967,45 +982,100 @@
                     
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        // Update the main profile picture in header
+                        // Update the profile picture preview
                         const mainAvatar = document.querySelector('.user-avatar');
+                        const avatarPlaceholder = document.querySelector('.user-avatar-placeholder');
+                        
                         if (mainAvatar) {
                             mainAvatar.src = e.target.result;
+                        } else if (avatarPlaceholder) {
+                            // Replace placeholder with actual image
+                            const container = avatarPlaceholder.parentNode;
+                            container.innerHTML = `<img src="${e.target.result}" alt="Profile preview" class="user-avatar">`;
                         }
                         
-                        // Update the preview in the profile section
-                        const imagePreview = document.querySelector('.image-preview');
-                        if (imagePreview) {
-                            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Profile preview" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; animation: fadeIn 0.3s ease-out;">`;
-                        }
-                        
-                        // Show success feedback
-                        const avatarContainer = document.querySelector('.user-avatar-container');
-                        if (avatarContainer) {
-                            // Add a temporary success indicator
-                            const successIcon = document.createElement('div');
-                            successIcon.innerHTML = '<i class="bi bi-check-circle-fill" style="color: #10b981; font-size: 1.2rem;"></i>';
-                            successIcon.style.position = 'absolute';
-                            successIcon.style.top = '5px';
-                            successIcon.style.right = '5px';
-                            successIcon.style.background = 'white';
-                            successIcon.style.borderRadius = '50%';
-                            successIcon.style.padding = '2px';
-                            successIcon.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                            avatarContainer.appendChild(successIcon);
+                        // Auto-submit the form when profile picture is selected
+                        if (confirm('Do you want to upload this profile picture?')) {
+                            // Create a new FormData object with just the profile picture
+                            const formData = new FormData();
+                            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                            formData.append('form_type', 'profile_picture');
+                            formData.append('profile_picture', file);
                             
-                            // Remove after 3 seconds
-                            setTimeout(() => {
-                                if (successIcon.parentNode) {
-                                    successIcon.parentNode.removeChild(successIcon);
+                            // Submit via AJAX to avoid losing other form data
+                            fetch(window.location.href, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
                                 }
-                            }, 3000);
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Show success message
+                                    showMessage('Profile picture updated successfully!', 'success');
+                                } else {
+                                    showMessage(data.error || 'Failed to update profile picture.', 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                showMessage('An error occurred while uploading the image.', 'error');
+                            });
                         }
                     };
                     reader.readAsDataURL(file);
                 }
             });
         }
+        
+        // Function to show messages
+        function showMessage(message, type) {
+            // Create message element
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `alert alert-${type}`;
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                background: ${type === 'success' ? '#10b981' : '#dc2626'};
+                color: white;
+                font-weight: 500;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                animation: slideIn 0.3s ease-out;
+            `;
+            messageDiv.textContent = message;
+            
+            document.body.appendChild(messageDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }, 300);
+                }
+            }, 5000);
+        }
+        
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
         
         // CV Upload Preview
         const cvInput = document.getElementById('freelancer_cv');

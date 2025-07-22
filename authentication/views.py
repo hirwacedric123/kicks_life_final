@@ -366,8 +366,32 @@ def user_settings(request):
         form_type = request.POST.get('form_type')
         upgrade_type = request.POST.get('upgrade_type')
         
+        # Profile picture upload (AJAX request)
+        if form_type == 'profile_picture':
+            if 'profile_picture' in request.FILES:
+                try:
+                    user = request.user
+                    user.profile_picture = request.FILES['profile_picture']
+                    user.save()
+                    
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': True, 'message': 'Profile picture updated successfully!'})
+                    else:
+                        messages.success(request, 'Profile picture updated successfully!')
+                        return redirect('user_settings')
+                except Exception as e:
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'error': f'Failed to update profile picture: {str(e)}'})
+                    else:
+                        messages.error(request, f'Failed to update profile picture: {str(e)}')
+            else:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'error': 'No image file provided'})
+                else:
+                    messages.error(request, 'No image file provided')
+        
         # Profile form submission
-        if form_type == 'profile':
+        elif form_type == 'profile':
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
             email = request.POST.get('email')
@@ -379,7 +403,7 @@ def user_settings(request):
             request.user.email = email
             request.user.phone_number = phone_number
             
-            # Handle profile picture upload
+            # Handle profile picture upload if included in the form
             profile_picture = request.FILES.get('profile_picture')
             if profile_picture:
                 request.user.profile_picture = profile_picture
