@@ -4,6 +4,7 @@
 {% block title %}QR Code Scanner{% endblock %}
 
 {% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
 <style>
     ::-webkit-scrollbar {
         display: none;
@@ -906,7 +907,7 @@ function initializePopupManager() {
                     <strong>${purchase.product_name}</strong><br>
                     Order ID: ${purchase.order_id}<br>
                     Quantity: ${purchase.quantity}<br>
-                    Price: $${purchase.price}<br>
+                    Price: RWF ${purchase.price}<br>
                     Vendor: ${purchase.vendor_name}
                 `;
                 purchaseElement.addEventListener('click', () => this.selectPurchase(purchase.id));
@@ -1209,6 +1210,54 @@ function debugLog(message) {
             debugDiv.scrollTop = debugDiv.scrollHeight;
         }
     }
+}
+
+// Helper function to get CSRF token with multiple fallbacks
+function getCSRFToken() {
+    let csrfToken = null;
+    
+    // Try to get from form input
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+        debugLog('CSRF token found in form input');
+    }
+    
+    // Fallback: try to get from cookies
+    if (!csrfToken) {
+        csrfToken = getCookie('csrftoken');
+        if (csrfToken) {
+            debugLog('CSRF token found in cookies');
+        }
+    }
+    
+    // Fallback: try to get from meta tag
+    if (!csrfToken) {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (csrfMeta) {
+            csrfToken = csrfMeta.getAttribute('content');
+            debugLog('CSRF token found in meta tag');
+        }
+    }
+    
+    debugLog('Final CSRF token status:', !!csrfToken);
+    return csrfToken;
+}
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 // Toggle debug mode
@@ -1619,13 +1668,12 @@ function handleQRScan(qrData) {
     debugLog('QR data length:', qrData.length);
     
     try {
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfToken = getCSRFToken();
         debugLog('CSRF token found:', !!csrfToken);
         
-        // Create form data
-        const formData = new FormData();
-        formData.append('qr_data', qrData);
-        formData.append('csrfmiddlewaretoken', csrfToken);
+        if (!csrfToken) {
+            throw new Error('CSRF token not found. Please refresh the page and try again.');
+        }
         
         debugLog('Sending request to /auth/api/purchases/by-qr/');
         debugLog('Request data:', {
@@ -1638,7 +1686,8 @@ function handleQRScan(qrData) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
                 qr_data: qrData
@@ -1650,6 +1699,9 @@ function handleQRScan(qrData) {
             debugLog(`Server response headers:`, response.headers);
             
             if (!response.ok) {
+                if (response.status === 403) {
+                    throw new Error('CSRF verification failed. Please refresh the page and try again.');
+                }
                 throw new Error(`Server error: ${response.status}`);
             }
             return response.text().then(text => {
@@ -1876,13 +1928,15 @@ function verifyCredentials(username, password) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ 
             username, 
             password, 
             user_id: user_id 
-        })
+        }),
+        credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
@@ -1930,13 +1984,15 @@ function verifyOTP(otp) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ 
             user_id: user_id,
             otp_code: otp,
             purchase_id: selectedPurchaseId
-        })
+        }),
+        credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
@@ -2078,11 +2134,13 @@ function completePurchase() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ 
             purchase_id: selectedPurchaseId
-        })
+        }),
+        credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
@@ -2134,12 +2192,14 @@ function requestNewOTP() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ 
             user_id: user_id,
             purchase_id: selectedPurchaseId 
-        })
+        }),
+        credentials: 'same-origin'
     })
     .then(response => {
         debugLog('OTP request response status:', response.status);

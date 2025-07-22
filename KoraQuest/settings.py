@@ -26,12 +26,24 @@ SECRET_KEY = 'django-insecure-yg!+2gbi#185v4j8r!qg&@+%mrl*qti5&1c!7y-sx0d)n(yj&@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['9aef-105-178-46-181.ngrok-free.app','127.0.0.1', '7a124993e4dd.ngrok-free.app']
+ALLOWED_HOSTS = ['9aef-105-178-46-181.ngrok-free.app','127.0.0.1', '83fb988dd15a.ngrok-free.app']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://9aef-105-178-46-181.ngrok-free.app',
-    'https://7a124993e4dd.ngrok-free.app'
+    'https://7a124993e4dd.ngrok-free.app',
+    'https://koraquest.bonasolutions.tech'
 ]
+
+# CSRF Configuration for HTTPS proxy setup
+CSRF_COOKIE_SECURE = True  # Since you're using HTTPS
+CSRF_COOKIE_HTTPONLY = False  # Must be False for JavaScript access
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# For nginx reverse proxy
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition

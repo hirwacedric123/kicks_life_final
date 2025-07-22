@@ -582,7 +582,9 @@ function refreshQRCode() {
         headers: {
             'X-CSRFToken': '{{ csrf_token }}',
             'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
         },
+        credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
