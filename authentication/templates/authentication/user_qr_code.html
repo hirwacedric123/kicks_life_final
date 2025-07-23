@@ -4,6 +4,9 @@
 {% block title %}My QR Code - KoraQuest{% endblock %}
 
 {% block content %}
+<form id="csrf-form" style="display:none;">
+    {% csrf_token %}
+</form>
 {% csrf_token %}
 <style>
     ::-webkit-scrollbar{
