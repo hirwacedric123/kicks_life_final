@@ -322,7 +322,7 @@
             flex-direction: column;
             min-width: 0;
             min-height: 0;
-            padding: 0.5rem;
+            padding: 0rem;
         }
 
         .card-image-container {
@@ -340,19 +340,6 @@
             object-fit: cover;
             display: block;
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .card-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(5, 5, 5, 0.95) 0%, rgba(0, 0, 0, 0.85) 50%, rgba(255, 255, 255, 0) 100%);
-            padding: 16px 12px 12px;
-            color: white;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 2;
         }
 
         .pinterest-card:hover .card-overlay {
@@ -549,8 +536,8 @@
         .card-price {
             font-size: 20px;
             font-weight: 700;
-            color: #2563eb;
-            margin-bottom: 12px;
+            color: #ffffff;
+            margin-bottom: 5px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -1350,26 +1337,6 @@
                     <h3 class="card-title">{{ post.title }}</h3>
                     <div class="card-price">RWF{{ post.price }}</div>
 
-                    <div class="card-meta">
-                        <div class="card-rating">
-                            {% if post.average_rating %}
-                                <span class="rating-stars">
-                                    {% for i in "12345" %}
-                                        {% if forloop.counter <= post.average_rating %}
-                                            <i class="bi bi-star-fill"></i>
-                                        {% else %}
-                                            <i class="bi bi-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
-                                </span>
-                                    <span>({{ post.review_count }})</span>
-                            {% else %}
-                                    <span>No reviews</span>
-                            {% endif %}
-                        </div>
-                        <span>{{ post.total_purchases }} sold</span>
-                    </div>
-
                         <div class="card-vendor">
                             <div class="vendor-avatar">{{ post.user.username|first|upper }}</div>
                             <span>{{ post.user.username }}</span>
@@ -1426,6 +1393,21 @@
 </div>
 
 <script>
+    // Helper to get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
     // Form submission for search and filters
     function submitForm() {
         document.getElementById('search-form').submit();
@@ -1450,15 +1432,15 @@
         fetch(`/auth/bookmark/${postId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json'
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update UI without page reload
-                const bookmarkBtn = document.querySelector(`[data-bookmark="${postId}"]`);
+                // Use event.currentTarget to get the button that was clicked
+                const bookmarkBtn = event.currentTarget;
                 const bookmarkIcon = bookmarkBtn.querySelector('i');
                 
                 if (data.status === 'bookmarked') {
@@ -1479,24 +1461,18 @@
             event.stopPropagation();
         }
         
-        console.log('Toggling like for post:', postId); // Debug log
-        
         fetch(`/auth/like-post/${postId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            console.log('Response status:', response.status); // Debug log
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Response data:', data); // Debug log
             if (data.liked !== undefined) {
-                // Update UI without page reload
-                const likeBtn = document.querySelector(`[data-like="${postId}"]`);
+                // Use event.currentTarget to get the button that was clicked
+                const likeBtn = event.currentTarget;
                 const likeIcon = likeBtn.querySelector('i');
                 
                 if (data.liked) {
@@ -1509,7 +1485,7 @@
             }
         })
         .catch(error => {
-            console.error('Error toggling like:', error); // Debug log
+            console.error('Error toggling like:', error);
         });
     }
 </script>

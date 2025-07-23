@@ -6,6 +6,8 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, Http404
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.http import require_http_methods
 from .forms import SignUpForm
 from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
 from django.db.models import Sum, Count, Avg, Q
@@ -637,6 +639,7 @@ def edit_product(request, product_id):
 
 # KoraQuest Views
 @login_required
+@ensure_csrf_cookie
 def user_qr_code(request):
     """Display user's QR code with their purchase information"""
     # Update/create QR code for the user
@@ -985,8 +988,16 @@ def confirm_delivery(request, purchase_id):
     return render(request, 'authentication/confirm_purchase_pickup.html', context)
 
 @login_required
+@ensure_csrf_cookie
+@require_http_methods(["POST"])
 def update_qr_code_ajax(request):
     """AJAX endpoint to update user's QR code"""
+    print(f"Update QR request received:")
+    print(f"Method: {request.method}")
+    print(f"Headers: {dict(request.headers)}")
+    print(f"CSRF Token in POST: {request.POST.get('csrfmiddlewaretoken', 'Not found')}")
+    print(f"CSRF Token in META: {request.META.get('HTTP_X_CSRFTOKEN', 'Not found')}")
+    
     if request.method == 'POST':
         user_qr = update_user_qr_code(request.user)
         

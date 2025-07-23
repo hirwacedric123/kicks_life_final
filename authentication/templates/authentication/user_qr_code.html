@@ -4,6 +4,7 @@
 {% block title %}My QR Code - KoraQuest{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <style>
     ::-webkit-scrollbar{
         display: none;
@@ -570,6 +571,45 @@
 </style>
 
 <script>
+// Helper function to get CSRF token
+function getCSRFToken() {
+    let csrfToken = null;
+    
+    // Try to get from form input
+    const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfInput) {
+        csrfToken = csrfInput.value;
+    }
+    
+    // Fallback: try to get from cookies
+    if (!csrfToken) {
+        csrfToken = getCookie('csrftoken');
+    }
+    
+    // Fallback: try Django template token
+    if (!csrfToken) {
+        csrfToken = '{{ csrf_token }}';
+    }
+    
+    return csrfToken;
+}
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 function refreshQRCode() {
     const btn = document.querySelector('.btn-refresh');
     const originalContent = btn.innerHTML;
@@ -577,16 +617,39 @@ function refreshQRCode() {
     btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i><span>Refreshing...</span>';
     btn.disabled = true;
     
+    const csrfToken = getCSRFToken();
+    console.log('CSRF Token found:', !!csrfToken);
+    console.log('CSRF Token value:', csrfToken);
+    console.log('Cookies:', document.cookie);
+    console.log('CSRF input element:', document.querySelector('[name=csrfmiddlewaretoken]'));
+    
+    if (!csrfToken) {
+        alert('CSRF token not found. Please refresh the page and try again.');
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        return;
+    }
+    
+    console.log('Making fetch request with token:', csrfToken);
+    
     fetch('{% url "update_qr_code_ajax" %}', {
         method: 'POST',
         headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
+            'X-CSRFToken': csrfToken,
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
         },
         credentials: 'same-origin'
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            if (response.status === 403) {
+                throw new Error('CSRF verification failed. Please refresh the page and try again.');
+            }
+            throw new Error(`Server error: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success && data.qr_image_url) {
             const qrImage = document.querySelector('.qr-code-frame img');
@@ -622,8 +685,10 @@ function refreshQRCode() {
     })
     .catch(error => {
         console.error('Error:', error);
+        alert(error.message || 'Failed to update QR code. Please try again.');
+        
         // Show error feedback
-        btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i><span>Failed to Update</span>';
+        btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i><span>Error</span>';
         btn.style.background = '#fee2e2';
         btn.style.color = '#991b1b';
         
