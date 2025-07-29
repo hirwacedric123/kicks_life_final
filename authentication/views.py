@@ -78,6 +78,8 @@ def dashboard(request):
     
     # Apply category filter if provided
     if category:
+        # Convert to lowercase to match the model's CATEGORY_CHOICES keys
+        category = category.lower()
         posts = posts.filter(category=category)
     
     # Apply price range filters

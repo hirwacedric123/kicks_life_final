@@ -1241,13 +1241,17 @@
             <div class="heading-search-section">
                 <!-- Category Buttons -->
                 <div class="category-filter">
+                    <input type="hidden" name="category" id="category-input" value="{{ selected_category }}">
                     <div class="category-buttons">
-                        <a href="?category=" class="category-btn {% if not selected_category %}active{% endif %}">All</a>
+                        <button type="button" 
+                                class="category-btn {% if not selected_category %}active{% endif %}"
+                                data-category="">All</button>
                         {% for category_value, category_name in categories %}
-                            <a href="?category={{ category_value }}{% if search_query %}&q={{ search_query }}{% endif %}" 
-                               class="category-btn {% if selected_category == category_value %}active{% endif %}">
+                            <button type="button" 
+                                   class="category-btn {% if selected_category == category_value %}active{% endif %}"
+                                   data-category="{{ category_value }}">
                                 {{ category_name }}
-                            </a>
+                            </button>
                         {% endfor %}
                     </div>
                     <div class="filters-actions">
@@ -1321,6 +1325,11 @@
             const filtersContainer = document.querySelector('.filters-container');
             filtersContainer.style.display = 'none';
         });
+
+        function setCategory(category) {
+            document.getElementById('category-input').value = category;
+            submitForm();
+        }
     </script>
     <div class="listing-container">
         <!-- Pinterest Grid -->
@@ -1409,11 +1418,50 @@
         }
         return cookieValue;
     }
+
     // Form submission for search and filters
     function submitForm() {
-        document.getElementById('search-form').submit();
+        const form = document.getElementById('search-form');
+        const formData = new FormData(form);
+        
+        // Log all form data
+        console.log('Submitting form with data:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        form.submit();
     }
-    
+
+    // Function to set category and submit form
+    function setCategory(category) {
+        console.log('Setting category:', category);
+        
+        // Get the form and create/update category input
+        const form = document.getElementById('search-form');
+        let categoryInput = document.getElementById('category-input');
+        
+        if (!categoryInput) {
+            categoryInput = document.createElement('input');
+            categoryInput.type = 'hidden';
+            categoryInput.name = 'category';
+            categoryInput.id = 'category-input';
+            form.appendChild(categoryInput);
+        }
+        
+        categoryInput.value = category;
+        console.log('Updated category input value:', categoryInput.value);
+        
+        // Log all current form inputs
+        const formData = new FormData(form);
+        console.log('Current form data before submit:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        submitForm();
+    }
+
     // Navigate to product detail
     function navigateToProduct(postId) {
         window.location.href = `/auth/post/${postId}/`;
@@ -1440,7 +1488,6 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Use event.currentTarget to get the button that was clicked
                 const bookmarkBtn = event.currentTarget;
                 const bookmarkIcon = bookmarkBtn.querySelector('i');
                 
@@ -1472,7 +1519,6 @@
         .then(response => response.json())
         .then(data => {
             if (data.liked !== undefined) {
-                // Use event.currentTarget to get the button that was clicked
                 const likeBtn = event.currentTarget;
                 const likeIcon = likeBtn.querySelector('i');
                 
@@ -1489,5 +1535,37 @@
             console.error('Error toggling like:', error);
         });
     }
+
+    // On page load, ensure the form has a hidden category input and log initial state
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('search-form');
+        let categoryInput = document.getElementById('category-input');
+        
+        if (!categoryInput) {
+            categoryInput = document.createElement('input');
+            categoryInput.type = 'hidden';
+            categoryInput.name = 'category';
+            categoryInput.id = 'category-input';
+            categoryInput.value = '{{ selected_category }}';
+            form.appendChild(categoryInput);
+        }
+        
+        // Log initial form state
+        console.log('Initial form state:');
+        const formData = new FormData(form);
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        // Add click event listeners to all category buttons
+        document.querySelectorAll('.category-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent any default button behavior
+                console.log('Category button clicked:', this.textContent.trim());
+                const category = this.getAttribute('data-category') || '';
+                setCategory(category);
+            });
+        });
+    });
 </script>
 {% endblock %}
