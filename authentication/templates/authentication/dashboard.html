@@ -1,5 +1,6 @@
 {% extends "authentication/base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}KoraQuest Marketplace{% endblock %}
 
@@ -1335,7 +1336,7 @@
                 <div class="card-overlay">
                 <div class="card-content">
                     <h3 class="card-title">{{ post.title }}</h3>
-                    <div class="card-price">RWF{{ post.price }}</div>
+                    <div class="card-price">RWF {{ post.price|intcomma }}</div>
 
                         <div class="card-vendor">
                             <div class="vendor-avatar">{{ post.user.username|first|upper }}</div>
