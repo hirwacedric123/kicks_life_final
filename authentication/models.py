@@ -44,14 +44,11 @@ class User(AbstractUser):
 class Post(models.Model):
     CATEGORY_CHOICES = (
         ('electronics', 'Electronics'),
-        ('fashion', 'Fashion & Apparel'),
-        ('books', 'Books & Media'),
-        ('home', 'Home & Garden'),
-        ('sports', 'Sports & Recreation'),
-        ('beauty', 'Beauty & Personal Care'),
-        ('food', 'Food & Beverages'),
-        ('automotive', 'Automotive'),
-        ('toys', 'Toys & Games'),
+        ('books_media', 'Books & Media'),
+        ('home_kitchen', 'Home & Kitchen'),
+        ('beauty_care', 'Beauty & Personal Care'),
+        ('software_services', 'Software & Services'),
+        ('health_fitness', 'Health & Fitness'),
         ('other', 'Other'),
     )
     
