@@ -290,6 +290,19 @@
 
 {% block content %}
 <div class="statistics-container">
+    <!-- Export Section -->
+    <div class="export-section" style="margin-bottom: 2rem; text-align: right;">
+        <div class="dropdown d-inline-block">
+            <button class="btn btn-export dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download me-1"></i>Export Report
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                <li><a class="dropdown-item" href="?export=csv"><i class="bi bi-file-earmark-text me-2"></i>Export as CSV</a></li>
+                <li><a class="dropdown-item" href="?export=pdf"><i class="bi bi-file-earmark-pdf me-2"></i>Export as PDF</a></li>
+            </ul>
+        </div>
+    </div>
+
     <!-- Main Statistics Grid -->
     <div class="main-stats-grid">
         {% if user_type == 'vendor' %}

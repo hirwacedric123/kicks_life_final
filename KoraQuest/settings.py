@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'authentication',
-    'vector_processor',
 ]
 
 MIDDLEWARE = [

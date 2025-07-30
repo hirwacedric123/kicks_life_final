@@ -1,23 +1,104 @@
+import os
+import csv
+import io
+import json
+from datetime import datetime
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login as auth_login
-from django.contrib.auth import logout as auth_logout
+from django.contrib.auth import login, authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, Http404
+from django.http import HttpResponse, JsonResponse, Http404
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.views.decorators.http import require_http_methods
-from .forms import SignUpForm
-from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
-from django.db.models import Sum, Count, Avg, Q
-import os
-from decimal import Decimal
+from django.db.models import Q, Sum, Count, Avg
 from django.utils import timezone
+from django.core.paginator import Paginator
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+
+from .forms import SignUpForm, ProductReviewForm
+from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
 from .qr_utils import update_user_qr_code, decode_qr_data, get_user_purchases_from_qr
 from .otp_utils import create_otp, verify_otp
-import json
-from django.core.paginator import Paginator
+
+def generate_csv_report(data, filename, headers):
+    """Generate CSV report from data"""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(headers)
+    writer.writerows(data)
+    
+    return response
+
+def generate_pdf_report(data, filename, title, headers, summary_data=None):
+    """Generate PDF report from data"""
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
+    
+    # Create the PDF object
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+    
+    # Get styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+    
+    # Add title
+    elements.append(Paragraph(title, title_style))
+    elements.append(Spacer(1, 20))
+    
+    # Add summary if provided
+    if summary_data:
+        summary_style = ParagraphStyle(
+            'Summary',
+            parent=styles['Normal'],
+            fontSize=12,
+            spaceAfter=20
+        )
+        for key, value in summary_data.items():
+            elements.append(Paragraph(f"<b>{key}:</b> {value}", summary_style))
+        elements.append(Spacer(1, 20))
+    
+    # Create table
+    if data:
+        table = Table([headers] + data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(table)
+    
+    # Build PDF
+    doc.build(elements)
+    return response
 
 def register(request):
     if request.method == 'POST':
@@ -316,6 +397,42 @@ def bookmark_toggle(request, post_id):
 @login_required
 def purchase_history(request):
     purchases = Purchase.objects.filter(buyer=request.user).order_by('-created_at')
+    
+    # Check if export is requested
+    export_format = request.GET.get('export')
+    if export_format in ['csv', 'pdf']:
+        # Prepare data for export
+        headers = ['Order ID', 'Product', 'Seller', 'Date', 'Price', 'Status', 'Quantity', 'Delivery Method']
+        data = []
+        
+        for purchase in purchases:
+            data.append([
+                purchase.order_id,
+                purchase.product.title,
+                f"{purchase.product.user.first_name} {purchase.product.user.last_name}",
+                purchase.created_at.strftime('%Y-%m-%d %H:%M'),
+                f"RWF {purchase.purchase_price:.1f}",
+                purchase.status.title(),
+                purchase.quantity,
+                purchase.delivery_method.title()
+            ])
+        
+        # Summary data for PDF
+        summary_data = {
+            'Total Purchases': purchases.count(),
+            'Total Spent': f"RWF {(purchases.aggregate(total=Sum('purchase_price'))['total'] or 0):.1f}",
+            'Completed Orders': purchases.filter(status='completed').count(),
+            'Pending Orders': purchases.filter(status__in=['pending', 'processing']).count(),
+            'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        filename = f"purchase_history_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        title = f"Purchase History Report - {request.user.get_full_name() or request.user.username}"
+        
+        if export_format == 'csv':
+            return generate_csv_report(data, filename, headers)
+        elif export_format == 'pdf':
+            return generate_pdf_report(data, filename, title, headers, summary_data)
     
     context = {
         'purchases': purchases
@@ -1037,6 +1154,9 @@ def koraquest_purchase_history(request):
 def sales_statistics(request):
     """Sales statistics view showing detailed financial breakdown for vendors and KoraQuest agents"""
     
+    # Check if export is requested
+    export_format = request.GET.get('export')
+    
     if request.user.is_vendor_role:
         # Vendor statistics - show their earnings (80% of product price)
         purchases = Purchase.objects.filter(
@@ -1070,6 +1190,41 @@ def sales_statistics(request):
         
         # Recent transactions
         recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+        
+        # Handle export for vendor
+        if export_format in ['csv', 'pdf']:
+            if export_format == 'csv':
+                headers = ['Product', 'Total Sales', 'Total Revenue', 'Average Price']
+                data = []
+                for product in product_stats:
+                    data.append([
+                        product['product__title'],
+                        product['total_sales'],
+                        f"RWF {product['total_revenue']:.1f}",
+                        f"RWF {product['avg_price']:.1f}"
+                    ])
+                filename = f"vendor_sales_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                return generate_csv_report(data, filename, headers)
+            elif export_format == 'pdf':
+                headers = ['Product', 'Total Sales', 'Total Revenue', 'Average Price']
+                data = []
+                for product in product_stats:
+                    data.append([
+                        product['product__title'],
+                        product['total_sales'],
+                        f"RWF {product['total_revenue']:.1f}",
+                        f"RWF {product['avg_price']:.1f}"
+                    ])
+                summary_data = {
+                    'Total Sales': total_sales,
+                    'Total Revenue': f"RWF {total_revenue:.1f}",
+                    'Monthly Revenue': f"RWF {monthly_revenue:.1f}",
+                    'Commission Rate': '80%',
+                    'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+                filename = f"vendor_sales_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                title = f"Vendor Sales Report - {request.user.get_full_name() or request.user.username}"
+                return generate_pdf_report(data, filename, title, headers, summary_data)
         
         context = {
             'user_type': 'vendor',
@@ -1120,29 +1275,62 @@ def sales_statistics(request):
         
         # Vendor-wise breakdown - get unique vendors with their stats
         vendor_stats = []
-        vendor_ids = purchases.values_list('product__user__id', flat=True).distinct()
         
-        for vendor_id in vendor_ids:
-            vendor_purchases = purchases.filter(product__user__id=vendor_id)
-            vendor_user = vendor_purchases.first().product.user
-            
+        # Use values() to get unique vendors with their aggregated stats
+        vendor_aggregates = purchases.values('product__user__id', 'product__user__username').annotate(
+            total_transactions=Count('id'),
+            total_commission=Sum('koraquest_commission_amount'),
+            avg_commission=Avg('koraquest_commission_amount')
+        ).order_by('-total_commission')
+        
+        for vendor_data in vendor_aggregates:
             vendor_stats.append({
-                'vendor_id': vendor_id,
-                'vendor_username': vendor_user.username,
-                'total_transactions': vendor_purchases.count(),
-                'total_commission': vendor_purchases.aggregate(
-                    total=Sum('koraquest_commission_amount')
-                )['total'] or 0,
-                'avg_commission': vendor_purchases.aggregate(
-                    avg=Avg('koraquest_commission_amount')
-                )['avg'] or 0
+                'vendor_id': vendor_data['product__user__id'],
+                'vendor_username': vendor_data['product__user__username'],
+                'total_transactions': vendor_data['total_transactions'],
+                'total_commission': vendor_data['total_commission'] or 0,
+                'avg_commission': vendor_data['avg_commission'] or 0
             })
         
-        # Sort by total commission
-        vendor_stats.sort(key=lambda x: x['total_commission'], reverse=True)
+
         
         # Recent transactions
         recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+        
+        # Handle export for KoraQuest
+        if export_format in ['csv', 'pdf']:
+            if export_format == 'csv':
+                headers = ['Vendor', 'Transactions', 'Total Commission', 'Average Commission']
+                data = []
+                for vendor in vendor_stats:
+                    data.append([
+                        vendor['vendor_username'],
+                        vendor['total_transactions'],
+                        f"RWF {vendor['total_commission']:.1f}",
+                        f"RWF {vendor['avg_commission']:.1f}"
+                    ])
+                filename = f"koraquest_commission_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                return generate_csv_report(data, filename, headers)
+            elif export_format == 'pdf':
+                headers = ['Vendor', 'Transactions', 'Total Commission', 'Average Commission']
+                data = []
+                for vendor in vendor_stats:
+                    data.append([
+                        vendor['vendor_username'],
+                        vendor['total_transactions'],
+                        f"RWF {vendor['total_commission']:.1f}",
+                        f"RWF {vendor['avg_commission']:.1f}"
+                    ])
+                summary_data = {
+                    'Total Transactions': total_transactions,
+                    'Total Commission': f"RWF {total_commission:.1f}",
+                    'Monthly Commission': f"RWF {monthly_commission:.1f}",
+                    'Commission Rate': '20% + Delivery Fees',
+                    'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+                filename = f"koraquest_commission_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                title = f"KoraQuest Commission Report - {request.user.get_full_name() or request.user.username}"
+                return generate_pdf_report(data, filename, title, headers, summary_data)
         
         context = {
             'user_type': 'koraquest',
@@ -1175,6 +1363,33 @@ def sales_statistics(request):
         monthly_spent = monthly_purchases.aggregate(
             total=Sum('purchase_price')
         )['total'] or 0
+        
+        # Handle export for customer
+        if export_format in ['csv', 'pdf']:
+            headers = ['Product', 'Seller', 'Date', 'Price', 'Status']
+            data = []
+            for purchase in purchases:
+                data.append([
+                    purchase.product.title,
+                    f"{purchase.product.user.first_name} {purchase.product.user.last_name}",
+                    purchase.created_at.strftime('%Y-%m-%d %H:%M'),
+                    f"RWF {purchase.purchase_price:.1f}",
+                    purchase.status.title()
+                ])
+            
+            if export_format == 'csv':
+                filename = f"customer_purchases_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                return generate_csv_report(data, filename, headers)
+            elif export_format == 'pdf':
+                summary_data = {
+                    'Total Purchases': purchases.count(),
+                    'Total Spent': f"RWF {total_spent:.1f}",
+                    'Monthly Spent': f"RWF {monthly_spent:.1f}",
+                    'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+                filename = f"customer_purchases_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                title = f"Customer Purchase Report - {request.user.get_full_name() or request.user.username}"
+                return generate_pdf_report(data, filename, title, headers, summary_data)
         
         context = {
             'user_type': 'customer',
