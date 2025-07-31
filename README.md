@@ -77,9 +77,9 @@ EMAIL_USE_TLS = True
 
 or 
 
-``` Reconfigure settings to send actual emails check
+Reconfigure settings to send actual emails check
 - **Link**: [Django Email Documentation]([https://koraquest.bonasolutions.tech](https://docs.djangoproject.com/en/5.2/topics/email/))
-```
+
 
 ## 🚀 Running the Application
 
