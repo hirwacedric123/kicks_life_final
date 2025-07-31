@@ -7,7 +7,7 @@ KoraQuest is a Django-based web application that has the purpose of helping peop
 ## 🌐 Demo UI
 
 - **Live Website**: [KoraQuest Marketplace](https://koraquest.bonasolutions.tech)
-- **Demo Video**: [Watch Demo](https://youtube.com/watch?v=your-demo-video-id](https://youtu.be/x3JjtgzZsGA?si=6HRMwlj9GTLLGAjL)
+- **Demo Video**: [Watch Demo](https://youtu.be/x3JjtgzZsGA?si=6HRMwlj9GTLLGAjL)
 
 ## 🚀 Features
 
