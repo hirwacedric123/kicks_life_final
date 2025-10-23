@@ -4,6 +4,7 @@ import io
 import json
 from datetime import datetime
 from decimal import Decimal
+import json
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -29,6 +30,7 @@ from .forms import SignUpForm, ProductReviewForm
 from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
 from .qr_utils import update_user_qr_code, decode_qr_data, get_user_purchases_from_qr
 from .otp_utils import create_otp, verify_otp
+from django.views.decorators.csrf import csrf_exempt
 
 def generate_csv_report(data, filename, headers):
     """Generate CSV report from data"""
@@ -112,6 +114,65 @@ def register(request):
     
     return render(request, 'authentication/register.html', {'form': form})
 
+# Register API
+@csrf_exempt
+@require_http_methods(["POST"])
+def register_api(request):
+    """API endpoint for user registration"""
+    try:
+        # Check content type
+        content_type = request.content_type
+        
+        # Handle both JSON and form data
+        if content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid JSON data',
+                    'errors': {'json': ['Request body contains invalid JSON']}
+                }, status=400)
+        else:
+            # Handle form data (your current approach)
+            data = request.POST
+        
+        # Create form with data
+        form = SignUpForm(data)
+        
+        if form.is_valid():
+            user = form.save()
+            
+            # Return success response with user data
+            return JsonResponse({
+                'success': True,
+                'message': 'Account created successfully',
+                'data': {
+                    'user_id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'role': user.role,
+                    'is_vendor_role': user.is_vendor_role
+                }
+            }, status=201)  # 201 for successful creation
+        else:
+            # Return validation errors
+            return JsonResponse({
+                'success': False,
+                'message': 'Validation failed',
+                'errors': form.errors
+            }, status=400)
+            
+    except Exception as e:
+        # Handle unexpected errors
+        return JsonResponse({
+            'success': False,
+            'message': 'Server error occurred',
+            'errors': {'server': [str(e)]}
+        }, status=500)
+
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -120,15 +181,501 @@ def login_view(request):
             auth_login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
             return redirect('dashboard')  # Redirect to dashboard or homepage
+        else:
+            # Form is invalid, re-render with errors
+            return render(request, 'authentication/login.html', {'form': form})
     else:
         form = AuthenticationForm()
-    
-    return render(request, 'authentication/login.html', {'form': form})
+        return render(request, 'authentication/login.html', {'form': form})
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def login_api(request):
+    """API endpoint for user login"""
+    try:
+        # Parse request data based on content type
+        content_type = request.content_type
+        if content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid JSON data',
+                    'errors': {'json': ['Request body contains invalid JSON']}
+                }, status=400)
+        else:
+            # Handle form data
+            data = request.POST.dict()
+        
+        # Validate required fields
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            return JsonResponse({
+                'success': False,
+                'message': 'Missing credentials',
+                'errors': {
+                    'credentials': ['Both username and password are required']
+                }
+            }, status=400)
+        
+        # Authenticate user
+        user = authenticate(username=username, password=password)
+        
+        if user is not None:
+            if user.is_active:
+                # Optional: Create authentication token for future API requests
+                # You can use Django's built-in Token authentication or create your own
+                try:
+                    from django.contrib.auth.models import update_last_login
+                    from rest_framework.authtoken.models import Token
+                    
+                    # Update last login time
+                    update_last_login(None, user)
+                    
+                    # Get or create authentication token
+                    token, created = Token.objects.get_or_create(user=user)
+                    
+                    # Return successful login response with user data and token
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Login successful',
+                        'data': {
+                            'user': {
+                                'id': user.id,
+                                'username': user.username,
+                                'email': user.email,
+                                'first_name': user.first_name,
+                                'last_name': user.last_name,
+                                'role': user.role,
+                                'is_vendor_role': user.is_vendor_role,
+                                'phone_number': getattr(user, 'phone_number', ''),
+                                'last_login': user.last_login.isoformat() if user.last_login else None
+                            },
+                            'auth': {
+                                'token': token.key,
+                                'token_type': 'Bearer',
+                                'expires_in': '30 days'  # Or your token expiry logic
+                            }
+                        }
+                    }, status=200)
+                    
+                except ImportError:
+                    # Fallback if DRF is not installed - return without token
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Login successful',
+                        'data': {
+                            'user': {
+                                'id': user.id,
+                                'username': user.username,
+                                'email': user.email,
+                                'first_name': user.first_name,
+                                'last_name': user.last_name,
+                                'role': user.role,
+                                'is_vendor_role': user.is_vendor_role,
+                                'phone_number': getattr(user, 'phone_number', ''),
+                                'last_login': user.last_login.isoformat() if user.last_login else None
+                            }
+                        }
+                    }, status=200)
+                    
+            else:
+                # User account is disabled
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Account disabled',
+                    'errors': {
+                        'account': ['This account has been disabled. Please contact support.']
+                    }
+                }, status=403)
+        else:
+            # Invalid credentials
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid credentials',
+                'errors': {
+                    'credentials': ['Username or password is incorrect']
+                }
+            }, status=401)
+            
+    except Exception as e:
+        # Handle unexpected errors
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Login API error: {str(e)}")
+        
+        return JsonResponse({
+            'success': False,
+            'message': 'Internal server error',
+            'errors': {
+                'server': ['An unexpected error occurred during login']
+            }
+        }, status=500)
 
 def logout_view(request):
     auth_logout(request)
     messages.success(request, 'You have been successfully logged out.')
     return redirect('login')
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def logout_api(request):
+    auth_logout(request)
+    return JsonResponse({
+        'message': 'you have been successfully logged out'
+    }, status=201)
+
+def get_token_user(request):
+    """Helper function to get user from token authentication"""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return None
+    
+    token = auth_header.replace('Bearer ', '')
+    try:
+        from rest_framework.authtoken.models import Token
+        token_obj = Token.objects.get(key=token)
+        return token_obj.user
+    except:
+        return None
+
+@csrf_exempt
+@require_http_methods(['GET'])
+def dashboard_api(request):
+    """API endpoint for dashboard data with filtering, sorting, and pagination"""
+    try:
+        # Authentication - support both session and token auth
+        if request.user.is_authenticated:
+            user = request.user
+        else:
+            user = get_token_user(request)
+            if not user:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Authentication required',
+                    'errors': {'auth': ['Please provide valid authentication credentials']}
+                }, status=401)
+        
+        # Get filter parameters from the request
+        search_query = request.GET.get('q', '').strip()
+        category = request.GET.get('category', '')
+        min_price = request.GET.get('min_price', '')
+        max_price = request.GET.get('max_price', '')
+        sort_by = request.GET.get('sort', 'newest')
+        page_number = request.GET.get('page', 1)
+        page_size = int(request.GET.get('page_size', 20))  # Allow custom page size
+        
+        # Validate page_size (limit to reasonable values)
+        if page_size > 100:
+            page_size = 100
+        elif page_size < 1:
+            page_size = 20
+        
+        # Start with all products (no job posts anymore)
+        posts = Post.objects.all()
+        
+        # Filter out sold-out products (inventory must be greater than 0)
+        posts = posts.filter(inventory__gt=0)
+        
+        # Filter out the user's own products if they are a vendor
+        if user.is_vendor_role:
+            posts = posts.exclude(user=user)
+        
+        # Apply search filter if provided
+        if search_query:
+            posts = posts.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(user__username__icontains=search_query)
+            )
+        
+        # Apply category filter if provided
+        if category:
+            # Convert to lowercase to match the model's CATEGORY_CHOICES keys
+            category = category.lower()
+            posts = posts.filter(category=category)
+        
+        # Apply price range filters
+        if min_price:
+            try:
+                posts = posts.filter(price__gte=float(min_price))
+            except ValueError:
+                pass
+        
+        if max_price:
+            try:
+                posts = posts.filter(price__lte=float(max_price))
+            except ValueError:
+                pass
+        
+        # Apply sorting
+        if sort_by == 'price_low':
+            posts = posts.order_by('price')
+        elif sort_by == 'price_high':
+            posts = posts.order_by('-price')
+        elif sort_by == 'popular':
+            posts = posts.order_by('-total_purchases', '-created_at')
+        elif sort_by == 'rating':
+            # Order by average rating (implement this later)
+            posts = posts.order_by('-created_at')
+        else:  # newest (default)
+            posts = posts.order_by('-created_at')
+        
+        # Get total count before pagination
+        total_products = posts.count()
+        
+        # Get user's bookmarked posts
+        bookmarked_posts = [bookmark.post.id for bookmark in Bookmark.objects.filter(user=user)]
+        
+        # Get user's liked posts
+        liked_posts = [post.id for post in Post.objects.filter(likes=user)]
+        
+        # Pagination
+        paginator = Paginator(posts, page_size)
+        try:
+            page_obj = paginator.get_page(page_number)
+        except Exception:
+            page_obj = paginator.get_page(1)
+        
+        # Convert posts to JSON-serializable format
+        posts_data = []
+        for post in page_obj:
+            # Get auxiliary images
+            auxiliary_images = ProductImage.objects.filter(product=post).order_by('display_order')
+            aux_images_data = []
+            for img in auxiliary_images:
+                aux_images_data.append({
+                    'id': img.id,
+                    'image_url': img.image.url if img.image else None,
+                    'display_order': img.display_order
+                })
+            
+            # Calculate average rating if reviews exist
+            reviews = ProductReview.objects.filter(product=post)
+            avg_rating = reviews.aggregate(avg=Avg('rating'))['avg']
+            avg_rating = round(avg_rating, 1) if avg_rating else None
+            
+            post_data = {
+                'id': post.id,
+                'title': post.title,
+                'description': post.description,
+                'price': float(post.price) if post.price else None,
+                'category': post.category,
+                'category_display': post.get_category_display(),
+                'inventory': post.inventory,
+                'created_at': post.created_at.isoformat(),
+                'updated_at': post.updated_at.isoformat(),
+                'total_purchases': post.total_purchases,
+                'image_url': post.image.url if post.image else None,
+                'auxiliary_images': aux_images_data,
+                'average_rating': avg_rating,
+                'review_count': reviews.count(),
+                'total_likes': post.total_likes(),
+                'is_bookmarked': post.id in bookmarked_posts,
+                'is_liked': post.id in liked_posts,
+                'user': {
+                    'id': post.user.id,
+                    'username': post.user.username,
+                    'first_name': post.user.first_name,
+                    'last_name': post.user.last_name,
+                    'is_vendor_role': post.user.is_vendor_role,
+                    'profile_picture_url': post.user.profile_picture.url if post.user.profile_picture else None
+                }
+            }
+            posts_data.append(post_data)
+        
+        # Get all categories for the filter dropdown
+        categories_data = []
+        for choice in Post.CATEGORY_CHOICES:
+            categories_data.append({
+                'value': choice[0],
+                'label': choice[1]
+            })
+        
+        # Build response
+        response_data = {
+            'success': True,
+            'message': 'Dashboard data retrieved successfully',
+            'data': {
+                'posts': posts_data,
+                'pagination': {
+                    'current_page': page_obj.number,
+                    'total_pages': paginator.num_pages,
+                    'page_size': page_size,
+                    'total_items': total_products,
+                    'has_next': page_obj.has_next(),
+                    'has_previous': page_obj.has_previous(),
+                    'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+                    'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None
+                },
+                'filters': {
+                    'search_query': search_query,
+                    'selected_category': category,
+                    'min_price': min_price,
+                    'max_price': max_price,
+                    'sort_by': sort_by,
+                    'available_categories': categories_data,
+                    'available_sorts': [
+                        {'value': 'newest', 'label': 'Newest First'},
+                        {'value': 'price_low', 'label': 'Price: Low to High'},
+                        {'value': 'price_high', 'label': 'Price: High to Low'},
+                        {'value': 'popular', 'label': 'Most Popular'},
+                        {'value': 'rating', 'label': 'Highest Rated'}
+                    ]
+                },
+                'user_info': {
+                    'id': user.id,
+                    'username': user.username,
+                    'is_vendor_role': user.is_vendor_role,
+                    'total_bookmarks': len(bookmarked_posts),
+                    'total_liked_posts': len(liked_posts)
+                },
+                'summary': {
+                    'total_products': total_products,
+                    'products_on_page': len(posts_data),
+                    'search_applied': bool(search_query),
+                    'filters_applied': bool(category or min_price or max_price),
+                    'sort_applied': sort_by != 'newest'
+                }
+            }
+        }
+        
+        return JsonResponse(response_data, status=200)
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Dashboard API error: {str(e)}")
+        
+        return JsonResponse({
+            'success': False,
+            'message': 'Internal server error',
+            'errors': {'server': ['An unexpected error occurred']}
+        }, status=500)
+
+@csrf_exempt 
+@require_http_methods(['POST'])
+def bookmark_toggle_api(request, post_id):
+    """API endpoint to toggle bookmark status"""
+    try:
+        # Get user from token
+        user = get_token_user(request)
+        if not user:
+            return JsonResponse({
+                'success': False,
+                'message': 'Authentication required',
+                'errors': {'auth': ['Please provide valid authentication credentials']}
+            }, status=401)
+        
+        post = get_object_or_404(Post, id=post_id)
+        
+        # Check if this post is already bookmarked by the user
+        existing_bookmark = Bookmark.objects.filter(user=user, post=post).first()
+        
+        if existing_bookmark:
+            # If bookmark already existed, delete it (toggle off)
+            existing_bookmark.delete()
+            is_bookmarked = False
+            status_text = 'removed'
+        else:
+            # Create a new bookmark
+            Bookmark.objects.create(user=user, post=post)
+            is_bookmarked = True
+            status_text = 'added'
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Bookmark {status_text} successfully',
+            'data': {
+                'is_bookmarked': is_bookmarked,
+                'status': status_text,
+                'post_id': post_id
+            }
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Error toggling bookmark',
+            'errors': {'server': [str(e)]}
+        }, status=500)
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def like_post_api(request, post_id):
+    """API endpoint to toggle like status"""
+    try:
+        # Get user from token
+        user = get_token_user(request)
+        if not user:
+            return JsonResponse({
+                'success': False,
+                'message': 'Authentication required',
+                'errors': {'auth': ['Please provide valid authentication credentials']}
+            }, status=401)
+        
+        post = get_object_or_404(Post, id=post_id)
+        
+        if user in post.likes.all():
+            post.likes.remove(user)
+            liked = False
+            status_text = 'removed'
+        else:
+            post.likes.add(user)
+            liked = True
+            status_text = 'added'
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Like {status_text} successfully',
+            'data': {
+                'liked': liked,
+                'total_likes': post.total_likes(),
+                'status': status_text,
+                'post_id': post_id
+            }
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Error toggling like',
+            'errors': {'server': [str(e)]}
+        }, status=500)
+
+@csrf_exempt
+@require_http_methods(['GET'])
+def categories_api(request):
+    """API endpoint to get all available categories"""
+    try:
+        categories_data = []
+        for choice in Post.CATEGORY_CHOICES:
+            # Get count of products in each category
+            count = Post.objects.filter(category=choice[0], inventory__gt=0).count()
+            categories_data.append({
+                'value': choice[0],
+                'label': choice[1],
+                'product_count': count
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Categories retrieved successfully',
+            'data': {
+                'categories': categories_data,
+                'total_categories': len(categories_data)
+            }
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Error retrieving categories',
+            'errors': {'server': [str(e)]}
+        }, status=500)
 
 @login_required
 def dashboard(request):
@@ -352,7 +899,7 @@ def purchase_product(request, post_id):
         
         # Success message based on delivery method
         if delivery_method == 'delivery':
-            messages.success(request, f'You have successfully purchased {quantity} {product.title}! Total: RWF{total_price + delivery_fee:.2f} (including RWF{delivery_fee:.2f} delivery fee). KoraQuest will deliver to your address.')
+            messages.success(request, f'You have successfully purchased {quantity} {product.title}! Total: RWF {total_price + delivery_fee:,.2f} (including RWF {delivery_fee:,.2f} delivery fee). KoraQuest will deliver to your address.')
         else:
             messages.success(request, f'You have successfully purchased {quantity} {product.title}! Please go to KoraQuest to collect your items.')
         
@@ -411,7 +958,7 @@ def purchase_history(request):
                 purchase.product.title,
                 f"{purchase.product.user.first_name} {purchase.product.user.last_name}",
                 purchase.created_at.strftime('%Y-%m-%d %H:%M'),
-                f"RWF {purchase.purchase_price:.1f}",
+                f"RWF {purchase.purchase_price:,.1f}",
                 purchase.status.title(),
                 purchase.quantity,
                 purchase.delivery_method.title()
@@ -420,7 +967,7 @@ def purchase_history(request):
         # Summary data for PDF
         summary_data = {
             'Total Purchases': purchases.count(),
-            'Total Spent': f"RWF {(purchases.aggregate(total=Sum('purchase_price'))['total'] or 0):.1f}",
+            'Total Spent': f"RWF {(purchases.aggregate(total=Sum('purchase_price'))['total'] or 0):,.1f}",
             'Completed Orders': purchases.filter(status='completed').count(),
             'Pending Orders': purchases.filter(status__in=['pending', 'processing']).count(),
             'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -1200,8 +1747,8 @@ def sales_statistics(request):
                     data.append([
                         product['product__title'],
                         product['total_sales'],
-                        f"RWF {product['total_revenue']:.1f}",
-                        f"RWF {product['avg_price']:.1f}"
+                        f"RWF {product['total_revenue']:,.1f}",
+                        f"RWF {product['avg_price']:,.1f}"
                     ])
                 filename = f"vendor_sales_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 return generate_csv_report(data, filename, headers)
@@ -1212,13 +1759,13 @@ def sales_statistics(request):
                     data.append([
                         product['product__title'],
                         product['total_sales'],
-                        f"RWF {product['total_revenue']:.1f}",
-                        f"RWF {product['avg_price']:.1f}"
+                        f"RWF {product['total_revenue']:,.1f}",
+                        f"RWF {product['avg_price']:,.1f}"
                     ])
                 summary_data = {
                     'Total Sales': total_sales,
-                    'Total Revenue': f"RWF {total_revenue:.1f}",
-                    'Monthly Revenue': f"RWF {monthly_revenue:.1f}",
+                    'Total Revenue': f"RWF {total_revenue:,.1f}",
+                    'Monthly Revenue': f"RWF {monthly_revenue:,.1f}",
                     'Commission Rate': '80%',
                     'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
@@ -1306,8 +1853,8 @@ def sales_statistics(request):
                     data.append([
                         vendor['vendor_username'],
                         vendor['total_transactions'],
-                        f"RWF {vendor['total_commission']:.1f}",
-                        f"RWF {vendor['avg_commission']:.1f}"
+                        f"RWF {vendor['total_commission']:,.1f}",
+                        f"RWF {vendor['avg_commission']:,.1f}"
                     ])
                 filename = f"koraquest_commission_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 return generate_csv_report(data, filename, headers)
@@ -1318,13 +1865,13 @@ def sales_statistics(request):
                     data.append([
                         vendor['vendor_username'],
                         vendor['total_transactions'],
-                        f"RWF {vendor['total_commission']:.1f}",
-                        f"RWF {vendor['avg_commission']:.1f}"
+                        f"RWF {vendor['total_commission']:,.1f}",
+                        f"RWF {vendor['avg_commission']:,.1f}"
                     ])
                 summary_data = {
                     'Total Transactions': total_transactions,
-                    'Total Commission': f"RWF {total_commission:.1f}",
-                    'Monthly Commission': f"RWF {monthly_commission:.1f}",
+                    'Total Commission': f"RWF {total_commission:,.1f}",
+                    'Monthly Commission': f"RWF {monthly_commission:,.1f}",
                     'Commission Rate': '20% + Delivery Fees',
                     'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
@@ -1373,7 +1920,7 @@ def sales_statistics(request):
                     purchase.product.title,
                     f"{purchase.product.user.first_name} {purchase.product.user.last_name}",
                     purchase.created_at.strftime('%Y-%m-%d %H:%M'),
-                    f"RWF {purchase.purchase_price:.1f}",
+                    f"RWF {purchase.purchase_price:,.1f}",
                     purchase.status.title()
                 ])
             
@@ -1383,8 +1930,8 @@ def sales_statistics(request):
             elif export_format == 'pdf':
                 summary_data = {
                     'Total Purchases': purchases.count(),
-                    'Total Spent': f"RWF {total_spent:.1f}",
-                    'Monthly Spent': f"RWF {monthly_spent:.1f}",
+                    'Total Spent': f"RWF {total_spent:,.1f}",
+                    'Monthly Spent': f"RWF {monthly_spent:,.1f}",
                     'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
                 filename = f"customer_purchases_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"

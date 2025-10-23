@@ -1,5 +1,6 @@
 {% extends "authentication/base.html" %}
 {% load static %}
+{% load currency_filters %}
 
 {% block title %}My Bookmarks - KoraQuest{% endblock %}
 
@@ -62,7 +63,7 @@
                         <i class="bi bi-briefcase me-1"></i>{{ bookmark.post.job_type|default:"Full-time" }}
                     </p>
                     {% elif bookmark.post.post_type == 'product' %}
-                    <div class="card-price">RWF{{ bookmark.post.price|floatformat:2 }}</div>
+                    <div class="card-price">{{ bookmark.post.price|currency }}</div>
                     {% endif %}
                     <p class="card-description">{{ bookmark.post.description|truncatechars:100 }}</p>
                     

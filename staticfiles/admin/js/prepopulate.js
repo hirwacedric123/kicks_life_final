@@ -1,8 +1,8 @@
 /*global URLify*/
 'use strict';
 {
-    const RWF = django.jQuery;
-    RWF.fn.prepopulate = function(dependencies, maxLength, allowUnicode) {
+    const $ = django.jQuery;
+    $.fn.prepopulate = function(dependencies, maxLength, allowUnicode) {
         /*
             Depends on urlify.js
             Populates a selected field with the values of the dependent fields,
@@ -12,7 +12,7 @@
             allowUnicode - Unicode support of the URLify'd string
         */
         return this.each(function() {
-            const prepopulatedField = RWF(this);
+            const prepopulatedField = $(this);
 
             const populate = function() {
                 // Bail if the field's value has been changed by the user
@@ -21,8 +21,8 @@
                 }
 
                 const values = [];
-                RWF.each(dependencies, function(i, field) {
-                    field = RWF(field);
+                $.each(dependencies, function(i, field) {
+                    field = $(field);
                     if (field.val().length > 0) {
                         values.push(field.val());
                     }
@@ -36,7 +36,7 @@
             });
 
             if (!prepopulatedField.val()) {
-                RWF(dependencies.join(',')).on('keyup change focus', populate);
+                $(dependencies.join(',')).on('keyup change focus', populate);
             }
         });
     };

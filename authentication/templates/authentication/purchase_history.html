@@ -1,5 +1,6 @@
 {% extends "authentication/base.html" %}
 {% load static %}
+{% load currency_filters %}
 
 {% block title %}Purchase History - KoraQuest{% endblock %}
 
@@ -108,7 +109,7 @@
                                     </div>
                                 </td>
                                 <td>{{ purchase.created_at|date:"M d, Y" }}</td>
-                                <td class="price">RWF{{ purchase.purchase_price }}</td>
+                                <td class="price">{{ purchase.purchase_price|currency }}</td>
                                 <td>
                                     <span class="status-badge status-{{ purchase.status }}">
                                         {{ purchase.status|title }}

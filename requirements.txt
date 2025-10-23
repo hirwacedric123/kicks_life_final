@@ -75,6 +75,7 @@ Django==5.2
 django-auto-logout==0.5.1
 django-cors-headers==4.7.0
 django-extensions==3.2.3
+django-filter==24.2
 django-jazzmin==3.0.1
 django-prometheus==2.3.1
 django-widget-tweaks==1.5.0
@@ -277,7 +278,7 @@ referencing==0.33.0
 regex==2022.10.31
 reportlab==4.4.1
 requests==2.32.3
-requests-file==2.1.0
+requespsycopg2-binaryts-file==2.1.0
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 rest-framework-simplejwt==0.0.2

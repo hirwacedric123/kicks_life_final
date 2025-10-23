@@ -1,5 +1,6 @@
 {% extends "authentication/base.html" %}
 {% load static %}
+{% load currency_filters %}
 
 {% block title %}Vendor Dashboard - KoraQuest{% endblock %}
 
@@ -114,7 +115,7 @@
                                     <span class="product-title">{{ product.title|truncatechars:25 }}</span>
                                 </div>
                             </td>
-                            <td class="price">RWF{{ product.price }}</td>
+                            <td class="price">{{ product.price|currency }}</td>
                             <td>
                                 <span class="category-badge">{{ product.category }}</span>
                             </td>
@@ -201,7 +202,7 @@
                                 </div>
                             </td>
                             <td>{{ purchase.buyer.username }}</td>
-                            <td class="price">RWF{{ purchase.purchase_price }}</td>
+                            <td class="price">{{ purchase.purchase_price|currency }}</td>
                             <td>
                                 <span class="status-badge status-{{ purchase.status }}">
                                     {{ purchase.status|title }}

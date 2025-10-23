@@ -60,7 +60,7 @@ var requirejs, require, define;
         defining = {},
         hasOwn = Object.prototype.hasOwnProperty,
         aps = [].slice,
-        jsSuffixRegExp = /\.jsRWF/;
+        jsSuffixRegExp = /\.js$/;
 
     function hasProp(obj, prop) {
         return hasOwn.call(obj, prop);
@@ -483,11 +483,11 @@ S2.requirejs = requirejs;S2.require = require;S2.define = define;
 }());
 S2.define("almond", function(){});
 
-/* global jQuery:false, RWF:false */
+/* global jQuery:false, $:false */
 S2.define('jquery',[],function () {
-  var _RWF = jQuery || RWF;
+  var _$ = jQuery || $;
 
-  if (_RWF == null && console && console.error) {
+  if (_$ == null && console && console.error) {
     console.error(
       'Select2: An instance of jQuery or a jQuery-compatible library was not ' +
       'found. Make sure that you are including jQuery before Select2 on your ' +
@@ -495,12 +495,12 @@ S2.define('jquery',[],function () {
     );
   }
 
-  return _RWF;
+  return _$;
 });
 
 S2.define('select2/utils',[
   'jquery'
-], function (RWF) {
+], function ($) {
   var Utils = {};
 
   Utils.Extend = function (ChildClass, SuperClass) {
@@ -716,7 +716,7 @@ S2.define('select2/utils',[
     // http://codereview.stackexchange.com/q/13338
     // and was designed to be used with the Sizzle selector engine.
 
-    var RWFel = RWF(el);
+    var $el = $(el);
     var overflowX = el.style.overflowX;
     var overflowY = el.style.overflowY;
 
@@ -730,8 +730,8 @@ S2.define('select2/utils',[
       return true;
     }
 
-    return (RWFel.innerHeight() < el.scrollHeight ||
-      RWFel.innerWidth() < el.scrollWidth);
+    return ($el.innerHeight() < el.scrollHeight ||
+      $el.innerWidth() < el.scrollWidth);
   };
 
   Utils.escapeMarkup = function (markup) {
@@ -756,23 +756,23 @@ S2.define('select2/utils',[
   };
 
   // Append an array of jQuery nodes to a given element.
-  Utils.appendMany = function (RWFelement, RWFnodes) {
-    // jQuery 1.7.x does not support RWF.fn.append() with an array
-    // Fall back to a jQuery object collection using RWF.fn.add()
-    if (RWF.fn.jquery.substr(0, 3) === '1.7') {
-      var RWFjqNodes = RWF();
+  Utils.appendMany = function ($element, $nodes) {
+    // jQuery 1.7.x does not support $.fn.append() with an array
+    // Fall back to a jQuery object collection using $.fn.add()
+    if ($.fn.jquery.substr(0, 3) === '1.7') {
+      var $jqNodes = $();
 
-      RWF.map(RWFnodes, function (node) {
-        RWFjqNodes = RWFjqNodes.add(node);
+      $.map($nodes, function (node) {
+        $jqNodes = $jqNodes.add(node);
       });
 
-      RWFnodes = RWFjqNodes;
+      $nodes = $jqNodes;
     }
 
-    RWFelement.append(RWFnodes);
+    $element.append($nodes);
   };
 
-  // Cache objects in Utils.__cache instead of RWF.data (see #4346)
+  // Cache objects in Utils.__cache instead of $.data (see #4346)
   Utils.__cache = {};
 
   var id = 0;
@@ -818,9 +818,9 @@ S2.define('select2/utils',[
         if (Utils.__cache[id][name] != null) {
           return Utils.__cache[id][name];
         }
-        return RWF(element).data(name); // Fallback to HTML5 data attribs.
+        return $(element).data(name); // Fallback to HTML5 data attribs.
       }
-      return RWF(element).data(name); // Fallback to HTML5 data attribs.
+      return $(element).data(name); // Fallback to HTML5 data attribs.
     } else {
       return Utils.__cache[id];
     }
@@ -842,9 +842,9 @@ S2.define('select2/utils',[
 S2.define('select2/results',[
   'jquery',
   './utils'
-], function (RWF, Utils) {
-  function Results (RWFelement, options, dataAdapter) {
-    this.RWFelement = RWFelement;
+], function ($, Utils) {
+  function Results ($element, options, dataAdapter) {
+    this.$element = $element;
     this.data = dataAdapter;
     this.options = options;
 
@@ -854,21 +854,21 @@ S2.define('select2/results',[
   Utils.Extend(Results, Utils.Observable);
 
   Results.prototype.render = function () {
-    var RWFresults = RWF(
+    var $results = $(
       '<ul class="select2-results__options" role="listbox"></ul>'
     );
 
     if (this.options.get('multiple')) {
-      RWFresults.attr('aria-multiselectable', 'true');
+      $results.attr('aria-multiselectable', 'true');
     }
 
-    this.RWFresults = RWFresults;
+    this.$results = $results;
 
-    return RWFresults;
+    return $results;
   };
 
   Results.prototype.clear = function () {
-    this.RWFresults.empty();
+    this.$results.empty();
   };
 
   Results.prototype.displayMessage = function (params) {
@@ -877,35 +877,35 @@ S2.define('select2/results',[
     this.clear();
     this.hideLoading();
 
-    var RWFmessage = RWF(
+    var $message = $(
       '<li role="alert" aria-live="assertive"' +
       ' class="select2-results__option"></li>'
     );
 
     var message = this.options.get('translations').get(params.message);
 
-    RWFmessage.append(
+    $message.append(
       escapeMarkup(
         message(params.args)
       )
     );
 
-    RWFmessage[0].className += ' select2-results__message';
+    $message[0].className += ' select2-results__message';
 
-    this.RWFresults.append(RWFmessage);
+    this.$results.append($message);
   };
 
   Results.prototype.hideMessages = function () {
-    this.RWFresults.find('.select2-results__message').remove();
+    this.$results.find('.select2-results__message').remove();
   };
 
   Results.prototype.append = function (data) {
     this.hideLoading();
 
-    var RWFoptions = [];
+    var $options = [];
 
     if (data.results == null || data.results.length === 0) {
-      if (this.RWFresults.children().length === 0) {
+      if (this.$results.children().length === 0) {
         this.trigger('results:message', {
           message: 'noResults'
         });
@@ -919,17 +919,17 @@ S2.define('select2/results',[
     for (var d = 0; d < data.results.length; d++) {
       var item = data.results[d];
 
-      var RWFoption = this.option(item);
+      var $option = this.option(item);
 
-      RWFoptions.push(RWFoption);
+      $options.push($option);
     }
 
-    this.RWFresults.append(RWFoptions);
+    this.$results.append($options);
   };
 
-  Results.prototype.position = function (RWFresults, RWFdropdown) {
-    var RWFresultsContainer = RWFdropdown.find('.select2-results');
-    RWFresultsContainer.append(RWFresults);
+  Results.prototype.position = function ($results, $dropdown) {
+    var $resultsContainer = $dropdown.find('.select2-results');
+    $resultsContainer.append($results);
   };
 
   Results.prototype.sort = function (data) {
@@ -939,19 +939,19 @@ S2.define('select2/results',[
   };
 
   Results.prototype.highlightFirstItem = function () {
-    var RWFoptions = this.RWFresults
+    var $options = this.$results
       .find('.select2-results__option[aria-selected]');
 
-    var RWFselected = RWFoptions.filter('[aria-selected=true]');
+    var $selected = $options.filter('[aria-selected=true]');
 
     // Check if there are any selected options
-    if (RWFselected.length > 0) {
+    if ($selected.length > 0) {
       // If there are selected options, highlight the first
-      RWFselected.first().trigger('mouseenter');
+      $selected.first().trigger('mouseenter');
     } else {
       // If there are no selected options, highlight the first option
       // in the dropdown
-      RWFoptions.first().trigger('mouseenter');
+      $options.first().trigger('mouseenter');
     }
 
     this.ensureHighlightVisible();
@@ -961,15 +961,15 @@ S2.define('select2/results',[
     var self = this;
 
     this.data.current(function (selected) {
-      var selectedIds = RWF.map(selected, function (s) {
+      var selectedIds = $.map(selected, function (s) {
         return s.id.toString();
       });
 
-      var RWFoptions = self.RWFresults
+      var $options = self.$results
         .find('.select2-results__option[aria-selected]');
 
-      RWFoptions.each(function () {
-        var RWFoption = RWF(this);
+      $options.each(function () {
+        var $option = $(this);
 
         var item = Utils.GetData(this, 'data');
 
@@ -977,10 +977,10 @@ S2.define('select2/results',[
         var id = '' + item.id;
 
         if ((item.element != null && item.element.selected) ||
-            (item.element == null && RWF.inArray(id, selectedIds) > -1)) {
-          RWFoption.attr('aria-selected', 'true');
+            (item.element == null && $.inArray(id, selectedIds) > -1)) {
+          $option.attr('aria-selected', 'true');
         } else {
-          RWFoption.attr('aria-selected', 'false');
+          $option.attr('aria-selected', 'false');
         }
       });
 
@@ -997,14 +997,14 @@ S2.define('select2/results',[
       loading: true,
       text: loadingMore(params)
     };
-    var RWFloading = this.option(loading);
-    RWFloading.className += ' loading-results';
+    var $loading = this.option(loading);
+    $loading.className += ' loading-results';
 
-    this.RWFresults.prepend(RWFloading);
+    this.$results.prepend($loading);
   };
 
   Results.prototype.hideLoading = function () {
-    this.RWFresults.find('.loading-results').remove();
+    this.$results.find('.loading-results').remove();
   };
 
   Results.prototype.option = function (data) {
@@ -1051,32 +1051,32 @@ S2.define('select2/results',[
     }
 
     if (data.children) {
-      var RWFoption = RWF(option);
+      var $option = $(option);
 
       var label = document.createElement('strong');
       label.className = 'select2-results__group';
 
-      var RWFlabel = RWF(label);
+      var $label = $(label);
       this.template(data, label);
 
-      var RWFchildren = [];
+      var $children = [];
 
       for (var c = 0; c < data.children.length; c++) {
         var child = data.children[c];
 
-        var RWFchild = this.option(child);
+        var $child = this.option(child);
 
-        RWFchildren.push(RWFchild);
+        $children.push($child);
       }
 
-      var RWFchildrenContainer = RWF('<ul></ul>', {
+      var $childrenContainer = $('<ul></ul>', {
         'class': 'select2-results__options select2-results__options--nested'
       });
 
-      RWFchildrenContainer.append(RWFchildren);
+      $childrenContainer.append($children);
 
-      RWFoption.append(label);
-      RWFoption.append(RWFchildrenContainer);
+      $option.append(label);
+      $option.append($childrenContainer);
     } else {
       this.template(data, option);
     }
@@ -1086,12 +1086,12 @@ S2.define('select2/results',[
     return option;
   };
 
-  Results.prototype.bind = function (container, RWFcontainer) {
+  Results.prototype.bind = function (container, $container) {
     var self = this;
 
     var id = container.id + '-results';
 
-    this.RWFresults.attr('id', id);
+    this.$results.attr('id', id);
 
     container.on('results:all', function (params) {
       self.clear();
@@ -1142,8 +1142,8 @@ S2.define('select2/results',[
 
     container.on('open', function () {
       // When the dropdown is open, aria-expended="true"
-      self.RWFresults.attr('aria-expanded', 'true');
-      self.RWFresults.attr('aria-hidden', 'false');
+      self.$results.attr('aria-expanded', 'true');
+      self.$results.attr('aria-hidden', 'false');
 
       self.setClasses();
       self.ensureHighlightVisible();
@@ -1151,31 +1151,31 @@ S2.define('select2/results',[
 
     container.on('close', function () {
       // When the dropdown is closed, aria-expended="false"
-      self.RWFresults.attr('aria-expanded', 'false');
-      self.RWFresults.attr('aria-hidden', 'true');
-      self.RWFresults.removeAttr('aria-activedescendant');
+      self.$results.attr('aria-expanded', 'false');
+      self.$results.attr('aria-hidden', 'true');
+      self.$results.removeAttr('aria-activedescendant');
     });
 
     container.on('results:toggle', function () {
-      var RWFhighlighted = self.getHighlightedResults();
+      var $highlighted = self.getHighlightedResults();
 
-      if (RWFhighlighted.length === 0) {
+      if ($highlighted.length === 0) {
         return;
       }
 
-      RWFhighlighted.trigger('mouseup');
+      $highlighted.trigger('mouseup');
     });
 
     container.on('results:select', function () {
-      var RWFhighlighted = self.getHighlightedResults();
+      var $highlighted = self.getHighlightedResults();
 
-      if (RWFhighlighted.length === 0) {
+      if ($highlighted.length === 0) {
         return;
       }
 
-      var data = Utils.GetData(RWFhighlighted[0], 'data');
+      var data = Utils.GetData($highlighted[0], 'data');
 
-      if (RWFhighlighted.attr('aria-selected') == 'true') {
+      if ($highlighted.attr('aria-selected') == 'true') {
         self.trigger('close', {});
       } else {
         self.trigger('select', {
@@ -1185,11 +1185,11 @@ S2.define('select2/results',[
     });
 
     container.on('results:previous', function () {
-      var RWFhighlighted = self.getHighlightedResults();
+      var $highlighted = self.getHighlightedResults();
 
-      var RWFoptions = self.RWFresults.find('[aria-selected]');
+      var $options = self.$results.find('[aria-selected]');
 
-      var currentIndex = RWFoptions.index(RWFhighlighted);
+      var currentIndex = $options.index($highlighted);
 
       // If we are already at the top, don't move further
       // If no options, currentIndex will be -1
@@ -1200,52 +1200,52 @@ S2.define('select2/results',[
       var nextIndex = currentIndex - 1;
 
       // If none are highlighted, highlight the first
-      if (RWFhighlighted.length === 0) {
+      if ($highlighted.length === 0) {
         nextIndex = 0;
       }
 
-      var RWFnext = RWFoptions.eq(nextIndex);
+      var $next = $options.eq(nextIndex);
 
-      RWFnext.trigger('mouseenter');
+      $next.trigger('mouseenter');
 
-      var currentOffset = self.RWFresults.offset().top;
-      var nextTop = RWFnext.offset().top;
-      var nextOffset = self.RWFresults.scrollTop() + (nextTop - currentOffset);
+      var currentOffset = self.$results.offset().top;
+      var nextTop = $next.offset().top;
+      var nextOffset = self.$results.scrollTop() + (nextTop - currentOffset);
 
       if (nextIndex === 0) {
-        self.RWFresults.scrollTop(0);
+        self.$results.scrollTop(0);
       } else if (nextTop - currentOffset < 0) {
-        self.RWFresults.scrollTop(nextOffset);
+        self.$results.scrollTop(nextOffset);
       }
     });
 
     container.on('results:next', function () {
-      var RWFhighlighted = self.getHighlightedResults();
+      var $highlighted = self.getHighlightedResults();
 
-      var RWFoptions = self.RWFresults.find('[aria-selected]');
+      var $options = self.$results.find('[aria-selected]');
 
-      var currentIndex = RWFoptions.index(RWFhighlighted);
+      var currentIndex = $options.index($highlighted);
 
       var nextIndex = currentIndex + 1;
 
       // If we are at the last option, stay there
-      if (nextIndex >= RWFoptions.length) {
+      if (nextIndex >= $options.length) {
         return;
       }
 
-      var RWFnext = RWFoptions.eq(nextIndex);
+      var $next = $options.eq(nextIndex);
 
-      RWFnext.trigger('mouseenter');
+      $next.trigger('mouseenter');
 
-      var currentOffset = self.RWFresults.offset().top +
-        self.RWFresults.outerHeight(false);
-      var nextBottom = RWFnext.offset().top + RWFnext.outerHeight(false);
-      var nextOffset = self.RWFresults.scrollTop() + nextBottom - currentOffset;
+      var currentOffset = self.$results.offset().top +
+        self.$results.outerHeight(false);
+      var nextBottom = $next.offset().top + $next.outerHeight(false);
+      var nextOffset = self.$results.scrollTop() + nextBottom - currentOffset;
 
       if (nextIndex === 0) {
-        self.RWFresults.scrollTop(0);
+        self.$results.scrollTop(0);
       } else if (nextBottom > currentOffset) {
-        self.RWFresults.scrollTop(nextOffset);
+        self.$results.scrollTop(nextOffset);
       }
     });
 
@@ -1257,23 +1257,23 @@ S2.define('select2/results',[
       self.displayMessage(params);
     });
 
-    if (RWF.fn.mousewheel) {
-      this.RWFresults.on('mousewheel', function (e) {
-        var top = self.RWFresults.scrollTop();
+    if ($.fn.mousewheel) {
+      this.$results.on('mousewheel', function (e) {
+        var top = self.$results.scrollTop();
 
-        var bottom = self.RWFresults.get(0).scrollHeight - top + e.deltaY;
+        var bottom = self.$results.get(0).scrollHeight - top + e.deltaY;
 
         var isAtTop = e.deltaY > 0 && top - e.deltaY <= 0;
-        var isAtBottom = e.deltaY < 0 && bottom <= self.RWFresults.height();
+        var isAtBottom = e.deltaY < 0 && bottom <= self.$results.height();
 
         if (isAtTop) {
-          self.RWFresults.scrollTop(0);
+          self.$results.scrollTop(0);
 
           e.preventDefault();
           e.stopPropagation();
         } else if (isAtBottom) {
-          self.RWFresults.scrollTop(
-            self.RWFresults.get(0).scrollHeight - self.RWFresults.height()
+          self.$results.scrollTop(
+            self.$results.get(0).scrollHeight - self.$results.height()
           );
 
           e.preventDefault();
@@ -1282,13 +1282,13 @@ S2.define('select2/results',[
       });
     }
 
-    this.RWFresults.on('mouseup', '.select2-results__option[aria-selected]',
+    this.$results.on('mouseup', '.select2-results__option[aria-selected]',
       function (evt) {
-      var RWFthis = RWF(this);
+      var $this = $(this);
 
       var data = Utils.GetData(this, 'data');
 
-      if (RWFthis.attr('aria-selected') === 'true') {
+      if ($this.attr('aria-selected') === 'true') {
         if (self.options.get('multiple')) {
           self.trigger('unselect', {
             originalEvent: evt,
@@ -1307,7 +1307,7 @@ S2.define('select2/results',[
       });
     });
 
-    this.RWFresults.on('mouseenter', '.select2-results__option[aria-selected]',
+    this.$results.on('mouseenter', '.select2-results__option[aria-selected]',
       function (evt) {
       var data = Utils.GetData(this, 'data');
 
@@ -1316,44 +1316,44 @@ S2.define('select2/results',[
 
       self.trigger('results:focus', {
         data: data,
-        element: RWF(this)
+        element: $(this)
       });
     });
   };
 
   Results.prototype.getHighlightedResults = function () {
-    var RWFhighlighted = this.RWFresults
+    var $highlighted = this.$results
     .find('.select2-results__option--highlighted');
 
-    return RWFhighlighted;
+    return $highlighted;
   };
 
   Results.prototype.destroy = function () {
-    this.RWFresults.remove();
+    this.$results.remove();
   };
 
   Results.prototype.ensureHighlightVisible = function () {
-    var RWFhighlighted = this.getHighlightedResults();
+    var $highlighted = this.getHighlightedResults();
 
-    if (RWFhighlighted.length === 0) {
+    if ($highlighted.length === 0) {
       return;
     }
 
-    var RWFoptions = this.RWFresults.find('[aria-selected]');
+    var $options = this.$results.find('[aria-selected]');
 
-    var currentIndex = RWFoptions.index(RWFhighlighted);
+    var currentIndex = $options.index($highlighted);
 
-    var currentOffset = this.RWFresults.offset().top;
-    var nextTop = RWFhighlighted.offset().top;
-    var nextOffset = this.RWFresults.scrollTop() + (nextTop - currentOffset);
+    var currentOffset = this.$results.offset().top;
+    var nextTop = $highlighted.offset().top;
+    var nextOffset = this.$results.scrollTop() + (nextTop - currentOffset);
 
     var offsetDelta = nextTop - currentOffset;
-    nextOffset -= RWFhighlighted.outerHeight(false) * 2;
+    nextOffset -= $highlighted.outerHeight(false) * 2;
 
     if (currentIndex <= 2) {
-      this.RWFresults.scrollTop(0);
-    } else if (offsetDelta > this.RWFresults.outerHeight() || offsetDelta < 0) {
-      this.RWFresults.scrollTop(nextOffset);
+      this.$results.scrollTop(0);
+    } else if (offsetDelta > this.$results.outerHeight() || offsetDelta < 0) {
+      this.$results.scrollTop(nextOffset);
     }
   };
 
@@ -1368,7 +1368,7 @@ S2.define('select2/results',[
     } else if (typeof content === 'string') {
       container.innerHTML = escapeMarkup(content);
     } else {
-      RWF(container).append(content);
+      $(container).append(content);
     }
   };
 
@@ -1405,9 +1405,9 @@ S2.define('select2/selection/base',[
   'jquery',
   '../utils',
   '../keys'
-], function (RWF, Utils, KEYS) {
-  function BaseSelection (RWFelement, options) {
-    this.RWFelement = RWFelement;
+], function ($, Utils, KEYS) {
+  function BaseSelection ($element, options) {
+    this.$element = $element;
     this.options = options;
 
     BaseSelection.__super__.constructor.call(this);
@@ -1416,7 +1416,7 @@ S2.define('select2/selection/base',[
   Utils.Extend(BaseSelection, Utils.Observable);
 
   BaseSelection.prototype.render = function () {
-    var RWFselection = RWF(
+    var $selection = $(
       '<span class="select2-selection" role="combobox" ' +
       ' aria-haspopup="true" aria-expanded="false">' +
       '</span>'
@@ -1424,37 +1424,37 @@ S2.define('select2/selection/base',[
 
     this._tabindex = 0;
 
-    if (Utils.GetData(this.RWFelement[0], 'old-tabindex') != null) {
-      this._tabindex = Utils.GetData(this.RWFelement[0], 'old-tabindex');
-    } else if (this.RWFelement.attr('tabindex') != null) {
-      this._tabindex = this.RWFelement.attr('tabindex');
+    if (Utils.GetData(this.$element[0], 'old-tabindex') != null) {
+      this._tabindex = Utils.GetData(this.$element[0], 'old-tabindex');
+    } else if (this.$element.attr('tabindex') != null) {
+      this._tabindex = this.$element.attr('tabindex');
     }
 
-    RWFselection.attr('title', this.RWFelement.attr('title'));
-    RWFselection.attr('tabindex', this._tabindex);
-    RWFselection.attr('aria-disabled', 'false');
+    $selection.attr('title', this.$element.attr('title'));
+    $selection.attr('tabindex', this._tabindex);
+    $selection.attr('aria-disabled', 'false');
 
-    this.RWFselection = RWFselection;
+    this.$selection = $selection;
 
-    return RWFselection;
+    return $selection;
   };
 
-  BaseSelection.prototype.bind = function (container, RWFcontainer) {
+  BaseSelection.prototype.bind = function (container, $container) {
     var self = this;
 
     var resultsId = container.id + '-results';
 
     this.container = container;
 
-    this.RWFselection.on('focus', function (evt) {
+    this.$selection.on('focus', function (evt) {
       self.trigger('focus', evt);
     });
 
-    this.RWFselection.on('blur', function (evt) {
+    this.$selection.on('blur', function (evt) {
       self._handleBlur(evt);
     });
 
-    this.RWFselection.on('keydown', function (evt) {
+    this.$selection.on('keydown', function (evt) {
       self.trigger('keypress', evt);
 
       if (evt.which === KEYS.SPACE) {
@@ -1463,7 +1463,7 @@ S2.define('select2/selection/base',[
     });
 
     container.on('results:focus', function (params) {
-      self.RWFselection.attr('aria-activedescendant', params.data._resultId);
+      self.$selection.attr('aria-activedescendant', params.data._resultId);
     });
 
     container.on('selection:update', function (params) {
@@ -1472,31 +1472,31 @@ S2.define('select2/selection/base',[
 
     container.on('open', function () {
       // When the dropdown is open, aria-expanded="true"
-      self.RWFselection.attr('aria-expanded', 'true');
-      self.RWFselection.attr('aria-owns', resultsId);
+      self.$selection.attr('aria-expanded', 'true');
+      self.$selection.attr('aria-owns', resultsId);
 
       self._attachCloseHandler(container);
     });
 
     container.on('close', function () {
       // When the dropdown is closed, aria-expanded="false"
-      self.RWFselection.attr('aria-expanded', 'false');
-      self.RWFselection.removeAttr('aria-activedescendant');
-      self.RWFselection.removeAttr('aria-owns');
+      self.$selection.attr('aria-expanded', 'false');
+      self.$selection.removeAttr('aria-activedescendant');
+      self.$selection.removeAttr('aria-owns');
 
-      self.RWFselection.trigger('focus');
+      self.$selection.trigger('focus');
 
       self._detachCloseHandler(container);
     });
 
     container.on('enable', function () {
-      self.RWFselection.attr('tabindex', self._tabindex);
-      self.RWFselection.attr('aria-disabled', 'false');
+      self.$selection.attr('tabindex', self._tabindex);
+      self.$selection.attr('aria-disabled', 'false');
     });
 
     container.on('disable', function () {
-      self.RWFselection.attr('tabindex', '-1');
-      self.RWFselection.attr('aria-disabled', 'true');
+      self.$selection.attr('tabindex', '-1');
+      self.$selection.attr('aria-disabled', 'true');
     });
   };
 
@@ -1508,8 +1508,8 @@ S2.define('select2/selection/base',[
     window.setTimeout(function () {
       // Don't trigger `blur` if the focus is still in the selection
       if (
-        (document.activeElement == self.RWFselection[0]) ||
-        (RWF.contains(self.RWFselection[0], document.activeElement))
+        (document.activeElement == self.$selection[0]) ||
+        ($.contains(self.$selection[0], document.activeElement))
       ) {
         return;
       }
@@ -1520,32 +1520,32 @@ S2.define('select2/selection/base',[
 
   BaseSelection.prototype._attachCloseHandler = function (container) {
 
-    RWF(document.body).on('mousedown.select2.' + container.id, function (e) {
-      var RWFtarget = RWF(e.target);
+    $(document.body).on('mousedown.select2.' + container.id, function (e) {
+      var $target = $(e.target);
 
-      var RWFselect = RWFtarget.closest('.select2');
+      var $select = $target.closest('.select2');
 
-      var RWFall = RWF('.select2.select2-container--open');
+      var $all = $('.select2.select2-container--open');
 
-      RWFall.each(function () {
-        if (this == RWFselect[0]) {
+      $all.each(function () {
+        if (this == $select[0]) {
           return;
         }
 
-        var RWFelement = Utils.GetData(this, 'element');
+        var $element = Utils.GetData(this, 'element');
 
-        RWFelement.select2('close');
+        $element.select2('close');
       });
     });
   };
 
   BaseSelection.prototype._detachCloseHandler = function (container) {
-    RWF(document.body).off('mousedown.select2.' + container.id);
+    $(document.body).off('mousedown.select2.' + container.id);
   };
 
-  BaseSelection.prototype.position = function (RWFselection, RWFcontainer) {
-    var RWFselectionContainer = RWFcontainer.find('.selection');
-    RWFselectionContainer.append(RWFselection);
+  BaseSelection.prototype.position = function ($selection, $container) {
+    var $selectionContainer = $container.find('.selection');
+    $selectionContainer.append($selection);
   };
 
   BaseSelection.prototype.destroy = function () {
@@ -1585,7 +1585,7 @@ S2.define('select2/selection/single',[
   './base',
   '../utils',
   '../keys'
-], function (RWF, BaseSelection, Utils, KEYS) {
+], function ($, BaseSelection, Utils, KEYS) {
   function SingleSelection () {
     SingleSelection.__super__.constructor.apply(this, arguments);
   }
@@ -1593,34 +1593,34 @@ S2.define('select2/selection/single',[
   Utils.Extend(SingleSelection, BaseSelection);
 
   SingleSelection.prototype.render = function () {
-    var RWFselection = SingleSelection.__super__.render.call(this);
+    var $selection = SingleSelection.__super__.render.call(this);
 
-    RWFselection.addClass('select2-selection--single');
+    $selection.addClass('select2-selection--single');
 
-    RWFselection.html(
+    $selection.html(
       '<span class="select2-selection__rendered"></span>' +
       '<span class="select2-selection__arrow" role="presentation">' +
         '<b role="presentation"></b>' +
       '</span>'
     );
 
-    return RWFselection;
+    return $selection;
   };
 
-  SingleSelection.prototype.bind = function (container, RWFcontainer) {
+  SingleSelection.prototype.bind = function (container, $container) {
     var self = this;
 
     SingleSelection.__super__.bind.apply(this, arguments);
 
     var id = container.id + '-container';
 
-    this.RWFselection.find('.select2-selection__rendered')
+    this.$selection.find('.select2-selection__rendered')
       .attr('id', id)
       .attr('role', 'textbox')
       .attr('aria-readonly', 'true');
-    this.RWFselection.attr('aria-labelledby', id);
+    this.$selection.attr('aria-labelledby', id);
 
-    this.RWFselection.on('mousedown', function (evt) {
+    this.$selection.on('mousedown', function (evt) {
       // Only respond to left clicks
       if (evt.which !== 1) {
         return;
@@ -1631,25 +1631,25 @@ S2.define('select2/selection/single',[
       });
     });
 
-    this.RWFselection.on('focus', function (evt) {
+    this.$selection.on('focus', function (evt) {
       // User focuses on the container
     });
 
-    this.RWFselection.on('blur', function (evt) {
+    this.$selection.on('blur', function (evt) {
       // User exits the container
     });
 
     container.on('focus', function (evt) {
       if (!container.isOpen()) {
-        self.RWFselection.trigger('focus');
+        self.$selection.trigger('focus');
       }
     });
   };
 
   SingleSelection.prototype.clear = function () {
-    var RWFrendered = this.RWFselection.find('.select2-selection__rendered');
-    RWFrendered.empty();
-    RWFrendered.removeAttr('title'); // clear tooltip on empty
+    var $rendered = this.$selection.find('.select2-selection__rendered');
+    $rendered.empty();
+    $rendered.removeAttr('title'); // clear tooltip on empty
   };
 
   SingleSelection.prototype.display = function (data, container) {
@@ -1660,7 +1660,7 @@ S2.define('select2/selection/single',[
   };
 
   SingleSelection.prototype.selectionContainer = function () {
-    return RWF('<span></span>');
+    return $('<span></span>');
   };
 
   SingleSelection.prototype.update = function (data) {
@@ -1671,17 +1671,17 @@ S2.define('select2/selection/single',[
 
     var selection = data[0];
 
-    var RWFrendered = this.RWFselection.find('.select2-selection__rendered');
-    var formatted = this.display(selection, RWFrendered);
+    var $rendered = this.$selection.find('.select2-selection__rendered');
+    var formatted = this.display(selection, $rendered);
 
-    RWFrendered.empty().append(formatted);
+    $rendered.empty().append(formatted);
 
     var title = selection.title || selection.text;
 
     if (title) {
-      RWFrendered.attr('title', title);
+      $rendered.attr('title', title);
     } else {
-      RWFrendered.removeAttr('title');
+      $rendered.removeAttr('title');
     }
   };
 
@@ -1692,37 +1692,37 @@ S2.define('select2/selection/multiple',[
   'jquery',
   './base',
   '../utils'
-], function (RWF, BaseSelection, Utils) {
-  function MultipleSelection (RWFelement, options) {
+], function ($, BaseSelection, Utils) {
+  function MultipleSelection ($element, options) {
     MultipleSelection.__super__.constructor.apply(this, arguments);
   }
 
   Utils.Extend(MultipleSelection, BaseSelection);
 
   MultipleSelection.prototype.render = function () {
-    var RWFselection = MultipleSelection.__super__.render.call(this);
+    var $selection = MultipleSelection.__super__.render.call(this);
 
-    RWFselection.addClass('select2-selection--multiple');
+    $selection.addClass('select2-selection--multiple');
 
-    RWFselection.html(
+    $selection.html(
       '<ul class="select2-selection__rendered"></ul>'
     );
 
-    return RWFselection;
+    return $selection;
   };
 
-  MultipleSelection.prototype.bind = function (container, RWFcontainer) {
+  MultipleSelection.prototype.bind = function (container, $container) {
     var self = this;
 
     MultipleSelection.__super__.bind.apply(this, arguments);
 
-    this.RWFselection.on('click', function (evt) {
+    this.$selection.on('click', function (evt) {
       self.trigger('toggle', {
         originalEvent: evt
       });
     });
 
-    this.RWFselection.on(
+    this.$selection.on(
       'click',
       '.select2-selection__choice__remove',
       function (evt) {
@@ -1731,10 +1731,10 @@ S2.define('select2/selection/multiple',[
           return;
         }
 
-        var RWFremove = RWF(this);
-        var RWFselection = RWFremove.parent();
+        var $remove = $(this);
+        var $selection = $remove.parent();
 
-        var data = Utils.GetData(RWFselection[0], 'data');
+        var data = Utils.GetData($selection[0], 'data');
 
         self.trigger('unselect', {
           originalEvent: evt,
@@ -1745,9 +1745,9 @@ S2.define('select2/selection/multiple',[
   };
 
   MultipleSelection.prototype.clear = function () {
-    var RWFrendered = this.RWFselection.find('.select2-selection__rendered');
-    RWFrendered.empty();
-    RWFrendered.removeAttr('title');
+    var $rendered = this.$selection.find('.select2-selection__rendered');
+    $rendered.empty();
+    $rendered.removeAttr('title');
   };
 
   MultipleSelection.prototype.display = function (data, container) {
@@ -1758,7 +1758,7 @@ S2.define('select2/selection/multiple',[
   };
 
   MultipleSelection.prototype.selectionContainer = function () {
-    var RWFcontainer = RWF(
+    var $container = $(
       '<li class="select2-selection__choice">' +
         '<span class="select2-selection__choice__remove" role="presentation">' +
           '&times;' +
@@ -1766,7 +1766,7 @@ S2.define('select2/selection/multiple',[
       '</li>'
     );
 
-    return RWFcontainer;
+    return $container;
   };
 
   MultipleSelection.prototype.update = function (data) {
@@ -1776,30 +1776,30 @@ S2.define('select2/selection/multiple',[
       return;
     }
 
-    var RWFselections = [];
+    var $selections = [];
 
     for (var d = 0; d < data.length; d++) {
       var selection = data[d];
 
-      var RWFselection = this.selectionContainer();
-      var formatted = this.display(selection, RWFselection);
+      var $selection = this.selectionContainer();
+      var formatted = this.display(selection, $selection);
 
-      RWFselection.append(formatted);
+      $selection.append(formatted);
 
       var title = selection.title || selection.text;
 
       if (title) {
-        RWFselection.attr('title', title);
+        $selection.attr('title', title);
       }
 
-      Utils.StoreData(RWFselection[0], 'data', selection);
+      Utils.StoreData($selection[0], 'data', selection);
 
-      RWFselections.push(RWFselection);
+      $selections.push($selection);
     }
 
-    var RWFrendered = this.RWFselection.find('.select2-selection__rendered');
+    var $rendered = this.$selection.find('.select2-selection__rendered');
 
-    Utils.appendMany(RWFrendered, RWFselections);
+    Utils.appendMany($rendered, $selections);
   };
 
   return MultipleSelection;
@@ -1808,10 +1808,10 @@ S2.define('select2/selection/multiple',[
 S2.define('select2/selection/placeholder',[
   '../utils'
 ], function (Utils) {
-  function Placeholder (decorated, RWFelement, options) {
+  function Placeholder (decorated, $element, options) {
     this.placeholder = this.normalizePlaceholder(options.get('placeholder'));
 
-    decorated.call(this, RWFelement, options);
+    decorated.call(this, $element, options);
   }
 
   Placeholder.prototype.normalizePlaceholder = function (_, placeholder) {
@@ -1826,13 +1826,13 @@ S2.define('select2/selection/placeholder',[
   };
 
   Placeholder.prototype.createPlaceholder = function (decorated, placeholder) {
-    var RWFplaceholder = this.selectionContainer();
+    var $placeholder = this.selectionContainer();
 
-    RWFplaceholder.html(this.display(placeholder));
-    RWFplaceholder.addClass('select2-selection__placeholder')
+    $placeholder.html(this.display(placeholder));
+    $placeholder.addClass('select2-selection__placeholder')
                 .removeClass('select2-selection__choice');
 
-    return RWFplaceholder;
+    return $placeholder;
   };
 
   Placeholder.prototype.update = function (decorated, data) {
@@ -1847,9 +1847,9 @@ S2.define('select2/selection/placeholder',[
 
     this.clear();
 
-    var RWFplaceholder = this.createPlaceholder(this.placeholder);
+    var $placeholder = this.createPlaceholder(this.placeholder);
 
-    this.RWFselection.find('.select2-selection__rendered').append(RWFplaceholder);
+    this.$selection.find('.select2-selection__rendered').append($placeholder);
   };
 
   return Placeholder;
@@ -1859,13 +1859,13 @@ S2.define('select2/selection/allowClear',[
   'jquery',
   '../keys',
   '../utils'
-], function (RWF, KEYS, Utils) {
+], function ($, KEYS, Utils) {
   function AllowClear () { }
 
-  AllowClear.prototype.bind = function (decorated, container, RWFcontainer) {
+  AllowClear.prototype.bind = function (decorated, container, $container) {
     var self = this;
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
     if (this.placeholder == null) {
       if (this.options.get('debug') && window.console && console.error) {
@@ -1876,7 +1876,7 @@ S2.define('select2/selection/allowClear',[
       }
     }
 
-    this.RWFselection.on('mousedown', '.select2-selection__clear',
+    this.$selection.on('mousedown', '.select2-selection__clear',
       function (evt) {
         self._handleClear(evt);
     });
@@ -1892,26 +1892,26 @@ S2.define('select2/selection/allowClear',[
       return;
     }
 
-    var RWFclear = this.RWFselection.find('.select2-selection__clear');
+    var $clear = this.$selection.find('.select2-selection__clear');
 
     // Ignore the event if nothing has been selected
-    if (RWFclear.length === 0) {
+    if ($clear.length === 0) {
       return;
     }
 
     evt.stopPropagation();
 
-    var data = Utils.GetData(RWFclear[0], 'data');
+    var data = Utils.GetData($clear[0], 'data');
 
-    var previousVal = this.RWFelement.val();
-    this.RWFelement.val(this.placeholder.id);
+    var previousVal = this.$element.val();
+    this.$element.val(this.placeholder.id);
 
     var unselectData = {
       data: data
     };
     this.trigger('clear', unselectData);
     if (unselectData.prevented) {
-      this.RWFelement.val(previousVal);
+      this.$element.val(previousVal);
       return;
     }
 
@@ -1926,12 +1926,12 @@ S2.define('select2/selection/allowClear',[
 
       // If the event was prevented, don't clear it out.
       if (unselectData.prevented) {
-        this.RWFelement.val(previousVal);
+        this.$element.val(previousVal);
         return;
       }
     }
 
-    this.RWFelement.trigger('input').trigger('change');
+    this.$element.trigger('input').trigger('change');
 
     this.trigger('toggle', {});
   };
@@ -1949,21 +1949,21 @@ S2.define('select2/selection/allowClear',[
   AllowClear.prototype.update = function (decorated, data) {
     decorated.call(this, data);
 
-    if (this.RWFselection.find('.select2-selection__placeholder').length > 0 ||
+    if (this.$selection.find('.select2-selection__placeholder').length > 0 ||
         data.length === 0) {
       return;
     }
 
     var removeAll = this.options.get('translations').get('removeAllItems');
 
-    var RWFremove = RWF(
+    var $remove = $(
       '<span class="select2-selection__clear" title="' + removeAll() +'">' +
         '&times;' +
       '</span>'
     );
-    Utils.StoreData(RWFremove[0], 'data', data);
+    Utils.StoreData($remove[0], 'data', data);
 
-    this.RWFselection.find('.select2-selection__rendered').prepend(RWFremove);
+    this.$selection.find('.select2-selection__rendered').prepend($remove);
   };
 
   return AllowClear;
@@ -1973,13 +1973,13 @@ S2.define('select2/selection/search',[
   'jquery',
   '../utils',
   '../keys'
-], function (RWF, Utils, KEYS) {
-  function Search (decorated, RWFelement, options) {
-    decorated.call(this, RWFelement, options);
+], function ($, Utils, KEYS) {
+  function Search (decorated, $element, options) {
+    decorated.call(this, $element, options);
   }
 
   Search.prototype.render = function (decorated) {
-    var RWFsearch = RWF(
+    var $search = $(
       '<li class="select2-search select2-search--inline">' +
         '<input class="select2-search__field" type="search" tabindex="-1"' +
         ' autocomplete="off" autocorrect="off" autocapitalize="none"' +
@@ -1987,66 +1987,66 @@ S2.define('select2/selection/search',[
       '</li>'
     );
 
-    this.RWFsearchContainer = RWFsearch;
-    this.RWFsearch = RWFsearch.find('input');
+    this.$searchContainer = $search;
+    this.$search = $search.find('input');
 
-    var RWFrendered = decorated.call(this);
+    var $rendered = decorated.call(this);
 
     this._transferTabIndex();
 
-    return RWFrendered;
+    return $rendered;
   };
 
-  Search.prototype.bind = function (decorated, container, RWFcontainer) {
+  Search.prototype.bind = function (decorated, container, $container) {
     var self = this;
 
     var resultsId = container.id + '-results';
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
     container.on('open', function () {
-      self.RWFsearch.attr('aria-controls', resultsId);
-      self.RWFsearch.trigger('focus');
+      self.$search.attr('aria-controls', resultsId);
+      self.$search.trigger('focus');
     });
 
     container.on('close', function () {
-      self.RWFsearch.val('');
-      self.RWFsearch.removeAttr('aria-controls');
-      self.RWFsearch.removeAttr('aria-activedescendant');
-      self.RWFsearch.trigger('focus');
+      self.$search.val('');
+      self.$search.removeAttr('aria-controls');
+      self.$search.removeAttr('aria-activedescendant');
+      self.$search.trigger('focus');
     });
 
     container.on('enable', function () {
-      self.RWFsearch.prop('disabled', false);
+      self.$search.prop('disabled', false);
 
       self._transferTabIndex();
     });
 
     container.on('disable', function () {
-      self.RWFsearch.prop('disabled', true);
+      self.$search.prop('disabled', true);
     });
 
     container.on('focus', function (evt) {
-      self.RWFsearch.trigger('focus');
+      self.$search.trigger('focus');
     });
 
     container.on('results:focus', function (params) {
       if (params.data._resultId) {
-        self.RWFsearch.attr('aria-activedescendant', params.data._resultId);
+        self.$search.attr('aria-activedescendant', params.data._resultId);
       } else {
-        self.RWFsearch.removeAttr('aria-activedescendant');
+        self.$search.removeAttr('aria-activedescendant');
       }
     });
 
-    this.RWFselection.on('focusin', '.select2-search--inline', function (evt) {
+    this.$selection.on('focusin', '.select2-search--inline', function (evt) {
       self.trigger('focus', evt);
     });
 
-    this.RWFselection.on('focusout', '.select2-search--inline', function (evt) {
+    this.$selection.on('focusout', '.select2-search--inline', function (evt) {
       self._handleBlur(evt);
     });
 
-    this.RWFselection.on('keydown', '.select2-search--inline', function (evt) {
+    this.$selection.on('keydown', '.select2-search--inline', function (evt) {
       evt.stopPropagation();
 
       self.trigger('keypress', evt);
@@ -2055,12 +2055,12 @@ S2.define('select2/selection/search',[
 
       var key = evt.which;
 
-      if (key === KEYS.BACKSPACE && self.RWFsearch.val() === '') {
-        var RWFpreviousChoice = self.RWFsearchContainer
+      if (key === KEYS.BACKSPACE && self.$search.val() === '') {
+        var $previousChoice = self.$searchContainer
           .prev('.select2-selection__choice');
 
-        if (RWFpreviousChoice.length > 0) {
-          var item = Utils.GetData(RWFpreviousChoice[0], 'data');
+        if ($previousChoice.length > 0) {
+          var item = Utils.GetData($previousChoice[0], 'data');
 
           self.searchRemoveChoice(item);
 
@@ -2069,8 +2069,8 @@ S2.define('select2/selection/search',[
       }
     });
 
-    this.RWFselection.on('click', '.select2-search--inline', function (evt) {
-      if (self.RWFsearch.val()) {
+    this.$selection.on('click', '.select2-search--inline', function (evt) {
+      if (self.$search.val()) {
         evt.stopPropagation();
       }
     });
@@ -2086,7 +2086,7 @@ S2.define('select2/selection/search',[
     // Workaround for browsers which do not support the `input` event
     // This will prevent double-triggering of events for browsers which support
     // both the `keyup` and `input` events.
-    this.RWFselection.on(
+    this.$selection.on(
       'input.searchcheck',
       '.select2-search--inline',
       function (evt) {
@@ -2094,16 +2094,16 @@ S2.define('select2/selection/search',[
         // search box. To get around this issue, we are forced to ignore all
         // `input` events in IE and keep using `keyup`.
         if (disableInputEvents) {
-          self.RWFselection.off('input.search input.searchcheck');
+          self.$selection.off('input.search input.searchcheck');
           return;
         }
 
         // Unbind the duplicated `keyup` event
-        self.RWFselection.off('keyup.search');
+        self.$selection.off('keyup.search');
       }
     );
 
-    this.RWFselection.on(
+    this.$selection.on(
       'keyup.search input.search',
       '.select2-search--inline',
       function (evt) {
@@ -2111,7 +2111,7 @@ S2.define('select2/selection/search',[
         // search box. To get around this issue, we are forced to ignore all
         // `input` events in IE and keep using `keyup`.
         if (disableInputEvents && evt.type === 'input') {
-          self.RWFselection.off('input.search input.searchcheck');
+          self.$selection.off('input.search input.searchcheck');
           return;
         }
 
@@ -2140,27 +2140,27 @@ S2.define('select2/selection/search',[
    * @private
    */
   Search.prototype._transferTabIndex = function (decorated) {
-    this.RWFsearch.attr('tabindex', this.RWFselection.attr('tabindex'));
-    this.RWFselection.attr('tabindex', '-1');
+    this.$search.attr('tabindex', this.$selection.attr('tabindex'));
+    this.$selection.attr('tabindex', '-1');
   };
 
   Search.prototype.createPlaceholder = function (decorated, placeholder) {
-    this.RWFsearch.attr('placeholder', placeholder.text);
+    this.$search.attr('placeholder', placeholder.text);
   };
 
   Search.prototype.update = function (decorated, data) {
-    var searchHadFocus = this.RWFsearch[0] == document.activeElement;
+    var searchHadFocus = this.$search[0] == document.activeElement;
 
-    this.RWFsearch.attr('placeholder', '');
+    this.$search.attr('placeholder', '');
 
     decorated.call(this, data);
 
-    this.RWFselection.find('.select2-selection__rendered')
-                   .append(this.RWFsearchContainer);
+    this.$selection.find('.select2-selection__rendered')
+                   .append(this.$searchContainer);
 
     this.resizeSearch();
     if (searchHadFocus) {
-      this.RWFsearch.trigger('focus');
+      this.$search.trigger('focus');
     }
   };
 
@@ -2168,7 +2168,7 @@ S2.define('select2/selection/search',[
     this.resizeSearch();
 
     if (!this._keyUpPrevented) {
-      var input = this.RWFsearch.val();
+      var input = this.$search.val();
 
       this.trigger('query', {
         term: input
@@ -2183,24 +2183,24 @@ S2.define('select2/selection/search',[
       data: item
     });
 
-    this.RWFsearch.val(item.text);
+    this.$search.val(item.text);
     this.handleSearch();
   };
 
   Search.prototype.resizeSearch = function () {
-    this.RWFsearch.css('width', '25px');
+    this.$search.css('width', '25px');
 
     var width = '';
 
-    if (this.RWFsearch.attr('placeholder') !== '') {
-      width = this.RWFselection.find('.select2-selection__rendered').width();
+    if (this.$search.attr('placeholder') !== '') {
+      width = this.$selection.find('.select2-selection__rendered').width();
     } else {
-      var minimumWidth = this.RWFsearch.val().length + 1;
+      var minimumWidth = this.$search.val().length + 1;
 
       width = (minimumWidth * 0.75) + 'em';
     }
 
-    this.RWFsearch.css('width', width);
+    this.$search.css('width', width);
   };
 
   return Search;
@@ -2208,10 +2208,10 @@ S2.define('select2/selection/search',[
 
 S2.define('select2/selection/eventRelay',[
   'jquery'
-], function (RWF) {
+], function ($) {
   function EventRelay () { }
 
-  EventRelay.prototype.bind = function (decorated, container, RWFcontainer) {
+  EventRelay.prototype.bind = function (decorated, container, $container) {
     var self = this;
     var relayEvents = [
       'open', 'opening',
@@ -2225,11 +2225,11 @@ S2.define('select2/selection/eventRelay',[
       'opening', 'closing', 'selecting', 'unselecting', 'clearing'
     ];
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
     container.on('*', function (name, params) {
       // Ignore events that should not be relayed
-      if (RWF.inArray(name, relayEvents) === -1) {
+      if ($.inArray(name, relayEvents) === -1) {
         return;
       }
 
@@ -2237,14 +2237,14 @@ S2.define('select2/selection/eventRelay',[
       params = params || {};
 
       // Generate the jQuery event for the Select2 event
-      var evt = RWF.Event('select2:' + name, {
+      var evt = $.Event('select2:' + name, {
         params: params
       });
 
-      self.RWFelement.trigger(evt);
+      self.$element.trigger(evt);
 
       // Only handle preventable events if it was one
-      if (RWF.inArray(name, preventableEvents) === -1) {
+      if ($.inArray(name, preventableEvents) === -1) {
         return;
       }
 
@@ -2258,7 +2258,7 @@ S2.define('select2/selection/eventRelay',[
 S2.define('select2/translation',[
   'jquery',
   'require'
-], function (RWF, require) {
+], function ($, require) {
   function Translation (dict) {
     this.dict = dict || {};
   }
@@ -2272,7 +2272,7 @@ S2.define('select2/translation',[
   };
 
   Translation.prototype.extend = function (translation) {
-    this.dict = RWF.extend({}, translation.all(), this.dict);
+    this.dict = $.extend({}, translation.all(), this.dict);
   };
 
   // Static functions
@@ -3146,7 +3146,7 @@ S2.define('select2/diacritics',[
 S2.define('select2/data/base',[
   '../utils'
 ], function (Utils) {
-  function BaseAdapter (RWFelement, options) {
+  function BaseAdapter ($element, options) {
     BaseAdapter.__super__.constructor.call(this);
   }
 
@@ -3160,7 +3160,7 @@ S2.define('select2/data/base',[
     throw new Error('The `query` method must be defined in child classes.');
   };
 
-  BaseAdapter.prototype.bind = function (container, RWFcontainer) {
+  BaseAdapter.prototype.bind = function (container, $container) {
     // Can be implemented in subclasses
   };
 
@@ -3188,9 +3188,9 @@ S2.define('select2/data/select',[
   './base',
   '../utils',
   'jquery'
-], function (BaseAdapter, Utils, RWF) {
-  function SelectAdapter (RWFelement, options) {
-    this.RWFelement = RWFelement;
+], function (BaseAdapter, Utils, $) {
+  function SelectAdapter ($element, options) {
+    this.$element = $element;
     this.options = options;
 
     SelectAdapter.__super__.constructor.call(this);
@@ -3202,10 +3202,10 @@ S2.define('select2/data/select',[
     var data = [];
     var self = this;
 
-    this.RWFelement.find(':selected').each(function () {
-      var RWFoption = RWF(this);
+    this.$element.find(':selected').each(function () {
+      var $option = $(this);
 
-      var option = self.item(RWFoption);
+      var option = self.item($option);
 
       data.push(option);
     });
@@ -3219,15 +3219,15 @@ S2.define('select2/data/select',[
     data.selected = true;
 
     // If data.element is a DOM node, use it instead
-    if (RWF(data.element).is('option')) {
+    if ($(data.element).is('option')) {
       data.element.selected = true;
 
-      this.RWFelement.trigger('input').trigger('change');
+      this.$element.trigger('input').trigger('change');
 
       return;
     }
 
-    if (this.RWFelement.prop('multiple')) {
+    if (this.$element.prop('multiple')) {
       this.current(function (currentData) {
         var val = [];
 
@@ -3237,35 +3237,35 @@ S2.define('select2/data/select',[
         for (var d = 0; d < data.length; d++) {
           var id = data[d].id;
 
-          if (RWF.inArray(id, val) === -1) {
+          if ($.inArray(id, val) === -1) {
             val.push(id);
           }
         }
 
-        self.RWFelement.val(val);
-        self.RWFelement.trigger('input').trigger('change');
+        self.$element.val(val);
+        self.$element.trigger('input').trigger('change');
       });
     } else {
       var val = data.id;
 
-      this.RWFelement.val(val);
-      this.RWFelement.trigger('input').trigger('change');
+      this.$element.val(val);
+      this.$element.trigger('input').trigger('change');
     }
   };
 
   SelectAdapter.prototype.unselect = function (data) {
     var self = this;
 
-    if (!this.RWFelement.prop('multiple')) {
+    if (!this.$element.prop('multiple')) {
       return;
     }
 
     data.selected = false;
 
-    if (RWF(data.element).is('option')) {
+    if ($(data.element).is('option')) {
       data.element.selected = false;
 
-      this.RWFelement.trigger('input').trigger('change');
+      this.$element.trigger('input').trigger('change');
 
       return;
     }
@@ -3276,18 +3276,18 @@ S2.define('select2/data/select',[
       for (var d = 0; d < currentData.length; d++) {
         var id = currentData[d].id;
 
-        if (id !== data.id && RWF.inArray(id, val) === -1) {
+        if (id !== data.id && $.inArray(id, val) === -1) {
           val.push(id);
         }
       }
 
-      self.RWFelement.val(val);
+      self.$element.val(val);
 
-      self.RWFelement.trigger('input').trigger('change');
+      self.$element.trigger('input').trigger('change');
     });
   };
 
-  SelectAdapter.prototype.bind = function (container, RWFcontainer) {
+  SelectAdapter.prototype.bind = function (container, $container) {
     var self = this;
 
     this.container = container;
@@ -3303,7 +3303,7 @@ S2.define('select2/data/select',[
 
   SelectAdapter.prototype.destroy = function () {
     // Remove anything added to child elements
-    this.RWFelement.find('*').each(function () {
+    this.$element.find('*').each(function () {
       // Remove any custom data set by Select2
       Utils.RemoveData(this);
     });
@@ -3313,16 +3313,16 @@ S2.define('select2/data/select',[
     var data = [];
     var self = this;
 
-    var RWFoptions = this.RWFelement.children();
+    var $options = this.$element.children();
 
-    RWFoptions.each(function () {
-      var RWFoption = RWF(this);
+    $options.each(function () {
+      var $option = $(this);
 
-      if (!RWFoption.is('option') && !RWFoption.is('optgroup')) {
+      if (!$option.is('option') && !$option.is('optgroup')) {
         return;
       }
 
-      var option = self.item(RWFoption);
+      var option = self.item($option);
 
       var matches = self.matches(params, option);
 
@@ -3336,8 +3336,8 @@ S2.define('select2/data/select',[
     });
   };
 
-  SelectAdapter.prototype.addOptions = function (RWFoptions) {
-    Utils.appendMany(this.RWFelement, RWFoptions);
+  SelectAdapter.prototype.addOptions = function ($options) {
+    Utils.appendMany(this.$element, $options);
   };
 
   SelectAdapter.prototype.option = function (data) {
@@ -3372,7 +3372,7 @@ S2.define('select2/data/select',[
       option.title = data.title;
     }
 
-    var RWFoption = RWF(option);
+    var $option = $(option);
 
     var normalizedData = this._normalizeItem(data);
     normalizedData.element = option;
@@ -3380,40 +3380,40 @@ S2.define('select2/data/select',[
     // Override the option's data with the combined data
     Utils.StoreData(option, 'data', normalizedData);
 
-    return RWFoption;
+    return $option;
   };
 
-  SelectAdapter.prototype.item = function (RWFoption) {
+  SelectAdapter.prototype.item = function ($option) {
     var data = {};
 
-    data = Utils.GetData(RWFoption[0], 'data');
+    data = Utils.GetData($option[0], 'data');
 
     if (data != null) {
       return data;
     }
 
-    if (RWFoption.is('option')) {
+    if ($option.is('option')) {
       data = {
-        id: RWFoption.val(),
-        text: RWFoption.text(),
-        disabled: RWFoption.prop('disabled'),
-        selected: RWFoption.prop('selected'),
-        title: RWFoption.prop('title')
+        id: $option.val(),
+        text: $option.text(),
+        disabled: $option.prop('disabled'),
+        selected: $option.prop('selected'),
+        title: $option.prop('title')
       };
-    } else if (RWFoption.is('optgroup')) {
+    } else if ($option.is('optgroup')) {
       data = {
-        text: RWFoption.prop('label'),
+        text: $option.prop('label'),
         children: [],
-        title: RWFoption.prop('title')
+        title: $option.prop('title')
       };
 
-      var RWFchildren = RWFoption.children('option');
+      var $children = $option.children('option');
       var children = [];
 
-      for (var c = 0; c < RWFchildren.length; c++) {
-        var RWFchild = RWF(RWFchildren[c]);
+      for (var c = 0; c < $children.length; c++) {
+        var $child = $($children[c]);
 
-        var child = this.item(RWFchild);
+        var child = this.item($child);
 
         children.push(child);
       }
@@ -3422,9 +3422,9 @@ S2.define('select2/data/select',[
     }
 
     data = this._normalizeItem(data);
-    data.element = RWFoption[0];
+    data.element = $option[0];
 
-    Utils.StoreData(RWFoption[0], 'data', data);
+    Utils.StoreData($option[0], 'data', data);
 
     return data;
   };
@@ -3437,7 +3437,7 @@ S2.define('select2/data/select',[
       };
     }
 
-    item = RWF.extend({}, {
+    item = $.extend({}, {
       text: ''
     }, item);
 
@@ -3458,7 +3458,7 @@ S2.define('select2/data/select',[
       item._resultId = this.generateResultId(this.container, item);
     }
 
-    return RWF.extend({}, defaults, item);
+    return $.extend({}, defaults, item);
   };
 
   SelectAdapter.prototype.matches = function (params, data) {
@@ -3474,30 +3474,30 @@ S2.define('select2/data/array',[
   './select',
   '../utils',
   'jquery'
-], function (SelectAdapter, Utils, RWF) {
-  function ArrayAdapter (RWFelement, options) {
+], function (SelectAdapter, Utils, $) {
+  function ArrayAdapter ($element, options) {
     this._dataToConvert = options.get('data') || [];
 
-    ArrayAdapter.__super__.constructor.call(this, RWFelement, options);
+    ArrayAdapter.__super__.constructor.call(this, $element, options);
   }
 
   Utils.Extend(ArrayAdapter, SelectAdapter);
 
-  ArrayAdapter.prototype.bind = function (container, RWFcontainer) {
-    ArrayAdapter.__super__.bind.call(this, container, RWFcontainer);
+  ArrayAdapter.prototype.bind = function (container, $container) {
+    ArrayAdapter.__super__.bind.call(this, container, $container);
 
     this.addOptions(this.convertToOptions(this._dataToConvert));
   };
 
   ArrayAdapter.prototype.select = function (data) {
-    var RWFoption = this.RWFelement.find('option').filter(function (i, elm) {
+    var $option = this.$element.find('option').filter(function (i, elm) {
       return elm.value == data.id.toString();
     });
 
-    if (RWFoption.length === 0) {
-      RWFoption = this.option(data);
+    if ($option.length === 0) {
+      $option = this.option(data);
 
-      this.addOptions(RWFoption);
+      this.addOptions($option);
     }
 
     ArrayAdapter.__super__.select.call(this, data);
@@ -3506,17 +3506,17 @@ S2.define('select2/data/array',[
   ArrayAdapter.prototype.convertToOptions = function (data) {
     var self = this;
 
-    var RWFexisting = this.RWFelement.find('option');
-    var existingIds = RWFexisting.map(function () {
-      return self.item(RWF(this)).id;
+    var $existing = this.$element.find('option');
+    var existingIds = $existing.map(function () {
+      return self.item($(this)).id;
     }).get();
 
-    var RWFoptions = [];
+    var $options = [];
 
     // Filter out all items except for the one passed in the argument
     function onlyItem (item) {
       return function () {
-        return RWF(this).val() == item.id;
+        return $(this).val() == item.id;
       };
     }
 
@@ -3524,31 +3524,31 @@ S2.define('select2/data/array',[
       var item = this._normalizeItem(data[d]);
 
       // Skip items which were pre-loaded, only merge the data
-      if (RWF.inArray(item.id, existingIds) >= 0) {
-        var RWFexistingOption = RWFexisting.filter(onlyItem(item));
+      if ($.inArray(item.id, existingIds) >= 0) {
+        var $existingOption = $existing.filter(onlyItem(item));
 
-        var existingData = this.item(RWFexistingOption);
-        var newData = RWF.extend(true, {}, item, existingData);
+        var existingData = this.item($existingOption);
+        var newData = $.extend(true, {}, item, existingData);
 
-        var RWFnewOption = this.option(newData);
+        var $newOption = this.option(newData);
 
-        RWFexistingOption.replaceWith(RWFnewOption);
+        $existingOption.replaceWith($newOption);
 
         continue;
       }
 
-      var RWFoption = this.option(item);
+      var $option = this.option(item);
 
       if (item.children) {
-        var RWFchildren = this.convertToOptions(item.children);
+        var $children = this.convertToOptions(item.children);
 
-        Utils.appendMany(RWFoption, RWFchildren);
+        Utils.appendMany($option, $children);
       }
 
-      RWFoptions.push(RWFoption);
+      $options.push($option);
     }
 
-    return RWFoptions;
+    return $options;
   };
 
   return ArrayAdapter;
@@ -3558,15 +3558,15 @@ S2.define('select2/data/ajax',[
   './array',
   '../utils',
   'jquery'
-], function (ArrayAdapter, Utils, RWF) {
-  function AjaxAdapter (RWFelement, options) {
+], function (ArrayAdapter, Utils, $) {
+  function AjaxAdapter ($element, options) {
     this.ajaxOptions = this._applyDefaults(options.get('ajax'));
 
     if (this.ajaxOptions.processResults != null) {
       this.processResults = this.ajaxOptions.processResults;
     }
 
-    AjaxAdapter.__super__.constructor.call(this, RWFelement, options);
+    AjaxAdapter.__super__.constructor.call(this, $element, options);
   }
 
   Utils.Extend(AjaxAdapter, ArrayAdapter);
@@ -3574,21 +3574,21 @@ S2.define('select2/data/ajax',[
   AjaxAdapter.prototype._applyDefaults = function (options) {
     var defaults = {
       data: function (params) {
-        return RWF.extend({}, params, {
+        return $.extend({}, params, {
           q: params.term
         });
       },
       transport: function (params, success, failure) {
-        var RWFrequest = RWF.ajax(params);
+        var $request = $.ajax(params);
 
-        RWFrequest.then(success);
-        RWFrequest.fail(failure);
+        $request.then(success);
+        $request.fail(failure);
 
-        return RWFrequest;
+        return $request;
       }
     };
 
-    return RWF.extend({}, defaults, options, true);
+    return $.extend({}, defaults, options, true);
   };
 
   AjaxAdapter.prototype.processResults = function (results) {
@@ -3601,32 +3601,32 @@ S2.define('select2/data/ajax',[
 
     if (this._request != null) {
       // JSONP requests cannot always be aborted
-      if (RWF.isFunction(this._request.abort)) {
+      if ($.isFunction(this._request.abort)) {
         this._request.abort();
       }
 
       this._request = null;
     }
 
-    var options = RWF.extend({
+    var options = $.extend({
       type: 'GET'
     }, this.ajaxOptions);
 
     if (typeof options.url === 'function') {
-      options.url = options.url.call(this.RWFelement, params);
+      options.url = options.url.call(this.$element, params);
     }
 
     if (typeof options.data === 'function') {
-      options.data = options.data.call(this.RWFelement, params);
+      options.data = options.data.call(this.$element, params);
     }
 
     function request () {
-      var RWFrequest = options.transport(options, function (data) {
+      var $request = options.transport(options, function (data) {
         var results = self.processResults(data, params);
 
         if (self.options.get('debug') && window.console && console.error) {
           // Check to make sure that the response included a `results` key.
-          if (!results || !results.results || !RWF.isArray(results.results)) {
+          if (!results || !results.results || !$.isArray(results.results)) {
             console.error(
               'Select2: The AJAX results did not return an array in the ' +
               '`results` key of the response.'
@@ -3638,8 +3638,8 @@ S2.define('select2/data/ajax',[
       }, function () {
         // Attempt to detect if a request was aborted
         // Only works if the transport exposes a status property
-        if ('status' in RWFrequest &&
-            (RWFrequest.status === 0 || RWFrequest.status === '0')) {
+        if ('status' in $request &&
+            ($request.status === 0 || $request.status === '0')) {
           return;
         }
 
@@ -3648,7 +3648,7 @@ S2.define('select2/data/ajax',[
         });
       });
 
-      self._request = RWFrequest;
+      self._request = $request;
     }
 
     if (this.ajaxOptions.delay && params.term != null) {
@@ -3667,8 +3667,8 @@ S2.define('select2/data/ajax',[
 
 S2.define('select2/data/tags',[
   'jquery'
-], function (RWF) {
-  function Tags (decorated, RWFelement, options) {
+], function ($) {
+  function Tags (decorated, $element, options) {
     var tags = options.get('tags');
 
     var createTag = options.get('createTag');
@@ -3683,16 +3683,16 @@ S2.define('select2/data/tags',[
         this.insertTag = insertTag;
     }
 
-    decorated.call(this, RWFelement, options);
+    decorated.call(this, $element, options);
 
-    if (RWF.isArray(tags)) {
+    if ($.isArray(tags)) {
       for (var t = 0; t < tags.length; t++) {
         var tag = tags[t];
         var item = this._normalizeItem(tag);
 
-        var RWFoption = this.option(item);
+        var $option = this.option(item);
 
-        this.RWFelement.append(RWFoption);
+        this.$element.append($option);
       }
     }
   }
@@ -3744,10 +3744,10 @@ S2.define('select2/data/tags',[
       var tag = self.createTag(params);
 
       if (tag != null) {
-        var RWFoption = self.option(tag);
-        RWFoption.attr('data-select2-tag', true);
+        var $option = self.option(tag);
+        $option.attr('data-select2-tag', true);
 
-        self.addOptions([RWFoption]);
+        self.addOptions([$option]);
 
         self.insertTag(data, tag);
       }
@@ -3761,7 +3761,7 @@ S2.define('select2/data/tags',[
   };
 
   Tags.prototype.createTag = function (decorated, params) {
-    var term = RWF.trim(params.term);
+    var term = $.trim(params.term);
 
     if (term === '') {
       return null;
@@ -3778,14 +3778,14 @@ S2.define('select2/data/tags',[
   };
 
   Tags.prototype._removeOldTags = function (_) {
-    var RWFoptions = this.RWFelement.find('option[data-select2-tag]');
+    var $options = this.$element.find('option[data-select2-tag]');
 
-    RWFoptions.each(function () {
+    $options.each(function () {
       if (this.selected) {
         return;
       }
 
-      RWF(this).remove();
+      $(this).remove();
     });
   };
 
@@ -3794,22 +3794,22 @@ S2.define('select2/data/tags',[
 
 S2.define('select2/data/tokenizer',[
   'jquery'
-], function (RWF) {
-  function Tokenizer (decorated, RWFelement, options) {
+], function ($) {
+  function Tokenizer (decorated, $element, options) {
     var tokenizer = options.get('tokenizer');
 
     if (tokenizer !== undefined) {
       this.tokenizer = tokenizer;
     }
 
-    decorated.call(this, RWFelement, options);
+    decorated.call(this, $element, options);
   }
 
-  Tokenizer.prototype.bind = function (decorated, container, RWFcontainer) {
-    decorated.call(this, container, RWFcontainer);
+  Tokenizer.prototype.bind = function (decorated, container, $container) {
+    decorated.call(this, container, $container);
 
-    this.RWFsearch =  container.dropdown.RWFsearch || container.selection.RWFsearch ||
-      RWFcontainer.find('.select2-search__field');
+    this.$search =  container.dropdown.$search || container.selection.$search ||
+      $container.find('.select2-search__field');
   };
 
   Tokenizer.prototype.query = function (decorated, params, callback) {
@@ -3821,17 +3821,17 @@ S2.define('select2/data/tokenizer',[
 
       // Check if the data object already exists as a tag
       // Select it if it doesn't
-      var RWFexistingOptions = self.RWFelement.find('option').filter(function () {
-        return RWF(this).val() === item.id;
+      var $existingOptions = self.$element.find('option').filter(function () {
+        return $(this).val() === item.id;
       });
 
       // If an existing option wasn't found for it, create the option
-      if (!RWFexistingOptions.length) {
-        var RWFoption = self.option(item);
-        RWFoption.attr('data-select2-tag', true);
+      if (!$existingOptions.length) {
+        var $option = self.option(item);
+        $option.attr('data-select2-tag', true);
 
         self._removeOldTags();
-        self.addOptions([RWFoption]);
+        self.addOptions([$option]);
       }
 
       // Select the item, now that we know there is an option for it
@@ -3850,9 +3850,9 @@ S2.define('select2/data/tokenizer',[
 
     if (tokenData.term !== params.term) {
       // Replace the search term if we have the search box
-      if (this.RWFsearch.length) {
-        this.RWFsearch.val(tokenData.term);
-        this.RWFsearch.trigger('focus');
+      if (this.$search.length) {
+        this.$search.val(tokenData.term);
+        this.$search.trigger('focus');
       }
 
       params.term = tokenData.term;
@@ -3876,14 +3876,14 @@ S2.define('select2/data/tokenizer',[
     while (i < term.length) {
       var termChar = term[i];
 
-      if (RWF.inArray(termChar, separators) === -1) {
+      if ($.inArray(termChar, separators) === -1) {
         i++;
 
         continue;
       }
 
       var part = term.substr(0, i);
-      var partParams = RWF.extend({}, params, {
+      var partParams = $.extend({}, params, {
         term: part
       });
 
@@ -3912,10 +3912,10 @@ S2.define('select2/data/tokenizer',[
 S2.define('select2/data/minimumInputLength',[
 
 ], function () {
-  function MinimumInputLength (decorated, RWFe, options) {
+  function MinimumInputLength (decorated, $e, options) {
     this.minimumInputLength = options.get('minimumInputLength');
 
-    decorated.call(this, RWFe, options);
+    decorated.call(this, $e, options);
   }
 
   MinimumInputLength.prototype.query = function (decorated, params, callback) {
@@ -3943,10 +3943,10 @@ S2.define('select2/data/minimumInputLength',[
 S2.define('select2/data/maximumInputLength',[
 
 ], function () {
-  function MaximumInputLength (decorated, RWFe, options) {
+  function MaximumInputLength (decorated, $e, options) {
     this.maximumInputLength = options.get('maximumInputLength');
 
-    decorated.call(this, RWFe, options);
+    decorated.call(this, $e, options);
   }
 
   MaximumInputLength.prototype.query = function (decorated, params, callback) {
@@ -3975,17 +3975,17 @@ S2.define('select2/data/maximumInputLength',[
 S2.define('select2/data/maximumSelectionLength',[
 
 ], function (){
-  function MaximumSelectionLength (decorated, RWFe, options) {
+  function MaximumSelectionLength (decorated, $e, options) {
     this.maximumSelectionLength = options.get('maximumSelectionLength');
 
-    decorated.call(this, RWFe, options);
+    decorated.call(this, $e, options);
   }
 
   MaximumSelectionLength.prototype.bind =
-    function (decorated, container, RWFcontainer) {
+    function (decorated, container, $container) {
       var self = this;
 
-      decorated.call(this, container, RWFcontainer);
+      decorated.call(this, container, $container);
 
       container.on('select', function () {
         self._checkIfMaximumSelected();
@@ -4030,9 +4030,9 @@ S2.define('select2/data/maximumSelectionLength',[
 S2.define('select2/dropdown',[
   'jquery',
   './utils'
-], function (RWF, Utils) {
-  function Dropdown (RWFelement, options) {
-    this.RWFelement = RWFelement;
+], function ($, Utils) {
+  function Dropdown ($element, options) {
+    this.$element = $element;
     this.options = options;
 
     Dropdown.__super__.constructor.call(this);
@@ -4041,30 +4041,30 @@ S2.define('select2/dropdown',[
   Utils.Extend(Dropdown, Utils.Observable);
 
   Dropdown.prototype.render = function () {
-    var RWFdropdown = RWF(
+    var $dropdown = $(
       '<span class="select2-dropdown">' +
         '<span class="select2-results"></span>' +
       '</span>'
     );
 
-    RWFdropdown.attr('dir', this.options.get('dir'));
+    $dropdown.attr('dir', this.options.get('dir'));
 
-    this.RWFdropdown = RWFdropdown;
+    this.$dropdown = $dropdown;
 
-    return RWFdropdown;
+    return $dropdown;
   };
 
   Dropdown.prototype.bind = function () {
     // Should be implemented in subclasses
   };
 
-  Dropdown.prototype.position = function (RWFdropdown, RWFcontainer) {
+  Dropdown.prototype.position = function ($dropdown, $container) {
     // Should be implemented in subclasses
   };
 
   Dropdown.prototype.destroy = function () {
     // Remove the dropdown from the DOM
-    this.RWFdropdown.remove();
+    this.$dropdown.remove();
   };
 
   return Dropdown;
@@ -4073,13 +4073,13 @@ S2.define('select2/dropdown',[
 S2.define('select2/dropdown/search',[
   'jquery',
   '../utils'
-], function (RWF, Utils) {
+], function ($, Utils) {
   function Search () { }
 
   Search.prototype.render = function (decorated) {
-    var RWFrendered = decorated.call(this);
+    var $rendered = decorated.call(this);
 
-    var RWFsearch = RWF(
+    var $search = $(
       '<span class="select2-search select2-search--dropdown">' +
         '<input class="select2-search__field" type="search" tabindex="-1"' +
         ' autocomplete="off" autocorrect="off" autocapitalize="none"' +
@@ -4087,22 +4087,22 @@ S2.define('select2/dropdown/search',[
       '</span>'
     );
 
-    this.RWFsearchContainer = RWFsearch;
-    this.RWFsearch = RWFsearch.find('input');
+    this.$searchContainer = $search;
+    this.$search = $search.find('input');
 
-    RWFrendered.prepend(RWFsearch);
+    $rendered.prepend($search);
 
-    return RWFrendered;
+    return $rendered;
   };
 
-  Search.prototype.bind = function (decorated, container, RWFcontainer) {
+  Search.prototype.bind = function (decorated, container, $container) {
     var self = this;
 
     var resultsId = container.id + '-results';
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
-    this.RWFsearch.on('keydown', function (evt) {
+    this.$search.on('keydown', function (evt) {
       self.trigger('keypress', evt);
 
       self._keyUpPrevented = evt.isDefaultPrevented();
@@ -4111,38 +4111,38 @@ S2.define('select2/dropdown/search',[
     // Workaround for browsers which do not support the `input` event
     // This will prevent double-triggering of events for browsers which support
     // both the `keyup` and `input` events.
-    this.RWFsearch.on('input', function (evt) {
+    this.$search.on('input', function (evt) {
       // Unbind the duplicated `keyup` event
-      RWF(this).off('keyup');
+      $(this).off('keyup');
     });
 
-    this.RWFsearch.on('keyup input', function (evt) {
+    this.$search.on('keyup input', function (evt) {
       self.handleSearch(evt);
     });
 
     container.on('open', function () {
-      self.RWFsearch.attr('tabindex', 0);
-      self.RWFsearch.attr('aria-controls', resultsId);
+      self.$search.attr('tabindex', 0);
+      self.$search.attr('aria-controls', resultsId);
 
-      self.RWFsearch.trigger('focus');
+      self.$search.trigger('focus');
 
       window.setTimeout(function () {
-        self.RWFsearch.trigger('focus');
+        self.$search.trigger('focus');
       }, 0);
     });
 
     container.on('close', function () {
-      self.RWFsearch.attr('tabindex', -1);
-      self.RWFsearch.removeAttr('aria-controls');
-      self.RWFsearch.removeAttr('aria-activedescendant');
+      self.$search.attr('tabindex', -1);
+      self.$search.removeAttr('aria-controls');
+      self.$search.removeAttr('aria-activedescendant');
 
-      self.RWFsearch.val('');
-      self.RWFsearch.trigger('blur');
+      self.$search.val('');
+      self.$search.trigger('blur');
     });
 
     container.on('focus', function () {
       if (!container.isOpen()) {
-        self.RWFsearch.trigger('focus');
+        self.$search.trigger('focus');
       }
     });
 
@@ -4151,25 +4151,25 @@ S2.define('select2/dropdown/search',[
         var showSearch = self.showSearch(params);
 
         if (showSearch) {
-          self.RWFsearchContainer.removeClass('select2-search--hide');
+          self.$searchContainer.removeClass('select2-search--hide');
         } else {
-          self.RWFsearchContainer.addClass('select2-search--hide');
+          self.$searchContainer.addClass('select2-search--hide');
         }
       }
     });
 
     container.on('results:focus', function (params) {
       if (params.data._resultId) {
-        self.RWFsearch.attr('aria-activedescendant', params.data._resultId);
+        self.$search.attr('aria-activedescendant', params.data._resultId);
       } else {
-        self.RWFsearch.removeAttr('aria-activedescendant');
+        self.$search.removeAttr('aria-activedescendant');
       }
     });
   };
 
   Search.prototype.handleSearch = function (evt) {
     if (!this._keyUpPrevented) {
-      var input = this.RWFsearch.val();
+      var input = this.$search.val();
 
       this.trigger('query', {
         term: input
@@ -4189,10 +4189,10 @@ S2.define('select2/dropdown/search',[
 S2.define('select2/dropdown/hidePlaceholder',[
 
 ], function () {
-  function HidePlaceholder (decorated, RWFelement, options, dataAdapter) {
+  function HidePlaceholder (decorated, $element, options, dataAdapter) {
     this.placeholder = this.normalizePlaceholder(options.get('placeholder'));
 
-    decorated.call(this, RWFelement, options, dataAdapter);
+    decorated.call(this, $element, options, dataAdapter);
   }
 
   HidePlaceholder.prototype.append = function (decorated, data) {
@@ -4231,32 +4231,32 @@ S2.define('select2/dropdown/hidePlaceholder',[
 
 S2.define('select2/dropdown/infiniteScroll',[
   'jquery'
-], function (RWF) {
-  function InfiniteScroll (decorated, RWFelement, options, dataAdapter) {
+], function ($) {
+  function InfiniteScroll (decorated, $element, options, dataAdapter) {
     this.lastParams = {};
 
-    decorated.call(this, RWFelement, options, dataAdapter);
+    decorated.call(this, $element, options, dataAdapter);
 
-    this.RWFloadingMore = this.createLoadingMore();
+    this.$loadingMore = this.createLoadingMore();
     this.loading = false;
   }
 
   InfiniteScroll.prototype.append = function (decorated, data) {
-    this.RWFloadingMore.remove();
+    this.$loadingMore.remove();
     this.loading = false;
 
     decorated.call(this, data);
 
     if (this.showLoadingMore(data)) {
-      this.RWFresults.append(this.RWFloadingMore);
+      this.$results.append(this.$loadingMore);
       this.loadMoreIfNeeded();
     }
   };
 
-  InfiniteScroll.prototype.bind = function (decorated, container, RWFcontainer) {
+  InfiniteScroll.prototype.bind = function (decorated, container, $container) {
     var self = this;
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
     container.on('query', function (params) {
       self.lastParams = params;
@@ -4268,23 +4268,23 @@ S2.define('select2/dropdown/infiniteScroll',[
       self.loading = true;
     });
 
-    this.RWFresults.on('scroll', this.loadMoreIfNeeded.bind(this));
+    this.$results.on('scroll', this.loadMoreIfNeeded.bind(this));
   };
 
   InfiniteScroll.prototype.loadMoreIfNeeded = function () {
-    var isLoadMoreVisible = RWF.contains(
+    var isLoadMoreVisible = $.contains(
       document.documentElement,
-      this.RWFloadingMore[0]
+      this.$loadingMore[0]
     );
 
     if (this.loading || !isLoadMoreVisible) {
       return;
     }
 
-    var currentOffset = this.RWFresults.offset().top +
-      this.RWFresults.outerHeight(false);
-    var loadingMoreOffset = this.RWFloadingMore.offset().top +
-      this.RWFloadingMore.outerHeight(false);
+    var currentOffset = this.$results.offset().top +
+      this.$results.outerHeight(false);
+    var loadingMoreOffset = this.$loadingMore.offset().top +
+      this.$loadingMore.outerHeight(false);
 
     if (currentOffset + 50 >= loadingMoreOffset) {
       this.loadMore();
@@ -4294,7 +4294,7 @@ S2.define('select2/dropdown/infiniteScroll',[
   InfiniteScroll.prototype.loadMore = function () {
     this.loading = true;
 
-    var params = RWF.extend({}, {page: 1}, this.lastParams);
+    var params = $.extend({}, {page: 1}, this.lastParams);
 
     params.page++;
 
@@ -4306,7 +4306,7 @@ S2.define('select2/dropdown/infiniteScroll',[
   };
 
   InfiniteScroll.prototype.createLoadingMore = function () {
-    var RWFoption = RWF(
+    var $option = $(
       '<li ' +
       'class="select2-results__option select2-results__option--load-more"' +
       'role="option" aria-disabled="true"></li>'
@@ -4314,9 +4314,9 @@ S2.define('select2/dropdown/infiniteScroll',[
 
     var message = this.options.get('translations').get('loadingMore');
 
-    RWFoption.html(message(this.lastParams));
+    $option.html(message(this.lastParams));
 
-    return RWFoption;
+    return $option;
   };
 
   return InfiniteScroll;
@@ -4325,17 +4325,17 @@ S2.define('select2/dropdown/infiniteScroll',[
 S2.define('select2/dropdown/attachBody',[
   'jquery',
   '../utils'
-], function (RWF, Utils) {
-  function AttachBody (decorated, RWFelement, options) {
-    this.RWFdropdownParent = RWF(options.get('dropdownParent') || document.body);
+], function ($, Utils) {
+  function AttachBody (decorated, $element, options) {
+    this.$dropdownParent = $(options.get('dropdownParent') || document.body);
 
-    decorated.call(this, RWFelement, options);
+    decorated.call(this, $element, options);
   }
 
-  AttachBody.prototype.bind = function (decorated, container, RWFcontainer) {
+  AttachBody.prototype.bind = function (decorated, container, $container) {
     var self = this;
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
     container.on('open', function () {
       self._showDropdown();
@@ -4350,7 +4350,7 @@ S2.define('select2/dropdown/attachBody',[
       self._detachPositioningHandler(container);
     });
 
-    this.RWFdropdownContainer.on('mousedown', function (evt) {
+    this.$dropdownContainer.on('mousedown', function (evt) {
       evt.stopPropagation();
     });
   };
@@ -4358,37 +4358,37 @@ S2.define('select2/dropdown/attachBody',[
   AttachBody.prototype.destroy = function (decorated) {
     decorated.call(this);
 
-    this.RWFdropdownContainer.remove();
+    this.$dropdownContainer.remove();
   };
 
-  AttachBody.prototype.position = function (decorated, RWFdropdown, RWFcontainer) {
+  AttachBody.prototype.position = function (decorated, $dropdown, $container) {
     // Clone all of the container classes
-    RWFdropdown.attr('class', RWFcontainer.attr('class'));
+    $dropdown.attr('class', $container.attr('class'));
 
-    RWFdropdown.removeClass('select2');
-    RWFdropdown.addClass('select2-container--open');
+    $dropdown.removeClass('select2');
+    $dropdown.addClass('select2-container--open');
 
-    RWFdropdown.css({
+    $dropdown.css({
       position: 'absolute',
       top: -999999
     });
 
-    this.RWFcontainer = RWFcontainer;
+    this.$container = $container;
   };
 
   AttachBody.prototype.render = function (decorated) {
-    var RWFcontainer = RWF('<span></span>');
+    var $container = $('<span></span>');
 
-    var RWFdropdown = decorated.call(this);
-    RWFcontainer.append(RWFdropdown);
+    var $dropdown = decorated.call(this);
+    $container.append($dropdown);
 
-    this.RWFdropdownContainer = RWFcontainer;
+    this.$dropdownContainer = $container;
 
-    return RWFcontainer;
+    return $container;
   };
 
   AttachBody.prototype._hideDropdown = function (decorated) {
-    this.RWFdropdownContainer.detach();
+    this.$dropdownContainer.detach();
   };
 
   AttachBody.prototype._bindContainerResultHandlers =
@@ -4437,20 +4437,20 @@ S2.define('select2/dropdown/attachBody',[
     var resizeEvent = 'resize.select2.' + container.id;
     var orientationEvent = 'orientationchange.select2.' + container.id;
 
-    var RWFwatchers = this.RWFcontainer.parents().filter(Utils.hasScroll);
-    RWFwatchers.each(function () {
+    var $watchers = this.$container.parents().filter(Utils.hasScroll);
+    $watchers.each(function () {
       Utils.StoreData(this, 'select2-scroll-position', {
-        x: RWF(this).scrollLeft(),
-        y: RWF(this).scrollTop()
+        x: $(this).scrollLeft(),
+        y: $(this).scrollTop()
       });
     });
 
-    RWFwatchers.on(scrollEvent, function (ev) {
+    $watchers.on(scrollEvent, function (ev) {
       var position = Utils.GetData(this, 'select2-scroll-position');
-      RWF(this).scrollTop(position.y);
+      $(this).scrollTop(position.y);
     });
 
-    RWF(window).on(scrollEvent + ' ' + resizeEvent + ' ' + orientationEvent,
+    $(window).on(scrollEvent + ' ' + resizeEvent + ' ' + orientationEvent,
       function (e) {
       self._positionDropdown();
       self._resizeDropdown();
@@ -4463,38 +4463,38 @@ S2.define('select2/dropdown/attachBody',[
     var resizeEvent = 'resize.select2.' + container.id;
     var orientationEvent = 'orientationchange.select2.' + container.id;
 
-    var RWFwatchers = this.RWFcontainer.parents().filter(Utils.hasScroll);
-    RWFwatchers.off(scrollEvent);
+    var $watchers = this.$container.parents().filter(Utils.hasScroll);
+    $watchers.off(scrollEvent);
 
-    RWF(window).off(scrollEvent + ' ' + resizeEvent + ' ' + orientationEvent);
+    $(window).off(scrollEvent + ' ' + resizeEvent + ' ' + orientationEvent);
   };
 
   AttachBody.prototype._positionDropdown = function () {
-    var RWFwindow = RWF(window);
+    var $window = $(window);
 
-    var isCurrentlyAbove = this.RWFdropdown.hasClass('select2-dropdown--above');
-    var isCurrentlyBelow = this.RWFdropdown.hasClass('select2-dropdown--below');
+    var isCurrentlyAbove = this.$dropdown.hasClass('select2-dropdown--above');
+    var isCurrentlyBelow = this.$dropdown.hasClass('select2-dropdown--below');
 
     var newDirection = null;
 
-    var offset = this.RWFcontainer.offset();
+    var offset = this.$container.offset();
 
-    offset.bottom = offset.top + this.RWFcontainer.outerHeight(false);
+    offset.bottom = offset.top + this.$container.outerHeight(false);
 
     var container = {
-      height: this.RWFcontainer.outerHeight(false)
+      height: this.$container.outerHeight(false)
     };
 
     container.top = offset.top;
     container.bottom = offset.top + container.height;
 
     var dropdown = {
-      height: this.RWFdropdown.outerHeight(false)
+      height: this.$dropdown.outerHeight(false)
     };
 
     var viewport = {
-      top: RWFwindow.scrollTop(),
-      bottom: RWFwindow.scrollTop() + RWFwindow.height()
+      top: $window.scrollTop(),
+      bottom: $window.scrollTop() + $window.height()
     };
 
     var enoughRoomAbove = viewport.top < (offset.top - dropdown.height);
@@ -4506,12 +4506,12 @@ S2.define('select2/dropdown/attachBody',[
     };
 
     // Determine what the parent element is to use for calculating the offset
-    var RWFoffsetParent = this.RWFdropdownParent;
+    var $offsetParent = this.$dropdownParent;
 
     // For statically positioned elements, we need to get the element
     // that is determining the offset
-    if (RWFoffsetParent.css('position') === 'static') {
-      RWFoffsetParent = RWFoffsetParent.offsetParent();
+    if ($offsetParent.css('position') === 'static') {
+      $offsetParent = $offsetParent.offsetParent();
     }
 
     var parentOffset = {
@@ -4520,10 +4520,10 @@ S2.define('select2/dropdown/attachBody',[
     };
 
     if (
-      RWF.contains(document.body, RWFoffsetParent[0]) ||
-      RWFoffsetParent[0].isConnected
+      $.contains(document.body, $offsetParent[0]) ||
+      $offsetParent[0].isConnected
       ) {
-      parentOffset = RWFoffsetParent.offset();
+      parentOffset = $offsetParent.offset();
     }
 
     css.top -= parentOffset.top;
@@ -4545,20 +4545,20 @@ S2.define('select2/dropdown/attachBody',[
     }
 
     if (newDirection != null) {
-      this.RWFdropdown
+      this.$dropdown
         .removeClass('select2-dropdown--below select2-dropdown--above')
         .addClass('select2-dropdown--' + newDirection);
-      this.RWFcontainer
+      this.$container
         .removeClass('select2-container--below select2-container--above')
         .addClass('select2-container--' + newDirection);
     }
 
-    this.RWFdropdownContainer.css(css);
+    this.$dropdownContainer.css(css);
   };
 
   AttachBody.prototype._resizeDropdown = function () {
     var css = {
-      width: this.RWFcontainer.outerWidth(false) + 'px'
+      width: this.$container.outerWidth(false) + 'px'
     };
 
     if (this.options.get('dropdownAutoWidth')) {
@@ -4567,11 +4567,11 @@ S2.define('select2/dropdown/attachBody',[
       css.width = 'auto';
     }
 
-    this.RWFdropdown.css(css);
+    this.$dropdown.css(css);
   };
 
   AttachBody.prototype._showDropdown = function (decorated) {
-    this.RWFdropdownContainer.appendTo(this.RWFdropdownParent);
+    this.$dropdownContainer.appendTo(this.$dropdownParent);
 
     this._positionDropdown();
     this._resizeDropdown();
@@ -4599,14 +4599,14 @@ S2.define('select2/dropdown/minimumResultsForSearch',[
     return count;
   }
 
-  function MinimumResultsForSearch (decorated, RWFelement, options, dataAdapter) {
+  function MinimumResultsForSearch (decorated, $element, options, dataAdapter) {
     this.minimumResultsForSearch = options.get('minimumResultsForSearch');
 
     if (this.minimumResultsForSearch < 0) {
       this.minimumResultsForSearch = Infinity;
     }
 
-    decorated.call(this, RWFelement, options, dataAdapter);
+    decorated.call(this, $element, options, dataAdapter);
   }
 
   MinimumResultsForSearch.prototype.showSearch = function (decorated, params) {
@@ -4625,10 +4625,10 @@ S2.define('select2/dropdown/selectOnClose',[
 ], function (Utils) {
   function SelectOnClose () { }
 
-  SelectOnClose.prototype.bind = function (decorated, container, RWFcontainer) {
+  SelectOnClose.prototype.bind = function (decorated, container, $container) {
     var self = this;
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
     container.on('close', function (params) {
       self._handleSelectOnClose(params);
@@ -4646,14 +4646,14 @@ S2.define('select2/dropdown/selectOnClose',[
       }
     }
 
-    var RWFhighlightedResults = this.getHighlightedResults();
+    var $highlightedResults = this.getHighlightedResults();
 
     // Only select highlighted results
-    if (RWFhighlightedResults.length < 1) {
+    if ($highlightedResults.length < 1) {
       return;
     }
 
-    var data = Utils.GetData(RWFhighlightedResults[0], 'data');
+    var data = Utils.GetData($highlightedResults[0], 'data');
 
     // Don't re-select already selected resulte
     if (
@@ -4676,10 +4676,10 @@ S2.define('select2/dropdown/closeOnSelect',[
 ], function () {
   function CloseOnSelect () { }
 
-  CloseOnSelect.prototype.bind = function (decorated, container, RWFcontainer) {
+  CloseOnSelect.prototype.bind = function (decorated, container, $container) {
     var self = this;
 
-    decorated.call(this, container, RWFcontainer);
+    decorated.call(this, container, $container);
 
     container.on('select', function (evt) {
       self._selectTriggered(evt);
@@ -4791,7 +4791,7 @@ S2.define('select2/defaults',[
   './dropdown/closeOnSelect',
 
   './i18n/en'
-], function (RWF, require,
+], function ($, require,
 
              ResultsList,
 
@@ -4812,7 +4812,7 @@ S2.define('select2/defaults',[
   }
 
   Defaults.prototype.apply = function (options) {
-    options = RWF.extend(true, {}, this.defaults, options);
+    options = $.extend(true, {}, this.defaults, options);
 
     if (options.dataAdapter == null) {
       if (options.ajax != null) {
@@ -5028,7 +5028,7 @@ S2.define('select2/defaults',[
 
     function matcher (params, data) {
       // Always return the object if there is nothing to compare
-      if (RWF.trim(params.term) === '') {
+      if ($.trim(params.term) === '') {
         return data;
       }
 
@@ -5036,7 +5036,7 @@ S2.define('select2/defaults',[
       if (data.children && data.children.length > 0) {
         // Clone the data object if there are children
         // This is required as we modify the object to remove any non-matches
-        var match = RWF.extend(true, {}, data);
+        var match = $.extend(true, {}, data);
 
         // Check each child of the option
         for (var c = data.children.length - 1; c >= 0; c--) {
@@ -5100,11 +5100,11 @@ S2.define('select2/defaults',[
     };
   };
 
-  Defaults.prototype.applyFromElement = function (options, RWFelement) {
+  Defaults.prototype.applyFromElement = function (options, $element) {
     var optionLanguage = options.language;
     var defaultLanguage = this.defaults.language;
-    var elementLanguage = RWFelement.prop('lang');
-    var parentLanguage = RWFelement.closest('[lang]').prop('lang');
+    var elementLanguage = $element.prop('lang');
+    var parentLanguage = $element.closest('[lang]').prop('lang');
 
     var languages = Array.prototype.concat.call(
       this._resolveLanguage(elementLanguage),
@@ -5123,17 +5123,17 @@ S2.define('select2/defaults',[
       return [];
     }
 
-    if (RWF.isEmptyObject(language)) {
+    if ($.isEmptyObject(language)) {
       return [];
     }
 
-    if (RWF.isPlainObject(language)) {
+    if ($.isPlainObject(language)) {
       return [language];
     }
 
     var languages;
 
-    if (!RWF.isArray(language)) {
+    if (!$.isArray(language)) {
       languages = [language];
     } else {
       languages = language;
@@ -5185,7 +5185,7 @@ S2.define('select2/defaults',[
             }
           }
         }
-      } else if (RWF.isPlainObject(language)) {
+      } else if ($.isPlainObject(language)) {
         languageData = new Translation(language);
       } else {
         languageData = language;
@@ -5198,14 +5198,14 @@ S2.define('select2/defaults',[
   };
 
   Defaults.prototype.set = function (key, value) {
-    var camelKey = RWF.camelCase(key);
+    var camelKey = $.camelCase(key);
 
     var data = {};
     data[camelKey] = value;
 
     var convertedData = Utils._convertData(data);
 
-    RWF.extend(true, this.defaults, convertedData);
+    $.extend(true, this.defaults, convertedData);
   };
 
   var defaults = new Defaults();
@@ -5218,21 +5218,21 @@ S2.define('select2/options',[
   'jquery',
   './defaults',
   './utils'
-], function (require, RWF, Defaults, Utils) {
-  function Options (options, RWFelement) {
+], function (require, $, Defaults, Utils) {
+  function Options (options, $element) {
     this.options = options;
 
-    if (RWFelement != null) {
-      this.fromElement(RWFelement);
+    if ($element != null) {
+      this.fromElement($element);
     }
 
-    if (RWFelement != null) {
-      this.options = Defaults.applyFromElement(this.options, RWFelement);
+    if ($element != null) {
+      this.options = Defaults.applyFromElement(this.options, $element);
     }
 
     this.options = Defaults.apply(this.options);
 
-    if (RWFelement && RWFelement.is('input')) {
+    if ($element && $element.is('input')) {
       var InputCompat = require(this.get('amdBase') + 'compat/inputData');
 
       this.options.dataAdapter = Utils.Decorate(
@@ -5242,31 +5242,31 @@ S2.define('select2/options',[
     }
   }
 
-  Options.prototype.fromElement = function (RWFe) {
+  Options.prototype.fromElement = function ($e) {
     var excludedData = ['select2'];
 
     if (this.options.multiple == null) {
-      this.options.multiple = RWFe.prop('multiple');
+      this.options.multiple = $e.prop('multiple');
     }
 
     if (this.options.disabled == null) {
-      this.options.disabled = RWFe.prop('disabled');
+      this.options.disabled = $e.prop('disabled');
     }
 
     if (this.options.dir == null) {
-      if (RWFe.prop('dir')) {
-        this.options.dir = RWFe.prop('dir');
-      } else if (RWFe.closest('[dir]').prop('dir')) {
-        this.options.dir = RWFe.closest('[dir]').prop('dir');
+      if ($e.prop('dir')) {
+        this.options.dir = $e.prop('dir');
+      } else if ($e.closest('[dir]').prop('dir')) {
+        this.options.dir = $e.closest('[dir]').prop('dir');
       } else {
         this.options.dir = 'ltr';
       }
     }
 
-    RWFe.prop('disabled', this.options.disabled);
-    RWFe.prop('multiple', this.options.multiple);
+    $e.prop('disabled', this.options.disabled);
+    $e.prop('multiple', this.options.multiple);
 
-    if (Utils.GetData(RWFe[0], 'select2Tags')) {
+    if (Utils.GetData($e[0], 'select2Tags')) {
       if (this.options.debug && window.console && console.warn) {
         console.warn(
           'Select2: The `data-select2-tags` attribute has been changed to ' +
@@ -5275,11 +5275,11 @@ S2.define('select2/options',[
         );
       }
 
-      Utils.StoreData(RWFe[0], 'data', Utils.GetData(RWFe[0], 'select2Tags'));
-      Utils.StoreData(RWFe[0], 'tags', true);
+      Utils.StoreData($e[0], 'data', Utils.GetData($e[0], 'select2Tags'));
+      Utils.StoreData($e[0], 'tags', true);
     }
 
-    if (Utils.GetData(RWFe[0], 'ajaxUrl')) {
+    if (Utils.GetData($e[0], 'ajaxUrl')) {
       if (this.options.debug && window.console && console.warn) {
         console.warn(
           'Select2: The `data-ajax-url` attribute has been changed to ' +
@@ -5288,8 +5288,8 @@ S2.define('select2/options',[
         );
       }
 
-      RWFe.attr('ajax--url', Utils.GetData(RWFe[0], 'ajaxUrl'));
-      Utils.StoreData(RWFe[0], 'ajax-Url', Utils.GetData(RWFe[0], 'ajaxUrl'));
+      $e.attr('ajax--url', Utils.GetData($e[0], 'ajaxUrl'));
+      Utils.StoreData($e[0], 'ajax-Url', Utils.GetData($e[0], 'ajaxUrl'));
     }
 
     var dataset = {};
@@ -5299,8 +5299,8 @@ S2.define('select2/options',[
     }
 
     // Pre-load all of the attributes which are prefixed with `data-`
-    for (var attr = 0; attr < RWFe[0].attributes.length; attr++) {
-      var attributeName = RWFe[0].attributes[attr].name;
+    for (var attr = 0; attr < $e[0].attributes.length; attr++) {
+      var attributeName = $e[0].attributes[attr].name;
       var prefix = 'data-';
 
       if (attributeName.substr(0, prefix.length) == prefix) {
@@ -5309,7 +5309,7 @@ S2.define('select2/options',[
 
         // Get the data contents from the consistent source
         // This is more than likely the jQuery data helper
-        var dataValue = Utils.GetData(RWFe[0], dataName);
+        var dataValue = Utils.GetData($e[0], dataName);
 
         // camelCase the attribute name to match the spec
         var camelDataName = dataName.replace(/-([a-z])/g, upperCaseLetter);
@@ -5321,22 +5321,22 @@ S2.define('select2/options',[
 
     // Prefer the element's `dataset` attribute if it exists
     // jQuery 1.x does not correctly handle data attributes with multiple dashes
-    if (RWF.fn.jquery && RWF.fn.jquery.substr(0, 2) == '1.' && RWFe[0].dataset) {
-      dataset = RWF.extend(true, {}, RWFe[0].dataset, dataset);
+    if ($.fn.jquery && $.fn.jquery.substr(0, 2) == '1.' && $e[0].dataset) {
+      dataset = $.extend(true, {}, $e[0].dataset, dataset);
     }
 
     // Prefer our internal data cache if it exists
-    var data = RWF.extend(true, {}, Utils.GetData(RWFe[0]), dataset);
+    var data = $.extend(true, {}, Utils.GetData($e[0]), dataset);
 
     data = Utils._convertData(data);
 
     for (var key in data) {
-      if (RWF.inArray(key, excludedData) > -1) {
+      if ($.inArray(key, excludedData) > -1) {
         continue;
       }
 
-      if (RWF.isPlainObject(this.options[key])) {
-        RWF.extend(this.options[key], data[key]);
+      if ($.isPlainObject(this.options[key])) {
+        $.extend(this.options[key], data[key]);
       } else {
         this.options[key] = data[key];
       }
@@ -5361,54 +5361,54 @@ S2.define('select2/core',[
   './options',
   './utils',
   './keys'
-], function (RWF, Options, Utils, KEYS) {
-  var Select2 = function (RWFelement, options) {
-    if (Utils.GetData(RWFelement[0], 'select2') != null) {
-      Utils.GetData(RWFelement[0], 'select2').destroy();
+], function ($, Options, Utils, KEYS) {
+  var Select2 = function ($element, options) {
+    if (Utils.GetData($element[0], 'select2') != null) {
+      Utils.GetData($element[0], 'select2').destroy();
     }
 
-    this.RWFelement = RWFelement;
+    this.$element = $element;
 
-    this.id = this._generateId(RWFelement);
+    this.id = this._generateId($element);
 
     options = options || {};
 
-    this.options = new Options(options, RWFelement);
+    this.options = new Options(options, $element);
 
     Select2.__super__.constructor.call(this);
 
     // Set up the tabindex
 
-    var tabindex = RWFelement.attr('tabindex') || 0;
-    Utils.StoreData(RWFelement[0], 'old-tabindex', tabindex);
-    RWFelement.attr('tabindex', '-1');
+    var tabindex = $element.attr('tabindex') || 0;
+    Utils.StoreData($element[0], 'old-tabindex', tabindex);
+    $element.attr('tabindex', '-1');
 
     // Set up containers and adapters
 
     var DataAdapter = this.options.get('dataAdapter');
-    this.dataAdapter = new DataAdapter(RWFelement, this.options);
+    this.dataAdapter = new DataAdapter($element, this.options);
 
-    var RWFcontainer = this.render();
+    var $container = this.render();
 
-    this._placeContainer(RWFcontainer);
+    this._placeContainer($container);
 
     var SelectionAdapter = this.options.get('selectionAdapter');
-    this.selection = new SelectionAdapter(RWFelement, this.options);
-    this.RWFselection = this.selection.render();
+    this.selection = new SelectionAdapter($element, this.options);
+    this.$selection = this.selection.render();
 
-    this.selection.position(this.RWFselection, RWFcontainer);
+    this.selection.position(this.$selection, $container);
 
     var DropdownAdapter = this.options.get('dropdownAdapter');
-    this.dropdown = new DropdownAdapter(RWFelement, this.options);
-    this.RWFdropdown = this.dropdown.render();
+    this.dropdown = new DropdownAdapter($element, this.options);
+    this.$dropdown = this.dropdown.render();
 
-    this.dropdown.position(this.RWFdropdown, RWFcontainer);
+    this.dropdown.position(this.$dropdown, $container);
 
     var ResultsAdapter = this.options.get('resultsAdapter');
-    this.results = new ResultsAdapter(RWFelement, this.options, this.dataAdapter);
-    this.RWFresults = this.results.render();
+    this.results = new ResultsAdapter($element, this.options, this.dataAdapter);
+    this.$results = this.results.render();
 
-    this.results.position(this.RWFresults, this.RWFdropdown);
+    this.results.position(this.$results, this.$dropdown);
 
     // Bind events
 
@@ -5435,27 +5435,27 @@ S2.define('select2/core',[
     });
 
     // Hide the original select
-    RWFelement.addClass('select2-hidden-accessible');
-    RWFelement.attr('aria-hidden', 'true');
+    $element.addClass('select2-hidden-accessible');
+    $element.attr('aria-hidden', 'true');
 
     // Synchronize any monitored attributes
     this._syncAttributes();
 
-    Utils.StoreData(RWFelement[0], 'select2', this);
+    Utils.StoreData($element[0], 'select2', this);
 
-    // Ensure backwards compatibility with RWFelement.data('select2').
-    RWFelement.data('select2', this);
+    // Ensure backwards compatibility with $element.data('select2').
+    $element.data('select2', this);
   };
 
   Utils.Extend(Select2, Utils.Observable);
 
-  Select2.prototype._generateId = function (RWFelement) {
+  Select2.prototype._generateId = function ($element) {
     var id = '';
 
-    if (RWFelement.attr('id') != null) {
-      id = RWFelement.attr('id');
-    } else if (RWFelement.attr('name') != null) {
-      id = RWFelement.attr('name') + '-' + Utils.generateChars(2);
+    if ($element.attr('id') != null) {
+      id = $element.attr('id');
+    } else if ($element.attr('name') != null) {
+      id = $element.attr('name') + '-' + Utils.generateChars(2);
     } else {
       id = Utils.generateChars(4);
     }
@@ -5466,31 +5466,31 @@ S2.define('select2/core',[
     return id;
   };
 
-  Select2.prototype._placeContainer = function (RWFcontainer) {
-    RWFcontainer.insertAfter(this.RWFelement);
+  Select2.prototype._placeContainer = function ($container) {
+    $container.insertAfter(this.$element);
 
-    var width = this._resolveWidth(this.RWFelement, this.options.get('width'));
+    var width = this._resolveWidth(this.$element, this.options.get('width'));
 
     if (width != null) {
-      RWFcontainer.css('width', width);
+      $container.css('width', width);
     }
   };
 
-  Select2.prototype._resolveWidth = function (RWFelement, method) {
+  Select2.prototype._resolveWidth = function ($element, method) {
     var WIDTH = /^width:(([-+]?([0-9]*\.)?[0-9]+)(px|em|ex|%|in|cm|mm|pt|pc))/i;
 
     if (method == 'resolve') {
-      var styleWidth = this._resolveWidth(RWFelement, 'style');
+      var styleWidth = this._resolveWidth($element, 'style');
 
       if (styleWidth != null) {
         return styleWidth;
       }
 
-      return this._resolveWidth(RWFelement, 'element');
+      return this._resolveWidth($element, 'element');
     }
 
     if (method == 'element') {
-      var elementWidth = RWFelement.outerWidth(false);
+      var elementWidth = $element.outerWidth(false);
 
       if (elementWidth <= 0) {
         return 'auto';
@@ -5500,7 +5500,7 @@ S2.define('select2/core',[
     }
 
     if (method == 'style') {
-      var style = RWFelement.attr('style');
+      var style = $element.attr('style');
 
       if (typeof(style) !== 'string') {
         return null;
@@ -5521,7 +5521,7 @@ S2.define('select2/core',[
     }
 
     if (method == 'computedstyle') {
-      var computedStyle = window.getComputedStyle(RWFelement[0]);
+      var computedStyle = window.getComputedStyle($element[0]);
 
       return computedStyle.width;
     }
@@ -5530,17 +5530,17 @@ S2.define('select2/core',[
   };
 
   Select2.prototype._bindAdapters = function () {
-    this.dataAdapter.bind(this, this.RWFcontainer);
-    this.selection.bind(this, this.RWFcontainer);
+    this.dataAdapter.bind(this, this.$container);
+    this.selection.bind(this, this.$container);
 
-    this.dropdown.bind(this, this.RWFcontainer);
-    this.results.bind(this, this.RWFcontainer);
+    this.dropdown.bind(this, this.$container);
+    this.results.bind(this, this.$container);
   };
 
   Select2.prototype._registerDomEvents = function () {
     var self = this;
 
-    this.RWFelement.on('change.select2', function () {
+    this.$element.on('change.select2', function () {
       self.dataAdapter.current(function (data) {
         self.trigger('selection:update', {
           data: data
@@ -5548,15 +5548,15 @@ S2.define('select2/core',[
       });
     });
 
-    this.RWFelement.on('focus.select2', function (evt) {
+    this.$element.on('focus.select2', function (evt) {
       self.trigger('focus', evt);
     });
 
     this._syncA = Utils.bind(this._syncAttributes, this);
     this._syncS = Utils.bind(this._syncSubtree, this);
 
-    if (this.RWFelement[0].attachEvent) {
-      this.RWFelement[0].attachEvent('onpropertychange', this._syncA);
+    if (this.$element[0].attachEvent) {
+      this.$element[0].attachEvent('onpropertychange', this._syncA);
     }
 
     var observer = window.MutationObserver ||
@@ -5569,23 +5569,23 @@ S2.define('select2/core',[
         self._syncA();
         self._syncS(null, mutations);
       });
-      this._observer.observe(this.RWFelement[0], {
+      this._observer.observe(this.$element[0], {
         attributes: true,
         childList: true,
         subtree: false
       });
-    } else if (this.RWFelement[0].addEventListener) {
-      this.RWFelement[0].addEventListener(
+    } else if (this.$element[0].addEventListener) {
+      this.$element[0].addEventListener(
         'DOMAttrModified',
         self._syncA,
         false
       );
-      this.RWFelement[0].addEventListener(
+      this.$element[0].addEventListener(
         'DOMNodeInserted',
         self._syncS,
         false
       );
-      this.RWFelement[0].addEventListener(
+      this.$element[0].addEventListener(
         'DOMNodeRemoved',
         self._syncS,
         false
@@ -5614,7 +5614,7 @@ S2.define('select2/core',[
     });
 
     this.selection.on('*', function (name, params) {
-      if (RWF.inArray(name, nonRelayEvents) !== -1) {
+      if ($.inArray(name, nonRelayEvents) !== -1) {
         return;
       }
 
@@ -5642,23 +5642,23 @@ S2.define('select2/core',[
     var self = this;
 
     this.on('open', function () {
-      self.RWFcontainer.addClass('select2-container--open');
+      self.$container.addClass('select2-container--open');
     });
 
     this.on('close', function () {
-      self.RWFcontainer.removeClass('select2-container--open');
+      self.$container.removeClass('select2-container--open');
     });
 
     this.on('enable', function () {
-      self.RWFcontainer.removeClass('select2-container--disabled');
+      self.$container.removeClass('select2-container--disabled');
     });
 
     this.on('disable', function () {
-      self.RWFcontainer.addClass('select2-container--disabled');
+      self.$container.addClass('select2-container--disabled');
     });
 
     this.on('blur', function () {
-      self.RWFcontainer.removeClass('select2-container--focus');
+      self.$container.removeClass('select2-container--focus');
     });
 
     this.on('query', function (params) {
@@ -5721,7 +5721,7 @@ S2.define('select2/core',[
   };
 
   Select2.prototype._syncAttributes = function () {
-    this.options.set('disabled', this.RWFelement.prop('disabled'));
+    this.options.set('disabled', this.$element.prop('disabled'));
 
     if (this.isDisabled()) {
       if (this.isOpen()) {
@@ -5762,8 +5762,8 @@ S2.define('select2/core',[
       }
     } else if (mutations.removedNodes && mutations.removedNodes.length > 0) {
       changed = true;
-    } else if (RWF.isArray(mutations)) {
-      RWF.each(mutations, function(evt, mutation) {
+    } else if ($.isArray(mutations)) {
+      $.each(mutations, function(evt, mutation) {
         if (self._isChangeMutation(evt, mutation)) {
           // We've found a change mutation.
           // Let's escape from the loop and continue
@@ -5881,11 +5881,11 @@ S2.define('select2/core',[
   };
 
   Select2.prototype.isOpen = function () {
-    return this.RWFcontainer.hasClass('select2-container--open');
+    return this.$container.hasClass('select2-container--open');
   };
 
   Select2.prototype.hasFocus = function () {
-    return this.RWFcontainer.hasClass('select2-container--focus');
+    return this.$container.hasClass('select2-container--focus');
   };
 
   Select2.prototype.focus = function (data) {
@@ -5894,7 +5894,7 @@ S2.define('select2/core',[
       return;
     }
 
-    this.RWFcontainer.addClass('select2-container--focus');
+    this.$container.addClass('select2-container--focus');
     this.trigger('focus', {});
   };
 
@@ -5902,7 +5902,7 @@ S2.define('select2/core',[
     if (this.options.get('debug') && window.console && console.warn) {
       console.warn(
         'Select2: The `select2("enable")` method has been deprecated and will' +
-        ' be removed in later Select2 versions. Use RWFelement.prop("disabled")' +
+        ' be removed in later Select2 versions. Use $element.prop("disabled")' +
         ' instead.'
       );
     }
@@ -5913,7 +5913,7 @@ S2.define('select2/core',[
 
     var disabled = !args[0];
 
-    this.RWFelement.prop('disabled', disabled);
+    this.$element.prop('disabled', disabled);
   };
 
   Select2.prototype.data = function () {
@@ -5921,7 +5921,7 @@ S2.define('select2/core',[
         arguments.length > 0 && window.console && console.warn) {
       console.warn(
         'Select2: Data can no longer be set using `select2("data")`. You ' +
-        'should consider setting the value instead using `RWFelement.val()`.'
+        'should consider setting the value instead using `$element.val()`.'
       );
     }
 
@@ -5938,55 +5938,55 @@ S2.define('select2/core',[
     if (this.options.get('debug') && window.console && console.warn) {
       console.warn(
         'Select2: The `select2("val")` method has been deprecated and will be' +
-        ' removed in later Select2 versions. Use RWFelement.val() instead.'
+        ' removed in later Select2 versions. Use $element.val() instead.'
       );
     }
 
     if (args == null || args.length === 0) {
-      return this.RWFelement.val();
+      return this.$element.val();
     }
 
     var newVal = args[0];
 
-    if (RWF.isArray(newVal)) {
-      newVal = RWF.map(newVal, function (obj) {
+    if ($.isArray(newVal)) {
+      newVal = $.map(newVal, function (obj) {
         return obj.toString();
       });
     }
 
-    this.RWFelement.val(newVal).trigger('input').trigger('change');
+    this.$element.val(newVal).trigger('input').trigger('change');
   };
 
   Select2.prototype.destroy = function () {
-    this.RWFcontainer.remove();
+    this.$container.remove();
 
-    if (this.RWFelement[0].detachEvent) {
-      this.RWFelement[0].detachEvent('onpropertychange', this._syncA);
+    if (this.$element[0].detachEvent) {
+      this.$element[0].detachEvent('onpropertychange', this._syncA);
     }
 
     if (this._observer != null) {
       this._observer.disconnect();
       this._observer = null;
-    } else if (this.RWFelement[0].removeEventListener) {
-      this.RWFelement[0]
+    } else if (this.$element[0].removeEventListener) {
+      this.$element[0]
         .removeEventListener('DOMAttrModified', this._syncA, false);
-      this.RWFelement[0]
+      this.$element[0]
         .removeEventListener('DOMNodeInserted', this._syncS, false);
-      this.RWFelement[0]
+      this.$element[0]
         .removeEventListener('DOMNodeRemoved', this._syncS, false);
     }
 
     this._syncA = null;
     this._syncS = null;
 
-    this.RWFelement.off('.select2');
-    this.RWFelement.attr('tabindex',
-    Utils.GetData(this.RWFelement[0], 'old-tabindex'));
+    this.$element.off('.select2');
+    this.$element.attr('tabindex',
+    Utils.GetData(this.$element[0], 'old-tabindex'));
 
-    this.RWFelement.removeClass('select2-hidden-accessible');
-    this.RWFelement.attr('aria-hidden', 'false');
-    Utils.RemoveData(this.RWFelement[0]);
-    this.RWFelement.removeData('select2');
+    this.$element.removeClass('select2-hidden-accessible');
+    this.$element.attr('aria-hidden', 'false');
+    Utils.RemoveData(this.$element[0]);
+    this.$element.removeData('select2');
 
     this.dataAdapter.destroy();
     this.selection.destroy();
@@ -6000,22 +6000,22 @@ S2.define('select2/core',[
   };
 
   Select2.prototype.render = function () {
-    var RWFcontainer = RWF(
+    var $container = $(
       '<span class="select2 select2-container">' +
         '<span class="selection"></span>' +
         '<span class="dropdown-wrapper" aria-hidden="true"></span>' +
       '</span>'
     );
 
-    RWFcontainer.attr('dir', this.options.get('dir'));
+    $container.attr('dir', this.options.get('dir'));
 
-    this.RWFcontainer = RWFcontainer;
+    this.$container = $container;
 
-    this.RWFcontainer.addClass('select2-container--' + this.options.get('theme'));
+    this.$container.addClass('select2-container--' + this.options.get('theme'));
 
-    Utils.StoreData(RWFcontainer[0], 'element', this.RWFelement);
+    Utils.StoreData($container[0], 'element', this.$element);
 
-    return RWFcontainer;
+    return $container;
   };
 
   return Select2;
@@ -6023,16 +6023,16 @@ S2.define('select2/core',[
 
 S2.define('select2/compat/utils',[
   'jquery'
-], function (RWF) {
-  function syncCssClasses (RWFdest, RWFsrc, adapter) {
+], function ($) {
+  function syncCssClasses ($dest, $src, adapter) {
     var classes, replacements = [], adapted;
 
-    classes = RWF.trim(RWFdest.attr('class'));
+    classes = $.trim($dest.attr('class'));
 
     if (classes) {
       classes = '' + classes; // for IE which returns object
 
-      RWF(classes.split(/\s+/)).each(function () {
+      $(classes.split(/\s+/)).each(function () {
         // Save all Select2 classes
         if (this.indexOf('select2-') === 0) {
           replacements.push(this);
@@ -6040,12 +6040,12 @@ S2.define('select2/compat/utils',[
       });
     }
 
-    classes = RWF.trim(RWFsrc.attr('class'));
+    classes = $.trim($src.attr('class'));
 
     if (classes) {
       classes = '' + classes; // for IE which returns object
 
-      RWF(classes.split(/\s+/)).each(function () {
+      $(classes.split(/\s+/)).each(function () {
         // Only adapt non-Select2 classes
         if (this.indexOf('select2-') !== 0) {
           adapted = adapter(this);
@@ -6057,7 +6057,7 @@ S2.define('select2/compat/utils',[
       });
     }
 
-    RWFdest.attr('class', replacements.join(' '));
+    $dest.attr('class', replacements.join(' '));
   }
 
   return {
@@ -6068,7 +6068,7 @@ S2.define('select2/compat/utils',[
 S2.define('select2/compat/containerCss',[
   'jquery',
   './utils'
-], function (RWF, CompatUtils) {
+], function ($, CompatUtils) {
   // No-op CSS adapter that discards all classes by default
   function _containerAdapter (clazz) {
     return null;
@@ -6077,12 +6077,12 @@ S2.define('select2/compat/containerCss',[
   function ContainerCSS () { }
 
   ContainerCSS.prototype.render = function (decorated) {
-    var RWFcontainer = decorated.call(this);
+    var $container = decorated.call(this);
 
     var containerCssClass = this.options.get('containerCssClass') || '';
 
-    if (RWF.isFunction(containerCssClass)) {
-      containerCssClass = containerCssClass(this.RWFelement);
+    if ($.isFunction(containerCssClass)) {
+      containerCssClass = containerCssClass(this.$element);
     }
 
     var containerCssAdapter = this.options.get('adaptContainerCssClass');
@@ -6107,16 +6107,16 @@ S2.define('select2/compat/containerCss',[
 
     var containerCss = this.options.get('containerCss') || {};
 
-    if (RWF.isFunction(containerCss)) {
-      containerCss = containerCss(this.RWFelement);
+    if ($.isFunction(containerCss)) {
+      containerCss = containerCss(this.$element);
     }
 
-    CompatUtils.syncCssClasses(RWFcontainer, this.RWFelement, containerCssAdapter);
+    CompatUtils.syncCssClasses($container, this.$element, containerCssAdapter);
 
-    RWFcontainer.css(containerCss);
-    RWFcontainer.addClass(containerCssClass);
+    $container.css(containerCss);
+    $container.addClass(containerCssClass);
 
-    return RWFcontainer;
+    return $container;
   };
 
   return ContainerCSS;
@@ -6125,7 +6125,7 @@ S2.define('select2/compat/containerCss',[
 S2.define('select2/compat/dropdownCss',[
   'jquery',
   './utils'
-], function (RWF, CompatUtils) {
+], function ($, CompatUtils) {
   // No-op CSS adapter that discards all classes by default
   function _dropdownAdapter (clazz) {
     return null;
@@ -6134,12 +6134,12 @@ S2.define('select2/compat/dropdownCss',[
   function DropdownCSS () { }
 
   DropdownCSS.prototype.render = function (decorated) {
-    var RWFdropdown = decorated.call(this);
+    var $dropdown = decorated.call(this);
 
     var dropdownCssClass = this.options.get('dropdownCssClass') || '';
 
-    if (RWF.isFunction(dropdownCssClass)) {
-      dropdownCssClass = dropdownCssClass(this.RWFelement);
+    if ($.isFunction(dropdownCssClass)) {
+      dropdownCssClass = dropdownCssClass(this.$element);
     }
 
     var dropdownCssAdapter = this.options.get('adaptDropdownCssClass');
@@ -6164,16 +6164,16 @@ S2.define('select2/compat/dropdownCss',[
 
     var dropdownCss = this.options.get('dropdownCss') || {};
 
-    if (RWF.isFunction(dropdownCss)) {
-      dropdownCss = dropdownCss(this.RWFelement);
+    if ($.isFunction(dropdownCss)) {
+      dropdownCss = dropdownCss(this.$element);
     }
 
-    CompatUtils.syncCssClasses(RWFdropdown, this.RWFelement, dropdownCssAdapter);
+    CompatUtils.syncCssClasses($dropdown, this.$element, dropdownCssAdapter);
 
-    RWFdropdown.css(dropdownCss);
-    RWFdropdown.addClass(dropdownCssClass);
+    $dropdown.css(dropdownCss);
+    $dropdown.addClass(dropdownCssClass);
 
-    return RWFdropdown;
+    return $dropdown;
   };
 
   return DropdownCSS;
@@ -6181,8 +6181,8 @@ S2.define('select2/compat/dropdownCss',[
 
 S2.define('select2/compat/initSelection',[
   'jquery'
-], function (RWF) {
-  function InitSelection (decorated, RWFelement, options) {
+], function ($) {
+  function InitSelection (decorated, $element, options) {
     if (options.get('debug') && window.console && console.warn) {
       console.warn(
         'Select2: The `initSelection` option has been deprecated in favor' +
@@ -6196,7 +6196,7 @@ S2.define('select2/compat/initSelection',[
     this.initSelection = options.get('initSelection');
     this._isInitialized = false;
 
-    decorated.call(this, RWFelement, options);
+    decorated.call(this, $element, options);
   }
 
   InitSelection.prototype.current = function (decorated, callback) {
@@ -6208,10 +6208,10 @@ S2.define('select2/compat/initSelection',[
       return;
     }
 
-    this.initSelection.call(null, this.RWFelement, function (data) {
+    this.initSelection.call(null, this.$element, function (data) {
       self._isInitialized = true;
 
-      if (!RWF.isArray(data)) {
+      if (!$.isArray(data)) {
         data = [data];
       }
 
@@ -6225,12 +6225,12 @@ S2.define('select2/compat/initSelection',[
 S2.define('select2/compat/inputData',[
   'jquery',
   '../utils'
-], function (RWF, Utils) {
-  function InputData (decorated, RWFelement, options) {
+], function ($, Utils) {
+  function InputData (decorated, $element, options) {
     this._currentData = [];
     this._valueSeparator = options.get('valueSeparator') || ',';
 
-    if (RWFelement.prop('type') === 'hidden') {
+    if ($element.prop('type') === 'hidden') {
       if (options.get('debug') && console && console.warn) {
         console.warn(
           'Select2: Using a hidden input with Select2 is no longer ' +
@@ -6240,14 +6240,14 @@ S2.define('select2/compat/inputData',[
       }
     }
 
-    decorated.call(this, RWFelement, options);
+    decorated.call(this, $element, options);
   }
 
   InputData.prototype.current = function (_, callback) {
     function getSelected (data, selectedIds) {
       var selected = [];
 
-      if (data.selected || RWF.inArray(data.id, selectedIds) !== -1) {
+      if (data.selected || $.inArray(data.id, selectedIds) !== -1) {
         data.selected = true;
         selected.push(data);
       } else {
@@ -6270,7 +6270,7 @@ S2.define('select2/compat/inputData',[
         selected,
         getSelected(
           data,
-          this.RWFelement.val().split(
+          this.$element.val().split(
             this._valueSeparator
           )
         )
@@ -6283,19 +6283,19 @@ S2.define('select2/compat/inputData',[
   InputData.prototype.select = function (_, data) {
     if (!this.options.get('multiple')) {
       this.current(function (allData) {
-        RWF.map(allData, function (data) {
+        $.map(allData, function (data) {
           data.selected = false;
         });
       });
 
-      this.RWFelement.val(data.id);
-      this.RWFelement.trigger('input').trigger('change');
+      this.$element.val(data.id);
+      this.$element.trigger('input').trigger('change');
     } else {
-      var value = this.RWFelement.val();
+      var value = this.$element.val();
       value += this._valueSeparator + data.id;
 
-      this.RWFelement.val(value);
-      this.RWFelement.trigger('input').trigger('change');
+      this.$element.val(value);
+      this.$element.trigger('input').trigger('change');
     }
   };
 
@@ -6317,8 +6317,8 @@ S2.define('select2/compat/inputData',[
         values.push(item.id);
       }
 
-      self.RWFelement.val(values.join(self._valueSeparator));
-      self.RWFelement.trigger('input').trigger('change');
+      self.$element.val(values.join(self._valueSeparator));
+      self.$element.trigger('input').trigger('change');
     });
   };
 
@@ -6340,9 +6340,9 @@ S2.define('select2/compat/inputData',[
     });
   };
 
-  InputData.prototype.addOptions = function (_, RWFoptions) {
-    var options = RWF.map(RWFoptions, function (RWFoption) {
-      return Utils.GetData(RWFoption[0], 'data');
+  InputData.prototype.addOptions = function (_, $options) {
+    var options = $.map($options, function ($option) {
+      return Utils.GetData($option[0], 'data');
     });
 
     this._currentData.push.apply(this._currentData, options);
@@ -6353,12 +6353,12 @@ S2.define('select2/compat/inputData',[
 
 S2.define('select2/compat/matcher',[
   'jquery'
-], function (RWF) {
+], function ($) {
   function oldMatcher (matcher) {
     function wrappedMatcher (params, data) {
-      var match = RWF.extend(true, {}, data);
+      var match = $.extend(true, {}, data);
 
-      if (params.term == null || RWF.trim(params.term) === '') {
+      if (params.term == null || $.trim(params.term) === '') {
         return match;
       }
 
@@ -6397,7 +6397,7 @@ S2.define('select2/compat/matcher',[
 S2.define('select2/compat/query',[
 
 ], function () {
-  function Query (decorated, RWFelement, options) {
+  function Query (decorated, $element, options) {
     if (options.get('debug') && window.console && console.warn) {
       console.warn(
         'Select2: The `query` option has been deprecated in favor of a ' +
@@ -6407,7 +6407,7 @@ S2.define('select2/compat/query',[
       );
     }
 
-    decorated.call(this, RWFelement, options);
+    decorated.call(this, $element, options);
   }
 
   Query.prototype.query = function (_, params, callback) {
@@ -6424,17 +6424,17 @@ S2.define('select2/compat/query',[
 S2.define('select2/dropdown/attachContainer',[
 
 ], function () {
-  function AttachContainer (decorated, RWFelement, options) {
-    decorated.call(this, RWFelement, options);
+  function AttachContainer (decorated, $element, options) {
+    decorated.call(this, $element, options);
   }
 
   AttachContainer.prototype.position =
-    function (decorated, RWFdropdown, RWFcontainer) {
-    var RWFdropdownContainer = RWFcontainer.find('.dropdown-wrapper');
-    RWFdropdownContainer.append(RWFdropdown);
+    function (decorated, $dropdown, $container) {
+    var $dropdownContainer = $container.find('.dropdown-wrapper');
+    $dropdownContainer.append($dropdown);
 
-    RWFdropdown.addClass('select2-dropdown--below');
-    RWFcontainer.addClass('select2-container--below');
+    $dropdown.addClass('select2-dropdown--below');
+    $container.addClass('select2-container--below');
   };
 
   return AttachContainer;
@@ -6445,8 +6445,8 @@ S2.define('select2/dropdown/stopPropagation',[
 ], function () {
   function StopPropagation () { }
 
-  StopPropagation.prototype.bind = function (decorated, container, RWFcontainer) {
-    decorated.call(this, container, RWFcontainer);
+  StopPropagation.prototype.bind = function (decorated, container, $container) {
+    decorated.call(this, container, $container);
 
     var stoppedEvents = [
     'blur',
@@ -6471,7 +6471,7 @@ S2.define('select2/dropdown/stopPropagation',[
     'touchstart'
     ];
 
-    this.RWFdropdown.on(stoppedEvents.join(' '), function (evt) {
+    this.$dropdown.on(stoppedEvents.join(' '), function (evt) {
       evt.stopPropagation();
     });
   };
@@ -6484,8 +6484,8 @@ S2.define('select2/selection/stopPropagation',[
 ], function () {
   function StopPropagation () { }
 
-  StopPropagation.prototype.bind = function (decorated, container, RWFcontainer) {
-    decorated.call(this, container, RWFcontainer);
+  StopPropagation.prototype.bind = function (decorated, container, $container) {
+    decorated.call(this, container, $container);
 
     var stoppedEvents = [
       'blur',
@@ -6510,7 +6510,7 @@ S2.define('select2/selection/stopPropagation',[
       'touchstart'
     ];
 
-    this.RWFselection.on(stoppedEvents.join(' '), function (evt) {
+    this.$selection.on(stoppedEvents.join(' '), function (evt) {
       evt.stopPropagation();
     });
   };
@@ -6537,7 +6537,7 @@ S2.define('select2/selection/stopPropagation',[
         // Browser globals
         factory(jQuery);
     }
-}(function (RWF) {
+}(function ($) {
 
     var toFix  = ['wheel', 'mousewheel', 'DOMMouseScroll', 'MozMousePixelScroll'],
         toBind = ( 'onwheel' in document || document.documentMode >= 9 ) ?
@@ -6545,13 +6545,13 @@ S2.define('select2/selection/stopPropagation',[
         slice  = Array.prototype.slice,
         nullLowestDeltaTimeout, lowestDelta;
 
-    if ( RWF.event.fixHooks ) {
+    if ( $.event.fixHooks ) {
         for ( var i = toFix.length; i; ) {
-            RWF.event.fixHooks[ toFix[--i] ] = RWF.event.mouseHooks;
+            $.event.fixHooks[ toFix[--i] ] = $.event.mouseHooks;
         }
     }
 
-    var special = RWF.event.special.mousewheel = {
+    var special = $.event.special.mousewheel = {
         version: '3.1.12',
 
         setup: function() {
@@ -6563,8 +6563,8 @@ S2.define('select2/selection/stopPropagation',[
                 this.onmousewheel = handler;
             }
             // Store the line height and page height for this particular element
-            RWF.data(this, 'mousewheel-line-height', special.getLineHeight(this));
-            RWF.data(this, 'mousewheel-page-height', special.getPageHeight(this));
+            $.data(this, 'mousewheel-line-height', special.getLineHeight(this));
+            $.data(this, 'mousewheel-page-height', special.getPageHeight(this));
         },
 
         teardown: function() {
@@ -6576,21 +6576,21 @@ S2.define('select2/selection/stopPropagation',[
                 this.onmousewheel = null;
             }
             // Clean up the data we added to the element
-            RWF.removeData(this, 'mousewheel-line-height');
-            RWF.removeData(this, 'mousewheel-page-height');
+            $.removeData(this, 'mousewheel-line-height');
+            $.removeData(this, 'mousewheel-page-height');
         },
 
         getLineHeight: function(elem) {
-            var RWFelem = RWF(elem),
-                RWFparent = RWFelem['offsetParent' in RWF.fn ? 'offsetParent' : 'parent']();
-            if (!RWFparent.length) {
-                RWFparent = RWF('body');
+            var $elem = $(elem),
+                $parent = $elem['offsetParent' in $.fn ? 'offsetParent' : 'parent']();
+            if (!$parent.length) {
+                $parent = $('body');
             }
-            return parseInt(RWFparent.css('fontSize'), 10) || parseInt(RWFelem.css('fontSize'), 10) || 16;
+            return parseInt($parent.css('fontSize'), 10) || parseInt($elem.css('fontSize'), 10) || 16;
         },
 
         getPageHeight: function(elem) {
-            return RWF(elem).height();
+            return $(elem).height();
         },
 
         settings: {
@@ -6599,7 +6599,7 @@ S2.define('select2/selection/stopPropagation',[
         }
     };
 
-    RWF.fn.extend({
+    $.fn.extend({
         mousewheel: function(fn) {
             return fn ? this.bind('mousewheel', fn) : this.trigger('mousewheel');
         },
@@ -6619,7 +6619,7 @@ S2.define('select2/selection/stopPropagation',[
             absDelta   = 0,
             offsetX    = 0,
             offsetY    = 0;
-        event = RWF.event.fix(orgEvent);
+        event = $.event.fix(orgEvent);
         event.type = 'mousewheel';
 
         // Old school scrollwheel delta
@@ -6656,12 +6656,12 @@ S2.define('select2/selection/stopPropagation',[
         //   * deltaMode 1 is by lines
         //   * deltaMode 2 is by pages
         if ( orgEvent.deltaMode === 1 ) {
-            var lineHeight = RWF.data(this, 'mousewheel-line-height');
+            var lineHeight = $.data(this, 'mousewheel-line-height');
             delta  *= lineHeight;
             deltaY *= lineHeight;
             deltaX *= lineHeight;
         } else if ( orgEvent.deltaMode === 2 ) {
-            var pageHeight = RWF.data(this, 'mousewheel-page-height');
+            var pageHeight = $.data(this, 'mousewheel-page-height');
             delta  *= pageHeight;
             deltaY *= pageHeight;
             deltaX *= pageHeight;
@@ -6720,7 +6720,7 @@ S2.define('select2/selection/stopPropagation',[
         if (nullLowestDeltaTimeout) { clearTimeout(nullLowestDeltaTimeout); }
         nullLowestDeltaTimeout = setTimeout(nullLowestDelta, 200);
 
-        return (RWF.event.dispatch || RWF.event.handle).apply(this, args);
+        return ($.event.dispatch || $.event.handle).apply(this, args);
     }
 
     function nullLowestDelta() {
@@ -6734,7 +6734,7 @@ S2.define('select2/selection/stopPropagation',[
         // by 40 to try and get a more usable deltaFactor.
         // Side note, this actually impacts the reported scroll distance
         // in older browsers and can cause scrolling to be slower than native.
-        // Turn this off by setting RWF.event.special.mousewheel.settings.adjustOldDeltas to false.
+        // Turn this off by setting $.event.special.mousewheel.settings.adjustOldDeltas to false.
         return special.settings.adjustOldDeltas && orgEvent.type === 'mousewheel' && absDelta % 120 === 0;
     }
 
@@ -6747,19 +6747,19 @@ S2.define('jquery.select2',[
   './select2/core',
   './select2/defaults',
   './select2/utils'
-], function (RWF, _, Select2, Defaults, Utils) {
-  if (RWF.fn.select2 == null) {
+], function ($, _, Select2, Defaults, Utils) {
+  if ($.fn.select2 == null) {
     // All methods that should return the element
     var thisMethods = ['open', 'close', 'destroy'];
 
-    RWF.fn.select2 = function (options) {
+    $.fn.select2 = function (options) {
       options = options || {};
 
       if (typeof options === 'object') {
         this.each(function () {
-          var instanceOptions = RWF.extend(true, {}, options);
+          var instanceOptions = $.extend(true, {}, options);
 
-          var instance = new Select2(RWF(this), instanceOptions);
+          var instance = new Select2($(this), instanceOptions);
         });
 
         return this;
@@ -6781,7 +6781,7 @@ S2.define('jquery.select2',[
         });
 
         // Check if we should be returning `this`
-        if (RWF.inArray(options, thisMethods) > -1) {
+        if ($.inArray(options, thisMethods) > -1) {
           return this;
         }
 
@@ -6792,8 +6792,8 @@ S2.define('jquery.select2',[
     };
   }
 
-  if (RWF.fn.select2.defaults == null) {
-    RWF.fn.select2.defaults = Defaults;
+  if ($.fn.select2.defaults == null) {
+    $.fn.select2.defaults = Defaults;
   }
 
   return Select2;

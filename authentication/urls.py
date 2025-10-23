@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from . import api_views
 from django.contrib.auth import views as auth_views
@@ -49,4 +49,21 @@ urlpatterns = [
     path('api/verify-otp/', api_views.verify_otp_view, name='api_verify_otp'),
     path('api/complete-purchase/', api_views.complete_purchase_pickup, name='api_complete_purchase'),
     path('api/vendor-statistics/<int:vendor_id>/', api_views.get_vendor_statistics_modal, name='api_vendor_statistics_modal'),
+    
+    # REST API endpoints
+    path('api/rest/', include('authentication.api_urls')),
 ]
+
+# API endpoints
+api_endpoints = [
+    path('v1/register/', views.register_api, name='register_api'),
+    path('v1/login/', views.login_api, name='login_api'),
+    path('v1/logout/', views.logout_api, name='logout_api'),
+    path('v1/dashboard/', views.dashboard_api, name='dashboard_api'),
+    path('v1/bookmark/<int:post_id>/', views.bookmark_toggle_api, name='bookmark_toggle_api'),
+    path('v1/like/<int:post_id>/', views.like_post_api, name='like_post_api'),
+    path('v1/categories/', views.categories_api, name='categories_api'),
+]
+
+# Add api_endpoints to main urlpatterns
+urlpatterns += api_endpoints
