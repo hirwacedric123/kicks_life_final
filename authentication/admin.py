@@ -37,3 +37,8 @@ admin.site.register(Bookmark)
 admin.site.register(ProductImage)
 admin.site.register(UserQRCode)
 admin.site.register(OTPVerification)
+
+# Customize Admin Site Branding
+admin.site.site_header = "Kicks_life 250 Admin"
+admin.site.site_title = "Kicks_life 250 Admin Portal"
+admin.site.index_title = "Welcome to Kicks_life 250 Shoe Marketplace Administration"

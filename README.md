@@ -1,27 +1,53 @@
-# KoraQuest
+# Kicks_life 250 👟
 
-KoraQuest is a Django-based web application that has the purpose of helping people to buy and sell products amongst each other.
-
-![Alt KoraQuest](./KoraQuest.png)
+Kicks_life 250 is a Django-based e-commerce web application specialized in buying and selling shoes in Rwanda. From sneakers to boots, casual to formal - find your perfect kicks!
 
 ## 🌐 Demo UI
 
-- **Live Website**: [KoraQuest Marketplace](https://koraquest.bonasolutions.tech)
-- **Demo Video**: [Watch Demo](https://youtu.be/x3JjtgzZsGA?si=6HRMwlj9GTLLGAjL)
+- **Live Website**: [Kicks_life 250 Marketplace](https://kickslife250.bonasolutions.tech)
+- **GitHub Repository**: [Kicks_life 250](https://github.com/hirwacedric123/kicks_life_final)
 
 ## 🚀 Features
 
+### 👤 User Features
 - User Authentication System
+- Browse shoes by category (Sneakers, Boots, Formal, Athletic, etc.)
+- Advanced search and filtering
+- Product reviews and ratings
+- Wishlist/Bookmark system
+- QR Code-based secure checkout
+- Order tracking
+
+### 🏪 Vendor Features
+- Vendor account registration
+- Product management dashboard
+- Inventory tracking
+- Sales analytics
+- Commission system (80/20 split)
+
+### 🎯 Platform Features
 - QR Code Generation and Processing
 - Account Upgrading (From Buyer to Vendor)
 - Media File Management
-- Static File Handling
 - Email Integration (with OTP support)
+- Secure payment processing
+- Home delivery or pickup options
+
+## 👟 Shoe Categories
+
+- **Sneakers**: Latest trendy sneakers and street fashion
+- **Boots**: Stylish boots for all occasions
+- **Formal Shoes**: Professional footwear for work and events
+- **Sandals & Slippers**: Comfortable everyday wear
+- **Athletic & Sports**: Performance shoes for athletes
+- **Casual Shoes**: Everyday comfortable footwear
+- **Kids Shoes**: Quality footwear for children
+- **Other**: Specialty and unique footwear
 
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
-- Python 3.x
+- Python 3.8+
 - pip (Python package manager)
 - Git
 
@@ -29,8 +55,8 @@ Before you begin, ensure you have the following installed:
 
 1. Clone the repository
 ```bash
-git clone https://github.com/Bonaparte003/KoraQuest.git
-cd KoraQuest
+git clone https://github.com/hirwacedric123/kicks_life_final.git
+cd kicks_life_final
 ```
 
 2. Create a virtual environment
@@ -66,8 +92,15 @@ python manage.py collectstatic
 
 ## ⚙️ Configuration
 
+1. Create a `.env` file in the root directory:
+```env
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+```
 
-1. Update email settings in `KoraQuest/settings.py` if needed:
+2. Update email settings in `KoraQuest/settings.py` if needed:
 ```python
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -75,11 +108,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 ```
 
-or 
-
-Reconfigure settings to send actual emails check
+For more details, check:
 - [Django Email Documentation](https://docs.djangoproject.com/en/5.2/topics/email)
-
 
 ## 🚀 Running the Application
 
@@ -95,35 +125,64 @@ python manage.py runserver
 ## 📁 Project Structure
 
 ```
-KoraQuest/
-├── authentication/       # Authentication app
-├── KoraQuest/          # Main project directory
-├── static/             # Static files
-├── media/              # User uploaded files
-├── templates/          # HTML templates
-└── manage.py          # Django management script
+kicks_life_final/
+├── authentication/       # Authentication and main app
+├── KoraQuest/           # Django project settings
+├── static/              # Static files (CSS, JS, images)
+├── staticfiles/         # Collected static files (generated)
+├── media/               # User uploaded files (product images)
+├── requirements.txt     # Python dependencies
+├── manage.py           # Django management script
+└── README.md           # This file
 ```
+
+## 💳 Payment & Commission
+
+### Revenue Split
+- **Vendors**: Receive 80% of product sale price
+- **Kicks_life 250**: Receives 20% commission + full delivery fees
+
+### Payment Methods
+- Mobile Money (MoMo)
+- Credit Card
+
+### Delivery Options
+- **Pickup**: Free pickup from Kicks_life 250 location
+- **Home Delivery**: RWF 5,000 delivery fee
 
 ## 🔒 Security Notes
 
-1. In production:
+### Production Settings
 - Set `DEBUG = False`
-- Use a strong `SECRET_KEY`
+- Use a strong `SECRET_KEY` (use environment variables)
 - Configure proper `ALLOWED_HOSTS`
 - Use secure email settings
 - Enable HTTPS
+- Use PostgreSQL or MySQL instead of SQLite
 
-2. For local development:
-- The default SQLite database is sufficient
-- Debug mode is enabled by default
-- Email backend is set to console for development
+### Development Settings
+- SQLite database is used by default
+- Debug mode is enabled
+- Email backend is set to console
 
 ## 📝 Additional Notes
 
-- QR codes are configured to update every 10 minutes
+- QR codes are configured to update every 10 minutes for security
 - Static files are served from the 'staticfiles' directory
-- Media files are stored in the 'media' directory
+- Media files (product images) are stored in the 'media' directory
 - The project uses Django's built-in authentication system with custom user model
+- All prices are in Rwandan Francs (RWF)
+
+## 🎨 User Roles
+
+1. **User**: Regular customers who can browse and purchase shoes
+2. **Vendor**: Sellers who can list and manage their shoe inventory
+3. **Staff**: Platform moderators with management permissions
+4. **Kicks_life 250**: Platform administrators with full access
+
+## 📊 API Endpoints
+
+The platform includes a REST API for integration. See `API_DOCUMENTATION.md` for details.
 
 ## 🤝 Contributing
 
@@ -139,10 +198,26 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 👥 Authors
 
-- UTERAMAHORO Avellin Bonaparte - Initial work
+- Development Team - Kicks_life 250
+- Based on KoraQuest marketplace platform
 
 ## 🙏 Acknowledgments
 
 - Django Framework
 - Python Community
-- All contributors
+- All contributors and shoe enthusiasts
+- Rwanda's vibrant e-commerce community
+
+## 🆘 Support
+
+For support, email support@kickslife250.rw or open an issue in the GitHub repository.
+
+## 🔗 Links
+
+- **Website**: https://kickslife250.bonasolutions.tech
+- **GitHub**: https://github.com/hirwacedric123/kicks_life_final
+- **Documentation**: See API_DOCUMENTATION.md
+
+---
+
+**Made with ❤️ for shoe lovers in Rwanda** 👟🇷🇼

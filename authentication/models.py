@@ -12,7 +12,7 @@ class User(AbstractUser):
         ('user', 'User'),
         ('staff', 'Staff'), 
         ('vendor', 'Vendor'),
-        ('koraquest', 'KoraQuest'),
+        ('kickslife250', 'Kicks_life 250'),
     )
     
     # Base role for all users
@@ -38,17 +38,18 @@ class User(AbstractUser):
     def is_vendor(self):
         return self.is_vendor_role
     
-    def is_koraquest(self):
-        return self.role == 'koraquest'
+    def is_kickslife250(self):
+        return self.role == 'kickslife250'
 
 class Post(models.Model):
     CATEGORY_CHOICES = (
-        ('electronics', 'Electronics'),
-        ('books_media', 'Books & Media'),
-        ('home_kitchen', 'Home & Kitchen'),
-        ('beauty_care', 'Beauty & Personal Care'),
-        ('software_services', 'Software & Services'),
-        ('health_fitness', 'Health & Fitness'),
+        ('sneakers', 'Sneakers'),
+        ('boots', 'Boots'),
+        ('formal', 'Formal Shoes'),
+        ('sandals', 'Sandals & Slippers'),
+        ('athletic', 'Athletic & Sports'),
+        ('casual', 'Casual Shoes'),
+        ('kids', 'Kids Shoes'),
         ('other', 'Other'),
     )
     
@@ -111,7 +112,7 @@ class Purchase(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('processing', 'Processing'),
-        ('awaiting_pickup', 'Awaiting Pickup'),  # Added for KoraQuest workflow
+        ('awaiting_pickup', 'Awaiting Pickup'),  # Added for Kicks_life 250 workflow
         ('awaiting_delivery', 'Awaiting Delivery'),  # Added for delivery option
         ('out_for_delivery', 'Out for Delivery'),  # Added for delivery tracking
         ('completed', 'Completed'),
@@ -119,7 +120,7 @@ class Purchase(models.Model):
     )
     
     DELIVERY_CHOICES = (
-        ('pickup', 'Pickup from KoraQuest'),
+        ('pickup', 'Pickup from Kicks_life 250'),
         ('delivery', 'Home Delivery'),
     )
     
@@ -143,15 +144,15 @@ class Purchase(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # KoraQuest workflow fields
-    koraquest_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
-                                     related_name='koraquest_purchases', 
-                                     help_text="KoraQuest user handling this purchase")
+    # Kicks_life 250 workflow fields
+    kickslife250_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+                                     related_name='kickslife250_purchases', 
+                                     help_text="Kicks_life 250 user handling this purchase")
     pickup_confirmed_at = models.DateTimeField(null=True, blank=True)
     vendor_payment_sent = models.BooleanField(default=False)
-    koraquest_commission_sent = models.BooleanField(default=False)
+    kickslife250_commission_sent = models.BooleanField(default=False)
     vendor_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    koraquest_commission_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    kickslife250_commission_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
     def save(self, *args, **kwargs):
         if not self.order_id:
@@ -169,7 +170,7 @@ class Purchase(models.Model):
             total_amount = self.purchase_price + self.delivery_fee
             product_amount = self.purchase_price
             self.vendor_payment_amount = product_amount * Decimal('0.8')  # 80% of product price to vendor
-            self.koraquest_commission_amount = (product_amount * Decimal('0.2')) + self.delivery_fee  # 20% of product + full delivery fee to KoraQuest
+            self.kickslife250_commission_amount = (product_amount * Decimal('0.2')) + self.delivery_fee  # 20% of product + full delivery fee to Kicks_life 250
         
         super().save(*args, **kwargs)
     
@@ -183,7 +184,7 @@ class Purchase(models.Model):
             'product_amount': product_amount,
             'delivery_fee': self.delivery_fee,
             'vendor_amount': product_amount * Decimal('0.8'),
-            'koraquest_amount': (product_amount * Decimal('0.2')) + self.delivery_fee
+            'kickslife250_amount': (product_amount * Decimal('0.2')) + self.delivery_fee
         }
     
     def __str__(self):
