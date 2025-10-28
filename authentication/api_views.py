@@ -63,26 +63,26 @@ def update_order_status_api(request):
         if new_status not in ['processing', 'shipped', 'delivered', 'completed', 'cancelled']:
             return JsonResponse({'error': 'Invalid status value'}, status=400)
         
-        try:
-            purchase = Purchase.objects.get(id=purchase_id)
-            purchase.status = new_status
-            if tracking_number:
-                purchase.tracking_number = tracking_number
-            purchase.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'Order {purchase.order_id} status updated to {new_status}',
-                'order': {
-                    'id': purchase.id,
-                    'order_id': purchase.order_id,
-                    'status': purchase.status,
-                    'tracking_number': purchase.tracking_number
-                }
-            })
-        except Purchase.DoesNotExist:
-            return JsonResponse({'error': 'Purchase not found'}, status=404)
-            
+        purchase = Purchase.objects.get(id=purchase_id)
+        purchase.status = new_status
+        if tracking_number:
+            purchase.tracking_number = tracking_number
+        purchase.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Order {purchase.order_id} status updated to {new_status}',
+            'order': {
+                'id': purchase.id,
+                'order_id': purchase.order_id,
+                'status': purchase.status,
+                'tracking_number': purchase.tracking_number
+            }
+        })
+    except Purchase.DoesNotExist:
+        return JsonResponse({'error': 'Purchase not found'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
 
