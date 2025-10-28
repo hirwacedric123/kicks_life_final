@@ -1,6 +1,6 @@
 {% extends "authentication/landing_base.html" %}
 
-{% block title %}KoraQuest - Premium Footwear{% endblock %}
+{% block title %}Kicks_life 250 - Premium Footwear{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -19,14 +19,136 @@
     
     /* Hero Section */
     .hero {
-        padding: 8rem 0 6rem;
+        padding: 6rem 0;
         background: var(--white);
     }
     
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+    }
+    
     .hero-content {
-        max-width: 700px;
-        margin: 0 auto;
-        text-align: center;
+        max-width: 600px;
+    }
+    
+    /* Slideshow */
+    .hero-slideshow {
+        position: relative;
+    }
+    
+    .slideshow-container {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        border-radius: 20px;
+        overflow: hidden;
+        background: var(--bg-gray);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .slide {
+        display: none;
+        width: 100%;
+        height: 100%;
+        animation: fadeIn 0.8s;
+    }
+    
+    .slide.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    .slide-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .slide-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .slide-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: var(--text-medium);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .slide-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 2rem;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        color: white;
+    }
+    
+    .slide-price {
+        display: block;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        display: inline-block;
+    }
+    
+    .slide-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    /* Slideshow Dots */
+    .slideshow-dots {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.75rem;
+        z-index: 10;
+    }
+    
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        border: 2px solid white;
+        cursor: pointer;
+        transition: all 0.3s;
+        padding: 0;
+    }
+    
+    .dot:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: scale(1.2);
+    }
+    
+    .dot.active {
+        background: white;
+        width: 32px;
+        border-radius: 6px;
     }
     
     .hero-badge {
@@ -512,13 +634,38 @@
     }
     
     /* Responsive */
+    @media (max-width: 1024px) {
+        .hero-grid {
+            gap: 2rem;
+        }
+        
+        .slideshow-container {
+            height: 400px;
+        }
+    }
+    
     @media (max-width: 768px) {
         .hero {
-            padding: 5rem 0 4rem;
+            padding: 4rem 0 3rem;
+        }
+        
+        .hero-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+        
+        .hero-content {
+            text-align: center;
+            max-width: 100%;
+        }
+        
+        .slideshow-container {
+            height: 350px;
         }
         
         .hero-buttons {
             flex-direction: column;
+            width: 100%;
         }
         
         .btn-primary,
@@ -544,21 +691,82 @@
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
+<!-- Hero Section with Slideshow -->
 <section class="hero">
     <div class="container">
-        <div class="hero-content">
-            <span class="hero-badge">PREMIUM FOOTWEAR</span>
-            <h1 class="hero-title">Step Into Style</h1>
-            <p class="hero-description">Discover comfort, quality, and timeless design. Your perfect pair awaits.</p>
-            <div class="hero-buttons">
-                <a href="{% url 'dashboard' %}" class="btn-primary">
-                    Shop Collection
-                    <i class="bi bi-arrow-right"></i>
-                </a>
-                {% if not user.is_authenticated %}
-                <a href="{% url 'register' %}" class="btn-secondary">Create Account</a>
-                {% endif %}
+        <div class="hero-grid">
+            <!-- Left Side: Content -->
+            <div class="hero-content">
+                <span class="hero-badge">PREMIUM FOOTWEAR</span>
+                <h1 class="hero-title">Step Into Style</h1>
+                <p class="hero-description">Discover comfort, quality, and timeless design. Your perfect pair awaits.</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'dashboard' %}" class="btn-primary">
+                        Shop Collection
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'register' %}" class="btn-secondary">Create Account</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Right Side: Image Slideshow -->
+            <div class="hero-slideshow">
+                <div class="slideshow-container">
+                    {% if featured_products %}
+                        {% for product in featured_products %}
+                        <div class="slide {% if forloop.first %}active{% endif %}">
+                            <div class="slide-image-wrapper">
+                                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="slide-image">
+                                <div class="slide-overlay">
+                                    <span class="slide-price">RWF {{ product.price|floatformat:0 }}</span>
+                                    <h3 class="slide-title">{{ product.title }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Placeholder slides if no products -->
+                        <div class="slide active">
+                            <div class="slide-image-wrapper">
+                                <div class="slide-placeholder">
+                                    <i class="bi bi-bag" style="font-size: 4rem; color: var(--primary);"></i>
+                                    <p>Premium Sneakers</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <div class="slide-image-wrapper">
+                                <div class="slide-placeholder">
+                                    <i class="bi bi-award" style="font-size: 4rem; color: var(--primary);"></i>
+                                    <p>Quality Guaranteed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <div class="slide-image-wrapper">
+                                <div class="slide-placeholder">
+                                    <i class="bi bi-star" style="font-size: 4rem; color: var(--primary);"></i>
+                                    <p>Best Sellers</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Navigation Dots -->
+                    <div class="slideshow-dots">
+                        {% if featured_products %}
+                            {% for product in featured_products %}
+                            <button class="dot {% if forloop.first %}active{% endif %}" onclick="currentSlide({{ forloop.counter }})"></button>
+                            {% endfor %}
+                        {% else %}
+                            <button class="dot active" onclick="currentSlide(1)"></button>
+                            <button class="dot" onclick="currentSlide(2)"></button>
+                            <button class="dot" onclick="currentSlide(3)"></button>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -659,7 +867,7 @@
 <section class="section">
     <div class="container">
         <div class="section-header">
-            <h2 class="section-title">Why Choose KoraQuest?</h2>
+            <h2 class="section-title">Why Choose Kicks_life 250?</h2>
             <p class="section-subtitle">Quality and service you can trust</p>
         </div>
         
@@ -794,6 +1002,68 @@
 
 {% block extra_js %}
 <script>
+    // Slideshow functionality
+    let slideIndex = 1;
+    let slideInterval;
+    
+    // Initialize slideshow
+    document.addEventListener('DOMContentLoaded', function() {
+        showSlides(slideIndex);
+        startAutoSlide();
+    });
+    
+    // Auto slide every 4 seconds
+    function startAutoSlide() {
+        slideInterval = setInterval(function() {
+            plusSlides(1);
+        }, 4000);
+    }
+    
+    // Next/previous controls
+    function plusSlides(n) {
+        clearInterval(slideInterval);
+        showSlides(slideIndex += n);
+        startAutoSlide();
+    }
+    
+    // Dot controls
+    function currentSlide(n) {
+        clearInterval(slideInterval);
+        showSlides(slideIndex = n);
+        startAutoSlide();
+    }
+    
+    // Show slides
+    function showSlides(n) {
+        let slides = document.getElementsByClassName("slide");
+        let dots = document.getElementsByClassName("dot");
+        
+        if (slides.length === 0) return;
+        
+        if (n > slides.length) { slideIndex = 1 }
+        if (n < 1) { slideIndex = slides.length }
+        
+        // Hide all slides
+        for (let i = 0; i < slides.length; i++) {
+            slides[i].classList.remove("active");
+        }
+        
+        // Remove active from all dots
+        for (let i = 0; i < dots.length; i++) {
+            dots[i].classList.remove("active");
+        }
+        
+        // Show current slide
+        if (slides[slideIndex - 1]) {
+            slides[slideIndex - 1].classList.add("active");
+        }
+        
+        // Activate current dot
+        if (dots[slideIndex - 1]) {
+            dots[slideIndex - 1].classList.add("active");
+        }
+    }
+    
     // Wishlist toggle
     document.querySelectorAll('.btn-wishlist').forEach(btn => {
         btn.addEventListener('click', function(e) {
