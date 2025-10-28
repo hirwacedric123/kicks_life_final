@@ -4,354 +4,169 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Purchase, User
-from .qr_utils import decode_qr_data, get_user_purchases_from_qr
-from .otp_utils import create_otp, verify_otp as verify_otp_util
+from .models import Purchase, User, Post
 import json
 from django.db.models import Sum, Count, Avg
 from decimal import Decimal
 
-@login_required
-@require_POST
-def get_purchases_by_qr(request):
-    """API endpoint to get purchases from a QR code"""
-    if not request.user.is_koraquest():
-        return JsonResponse({'error': 'Access denied. KoraQuest role required.', 'purchases': []}, status=403)
-    
-    try:
-        data = json.loads(request.body)
-        qr_data = data.get('qr_data')
-        
-        if not qr_data:
-            return JsonResponse({'error': 'No QR data provided', 'purchases': []}, status=400)
-        
-        # Decode QR data
-        decoded_data = decode_qr_data(qr_data.strip())
-        
-        if isinstance(decoded_data, dict) and 'error' in decoded_data:
-            return JsonResponse({'error': decoded_data['error'], 'purchases': []}, status=400)
-        
-        # Get purchase information
-        purchase_info = get_user_purchases_from_qr(decoded_data)
-        
-        # If no purchases found or empty QR data
-        if not purchase_info.get('purchases'):
-            # Still return user info if possible
-            user_info = {}
-            try:
-                user = User.objects.get(id=purchase_info.get('user_id'))
-                user_info = {
-                    'id': user.id,
-                    'username': user.username,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'email': user.email
-                }
-            except Exception:
-                pass
-            return JsonResponse({
-                'error': 'No pending purchases found in this QR code.',
-                'purchases': [],
-                'buyer': user_info
-            }, status=404)
-        
-        # Add buyer information
-        try:
-            user = User.objects.get(id=purchase_info['user_id'])
-            purchase_info['buyer'] = {
-                'id': user.id,
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'email': user.email
-            }
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found', 'purchases': []}, status=404)
-        
-        # Always include purchases key
-        if 'purchases' not in purchase_info:
-            purchase_info['purchases'] = []
-        
-        return JsonResponse(purchase_info)
-    except Exception as e:
-        import traceback
-        print('Error in get_purchases_by_qr:', traceback.format_exc())
-        return JsonResponse({'error': f'Error processing request: {str(e)}', 'purchases': []}, status=500)
+# Simplified API views for direct store operations (admin-only)
 
 @login_required
 @require_POST
 def verify_buyer_credentials(request):
-    """API endpoint to verify buyer credentials"""
-    if not request.user.is_koraquest():
-        return JsonResponse({'error': 'Access denied. KoraQuest role required.'}, status=403)
+    """Verify buyer credentials for order confirmation (Admin only)"""
+    if not request.user.is_admin():
+        return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
     
     try:
         data = json.loads(request.body)
         username = data.get('username')
-        password = data.get('password')
-        user_id = data.get('user_id')  # This should match the user from the QR code
+        email = data.get('email')
         
-        if not all([username, password, user_id]):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
-        
-        # Verify credentials
-        user = authenticate(username=username, password=password)
-        
-        if not user:
-            return JsonResponse({'error': 'Invalid username or password'}, status=401)
-        
-        # Ensure the authenticated user matches the user from the QR code
-        if user.id != int(user_id):
-            return JsonResponse({'error': 'Authentication failed. User mismatch.'}, status=401)
-        
-        return JsonResponse({
-            'success': True,
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email
-            }
-        })
-    except Exception as e:
-        return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
-
-@login_required
-@require_POST
-def send_otp(request):
-    """API endpoint to send OTP for purchase verification"""
-    if not request.user.is_koraquest():
-        return JsonResponse({'error': 'Access denied. KoraQuest role required.'}, status=403)
-    
-    try:
-        data = json.loads(request.body)
-        user_id = data.get('user_id')
-        purchase_id = data.get('purchase_id')
-        
-        if not user_id:
-            return JsonResponse({'error': 'Missing user_id'}, status=400)
+        if not username or not email:
+            return JsonResponse({'error': 'Username and email are required'}, status=400)
         
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(username=username, email=email)
+            return JsonResponse({
+                'success': True,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name
+                }
+            })
         except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
-        
-        # Create and send OTP
-        otp_result = create_otp(user, 'purchase_confirmation')
-        print(otp_result)
-        
-        if not otp_result.get('email_sent'):
-            return JsonResponse({'error': 'Failed to send OTP email'}, status=500)
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'OTP sent to {user.email}',
-            'session_id': otp_result.get('otp_id')
-        })
+            return JsonResponse({'error': 'User not found with provided credentials'}, status=404)
+            
     except Exception as e:
         return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
 
 @login_required
 @require_POST
-def verify_otp_view(request):
-    """API endpoint to verify OTP for purchase confirmation"""
-    if not request.user.is_koraquest():
-        return JsonResponse({'error': 'Access denied. KoraQuest role required.'}, status=403)
-    
-    try:
-        data = json.loads(request.body)
-        user_id = data.get('user_id')
-        otp_code = data.get('otp_code')
-        purchase_id = data.get('purchase_id')
-        
-        if not all([user_id, otp_code]):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
-        
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
-        
-        # Verify OTP using the utility function
-        otp_result = verify_otp_util(user, otp_code, 'purchase_confirmation')
-        
-        if not otp_result.get('valid'):
-            return JsonResponse({'error': otp_result.get('error', 'Invalid OTP')}, status=400)
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'OTP verified successfully',
-            'purchase_id': purchase_id  # Include purchase_id in response for frontend
-        })
-    except Exception as e:
-        return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
-
-@login_required
-@require_POST
-def complete_purchase_pickup(request):
-    """API endpoint to complete purchase pickup after OTP verification"""
-    if not request.user.is_koraquest():
-        return JsonResponse({'error': 'Access denied. KoraQuest role required.'}, status=403)
+def update_order_status_api(request):
+    """Update order status (Admin only)"""
+    if not request.user.is_admin():
+        return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
     
     try:
         data = json.loads(request.body)
         purchase_id = data.get('purchase_id')
+        new_status = data.get('status')
+        tracking_number = data.get('tracking_number', '')
         
-        print(f"DEBUG: Received purchase completion request with purchase_id: {purchase_id}")
-        print(f"DEBUG: Request data: {data}")
+        if not purchase_id or not new_status:
+            return JsonResponse({'error': 'Purchase ID and status are required'}, status=400)
         
-        if not purchase_id:
-            print("DEBUG: Missing purchase_id in request")
-            return JsonResponse({'error': 'Missing purchase_id'}, status=400)
+        if new_status not in ['processing', 'shipped', 'delivered', 'completed', 'cancelled']:
+            return JsonResponse({'error': 'Invalid status value'}, status=400)
         
         try:
             purchase = Purchase.objects.get(id=purchase_id)
-            print(f"DEBUG: Found purchase with ID {purchase_id}")
-            print(f"DEBUG: Purchase status: {purchase.status}")
-            print(f"DEBUG: Purchase details: Order ID: {purchase.order_id}, Product: {purchase.product.title}")
+            purchase.status = new_status
+            if tracking_number:
+                purchase.tracking_number = tracking_number
+            purchase.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Order {purchase.order_id} status updated to {new_status}',
+                'order': {
+                    'id': purchase.id,
+                    'order_id': purchase.order_id,
+                    'status': purchase.status,
+                    'tracking_number': purchase.tracking_number
+                }
+            })
         except Purchase.DoesNotExist:
-            print(f"DEBUG: Purchase with ID {purchase_id} not found")
             return JsonResponse({'error': 'Purchase not found'}, status=404)
-        
-        # Check if purchase is awaiting pickup or delivery
-        if purchase.status not in ['awaiting_pickup', 'awaiting_delivery']:
-            print(f"DEBUG: Invalid purchase status. Expected 'awaiting_pickup' or 'awaiting_delivery', got '{purchase.status}'")
-            return JsonResponse({'error': f'Invalid purchase status: {purchase.status}. Expected: awaiting_pickup or awaiting_delivery'}, status=400)
-        
-        # Complete the purchase
-        purchase.status = 'completed'
-        purchase.koraquest_user = request.user
-        purchase.pickup_confirmed_at = timezone.now()
-        purchase.save()
-        
-        # Update vendor and buyer stats
-        vendor = purchase.product.user
-        vendor.total_sales += purchase.vendor_payment_amount
-        vendor.save()
-        
-        buyer = purchase.buyer
-        buyer.total_purchases += (purchase.purchase_price * purchase.quantity)
-        buyer.save()
-        
-        # Regenerate buyer's QR code to remove completed purchase
-        try:
-            from .qr_utils import update_user_qr_code
-            update_user_qr_code(buyer)
-            print(f"DEBUG: Updated QR code for buyer {buyer.username}")
-        except Exception as e:
-            print(f"DEBUG: Failed to update QR code for buyer: {str(e)}")
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Purchase confirmed successfully!',
-            'vendor_payment': str(purchase.vendor_payment_amount),
-            'koraquest_commission': str(purchase.koraquest_commission_amount)
-        })
+            
     except Exception as e:
         return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
 
-@csrf_exempt
-def get_vendor_statistics_modal(request, vendor_id):
-    """API endpoint to get vendor statistics for modal popup"""
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-    
-    if not request.user.is_authenticated or not request.user.is_koraquest():
-        return JsonResponse({'error': 'Access denied'}, status=403)
+@login_required
+def get_admin_statistics(request):
+    """Get admin dashboard statistics (Admin only)"""
+    if not request.user.is_admin():
+        return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
     
     try:
-        # Get the vendor
-        vendor = User.objects.get(id=vendor_id, is_vendor_role=True)
+        products = Post.objects.all()
+        purchases = Purchase.objects.all()
         
-        # Get all purchases for this vendor
-        purchases = Purchase.objects.filter(
-            product__user=vendor,
-            status='completed'
-        ).select_related('product', 'buyer', 'koraquest_user')
+        total_orders = purchases.count()
+        pending_orders = purchases.filter(status='pending').count()
+        completed_orders = purchases.filter(status='completed').count()
         
-        # Calculate vendor statistics
-        total_sales = purchases.count()
-        total_revenue = purchases.aggregate(
-            total=Sum('vendor_payment_amount')
+        total_revenue = purchases.filter(status='completed').aggregate(
+            total=Sum('purchase_price')
         )['total'] or 0
         
         # Monthly statistics
         current_month = timezone.now().month
         current_year = timezone.now().year
-        monthly_purchases = purchases.filter(
-            pickup_confirmed_at__month=current_month,
-            pickup_confirmed_at__year=current_year
-        )
-        monthly_revenue = monthly_purchases.aggregate(
-            total=Sum('vendor_payment_amount')
-        )['total'] or 0
+        monthly_revenue = purchases.filter(
+            status='completed',
+            created_at__month=current_month,
+            created_at__year=current_year
+        ).aggregate(total=Sum('purchase_price'))['total'] or 0
         
-        # Product-wise breakdown
-        product_stats = list(purchases.values('product__title').annotate(
-            total_sales=Count('id'),
-            total_revenue=Sum('vendor_payment_amount'),
-            avg_price=Avg('vendor_payment_amount')
-        ).order_by('-total_revenue')[:5])  # Limit to top 5 products
-        
-        # KoraQuest commission from this vendor
-        koraquest_commission = purchases.aggregate(
-            total=Sum('koraquest_commission_amount')
-        )['total'] or 0
-        
-        # Monthly KoraQuest commission
-        monthly_koraquest_commission = monthly_purchases.aggregate(
-            total=Sum('koraquest_commission_amount')
-        )['total'] or 0
-        
-        # Recent transactions
-        recent_transactions = list(purchases.order_by('-pickup_confirmed_at')[:5].values(
-            'product__title', 'buyer__username', 'order_id', 'quantity', 
-            'vendor_payment_amount', 'pickup_confirmed_at', 'created_at'
-        ))
-        
-        # Commission breakdown
-        total_product_price = purchases.aggregate(total=Sum('purchase_price'))['total'] or 0
-        total_delivery_fees = purchases.aggregate(total=Sum('delivery_fee'))['total'] or 0
-        
-        commission_breakdown = {
-            'vendor_earnings': float(total_revenue),
-            'koraquest_commission': float(koraquest_commission),
-            'product_commission': float(total_product_price * Decimal('0.2')),
-            'delivery_fees': float(total_delivery_fees),
-            'total_transaction_value': float(total_product_price + total_delivery_fees)
-        }
-        
-        # Format dates for JSON serialization
-        for transaction in recent_transactions:
-            if transaction['pickup_confirmed_at']:
-                transaction['pickup_confirmed_at'] = transaction['pickup_confirmed_at'].strftime('%b %d, %H:%M')
-            else:
-                transaction['pickup_confirmed_at'] = transaction['created_at'].strftime('%b %d, %H:%M')
-            transaction['created_at'] = transaction['created_at'].strftime('%b %d, %H:%M')
-        
-        data = {
-            'vendor': {
-                'id': vendor.id,
-                'username': vendor.username,
-                'email': vendor.email
-            },
+        return JsonResponse({
+            'success': True,
             'statistics': {
-                'total_sales': total_sales,
+                'total_orders': total_orders,
+                'pending_orders': pending_orders,
+                'completed_orders': completed_orders,
                 'total_revenue': float(total_revenue),
                 'monthly_revenue': float(monthly_revenue),
-                'monthly_sales': monthly_purchases.count(),
-                'koraquest_commission': float(koraquest_commission),
-                'monthly_koraquest_commission': float(monthly_koraquest_commission),
-                'commission_rate': 80,
-                'koraquest_rate': 20
-            },
-            'product_stats': product_stats,
-            'recent_transactions': recent_transactions,
-            'commission_breakdown': commission_breakdown
-        }
+                'total_products': products.count(),
+                'low_stock_products': products.filter(inventory__lte=5).count()
+            }
+        })
         
-        return JsonResponse(data)
-        
-    except User.DoesNotExist:
-        return JsonResponse({'error': 'Vendor not found'}, status=404)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)
+
+@login_required
+def get_order_details(request, order_id):
+    """Get detailed order information (Admin only)"""
+    if not request.user.is_admin():
+        return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
+    
+    try:
+        purchase = Purchase.objects.select_related('buyer', 'product').get(order_id=order_id)
+        
+        return JsonResponse({
+            'success': True,
+            'order': {
+                'id': purchase.id,
+                'order_id': purchase.order_id,
+                'buyer': {
+                    'username': purchase.buyer.username,
+                    'email': purchase.buyer.email,
+                    'phone': purchase.buyer.phone_number
+                },
+                'product': {
+                    'title': purchase.product.title,
+                    'price': float(purchase.product.price)
+                },
+                'quantity': purchase.quantity,
+                'purchase_price': float(purchase.purchase_price),
+                'status': purchase.status,
+                'delivery_method': purchase.delivery_method,
+                'payment_method': purchase.payment_method,
+                'delivery_fee': float(purchase.delivery_fee),
+                'delivery_address': purchase.delivery_address,
+                'notes': purchase.notes,
+                'tracking_number': purchase.tracking_number,
+                'created_at': purchase.created_at.isoformat(),
+                'updated_at': purchase.updated_at.isoformat()
+            }
+        })
+        
+    except Purchase.DoesNotExist:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': f'Error processing request: {str(e)}'}, status=500)

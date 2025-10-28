@@ -3,8 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from .models import (
-    User, Post, Purchase, Bookmark, ProductImage, 
-    UserQRCode, OTPVerification, ProductReview
+    User, Post, Purchase, Bookmark, ProductImage, ProductReview
 )
 
 
@@ -17,11 +16,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 
-            'phone_number', 'role', 'is_vendor_role', 'profile_picture',
-            'total_sales', 'total_purchases', 'date_joined', 'last_login',
+            'phone_number', 'role', 'profile_picture',
+            'total_purchases', 'date_joined', 'last_login',
             'password', 'password_confirm'
         ]
-        read_only_fields = ['id', 'date_joined', 'last_login', 'total_sales', 'total_purchases']
+        read_only_fields = ['id', 'date_joined', 'last_login', 'total_purchases']
     
     def validate(self, attrs):
         if 'password' in attrs and 'password_confirm' in attrs:
@@ -184,7 +183,6 @@ class PurchaseSerializer(serializers.ModelSerializer):
     """Serializer for Purchase model"""
     buyer = UserSerializer(read_only=True)
     product = PostSerializer(read_only=True)
-    koraquest_user = UserSerializer(read_only=True)
     
     class Meta:
         model = Purchase
@@ -192,14 +190,10 @@ class PurchaseSerializer(serializers.ModelSerializer):
             'id', 'order_id', 'buyer', 'product', 'quantity', 'purchase_price',
             'status', 'delivery_method', 'payment_method', 'delivery_fee',
             'delivery_address', 'delivery_latitude', 'delivery_longitude',
-            'created_at', 'updated_at', 'koraquest_user', 'pickup_confirmed_at',
-            'vendor_payment_sent', 'koraquest_commission_sent',
-            'vendor_payment_amount', 'koraquest_commission_amount'
+            'created_at', 'updated_at', 'notes', 'tracking_number'
         ]
         read_only_fields = [
-            'id', 'order_id', 'created_at', 'updated_at', 'koraquest_user',
-            'pickup_confirmed_at', 'vendor_payment_sent', 'koraquest_commission_sent',
-            'vendor_payment_amount', 'koraquest_commission_amount'
+            'id', 'order_id', 'created_at', 'updated_at'
         ]
 
 
@@ -209,7 +203,7 @@ class PurchaseCreateSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = [
             'product', 'quantity', 'delivery_method', 'payment_method',
-            'delivery_address', 'delivery_latitude', 'delivery_longitude'
+            'delivery_address', 'delivery_latitude', 'delivery_longitude', 'notes'
         ]
     
     def create(self, validated_data):
@@ -229,50 +223,17 @@ class BookmarkSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
-class UserQRCodeSerializer(serializers.ModelSerializer):
-    """Serializer for UserQRCode model"""
-    user = UserSerializer(read_only=True)
-    is_expired = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = UserQRCode
-        fields = [
-            'id', 'user', 'qr_data', 'qr_image', 'created_at', 'updated_at',
-            'expires_at', 'is_expired'
-        ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
-    
-    def get_is_expired(self, obj):
-        return obj.is_expired()
+# Removed QR Code and OTP serializers for simplified workflow
 
 
-class OTPVerificationSerializer(serializers.ModelSerializer):
-    """Serializer for OTPVerification model"""
-    user = UserSerializer(read_only=True)
-    is_expired = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = OTPVerification
-        fields = [
-            'id', 'user', 'otp_code', 'purpose', 'created_at', 'expires_at',
-            'is_used', 'is_expired'
-        ]
-        read_only_fields = ['id', 'created_at', 'expires_at']
-    
-    def get_is_expired(self, obj):
-        return obj.is_expired()
-
-
-class VendorStatisticsSerializer(serializers.Serializer):
-    """Serializer for vendor statistics"""
-    total_sales = serializers.IntegerField()
+class AdminStatisticsSerializer(serializers.Serializer):
+    """Serializer for admin/store statistics"""
+    total_orders = serializers.IntegerField()
+    pending_orders = serializers.IntegerField()
+    completed_orders = serializers.IntegerField()
     total_revenue = serializers.DecimalField(max_digits=12, decimal_places=2)
     monthly_revenue = serializers.DecimalField(max_digits=12, decimal_places=2)
-    monthly_sales = serializers.IntegerField()
-    koraquest_commission = serializers.DecimalField(max_digits=12, decimal_places=2)
-    monthly_koraquest_commission = serializers.DecimalField(max_digits=12, decimal_places=2)
-    commission_rate = serializers.IntegerField()
-    koraquest_rate = serializers.IntegerField()
+    total_products = serializers.IntegerField()
 
 
 class DashboardStatsSerializer(serializers.Serializer):

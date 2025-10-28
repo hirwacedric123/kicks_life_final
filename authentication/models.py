@@ -9,37 +9,25 @@ import uuid
 
 class User(AbstractUser):
     USER_ROLES = (
-        ('user', 'User'),
-        ('staff', 'Staff'), 
-        ('vendor', 'Vendor'),
-        ('kickslife250', 'Kicks_life 250'),
+        ('customer', 'Customer'),
+        ('admin', 'Admin/Store Owner'),
     )
     
     # Base role for all users
-    role = models.CharField(max_length=20, choices=USER_ROLES, default='user')
+    role = models.CharField(max_length=20, choices=USER_ROLES, default='customer')
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    
-    # Additional role flags to support multiple roles
-    is_vendor_role = models.BooleanField(default=False)
     
     # Profile picture
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     
     # Stats
-    total_sales = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_purchases = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    def is_user(self):
-        return self.role == 'user' and not self.is_vendor_role
+    def is_customer(self):
+        return self.role == 'customer'
     
-    def is_staff_member(self):
-        return self.role == 'staff'
-    
-    def is_vendor(self):
-        return self.is_vendor_role
-    
-    def is_kickslife250(self):
-        return self.role == 'kickslife250'
+    def is_admin(self):
+        return self.role == 'admin'
 
 class Post(models.Model):
     CATEGORY_CHOICES = (
@@ -58,7 +46,7 @@ class Post(models.Model):
     image = models.ImageField(upload_to='posts/')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', null=True, blank=True, help_text="Store admin who created this product")
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     
     # Product fields
@@ -112,21 +100,21 @@ class Purchase(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('processing', 'Processing'),
-        ('awaiting_pickup', 'Awaiting Pickup'),  # Added for Kicks_life 250 workflow
-        ('awaiting_delivery', 'Awaiting Delivery'),  # Added for delivery option
-        ('out_for_delivery', 'Out for Delivery'),  # Added for delivery tracking
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     )
     
     DELIVERY_CHOICES = (
-        ('pickup', 'Pickup from Kicks_life 250'),
+        ('pickup', 'Store Pickup'),
         ('delivery', 'Home Delivery'),
     )
     
     PAYMENT_METHOD_CHOICES = (
         ('momo', 'Mobile Money'),
         ('credit', 'Credit Card'),
+        ('cash', 'Cash on Delivery'),
     )
     
     order_id = models.CharField(max_length=50, unique=True, blank=True)
@@ -144,15 +132,9 @@ class Purchase(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Kicks_life 250 workflow fields
-    kickslife250_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
-                                     related_name='kickslife250_purchases', 
-                                     help_text="Kicks_life 250 user handling this purchase")
-    pickup_confirmed_at = models.DateTimeField(null=True, blank=True)
-    vendor_payment_sent = models.BooleanField(default=False)
-    kickslife250_commission_sent = models.BooleanField(default=False)
-    vendor_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    kickslife250_commission_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # Simplified fields for direct store operations
+    notes = models.TextField(blank=True, null=True, help_text="Order notes or special instructions")
+    tracking_number = models.CharField(max_length=100, blank=True, null=True, help_text="Tracking number for shipped orders")
     
     def save(self, *args, **kwargs):
         if not self.order_id:
@@ -164,28 +146,12 @@ class Purchase(models.Model):
             from decimal import Decimal
             self.delivery_fee = Decimal('5.00')  # RWF5 delivery fee
         
-        # Calculate payment splits when status changes to completed
-        if self.status == 'completed' and not self.vendor_payment_amount:
-            from decimal import Decimal
-            total_amount = self.purchase_price + self.delivery_fee
-            product_amount = self.purchase_price
-            self.vendor_payment_amount = product_amount * Decimal('0.8')  # 80% of product price to vendor
-            self.kickslife250_commission_amount = (product_amount * Decimal('0.2')) + self.delivery_fee  # 20% of product + full delivery fee to Kicks_life 250
-        
         super().save(*args, **kwargs)
     
-    def calculate_payment_split(self):
-        """Calculate the 80/20 payment split including delivery fees"""
+    def calculate_total(self):
+        """Calculate total amount including delivery fees"""
         from decimal import Decimal
-        product_amount = self.purchase_price
-        total_amount = product_amount + self.delivery_fee
-        return {
-            'total': total_amount,
-            'product_amount': product_amount,
-            'delivery_fee': self.delivery_fee,
-            'vendor_amount': product_amount * Decimal('0.8'),
-            'kickslife250_amount': (product_amount * Decimal('0.2')) + self.delivery_fee
-        }
+        return self.purchase_price + self.delivery_fee
     
     def __str__(self):
         return f"{self.buyer.username} - {self.product.title} - {self.order_id}"
@@ -217,36 +183,4 @@ class ProductImage(models.Model):
     class Meta:
         ordering = ['display_order']
 
-class UserQRCode(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='qr_code')
-    qr_data = models.TextField()  # JWT token or encrypted data
-    qr_image = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    expires_at = models.DateTimeField()
-    
-    def __str__(self):
-        return f"QR Code for {self.user.username}"
-    
-    def is_expired(self):
-        return timezone.now() > self.expires_at
-
-class OTPVerification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_verifications')
-    otp_code = models.CharField(max_length=6)
-    purpose = models.CharField(max_length=50, default='purchase_confirmation')  # purchase_confirmation, general
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    is_used = models.BooleanField(default=False)
-    
-    def __str__(self):
-        return f"OTP for {self.user.username} - {self.purpose}"
-    
-    def is_expired(self):
-        return timezone.now() > self.expires_at
-    
-    def save(self, *args, **kwargs):
-        if not self.expires_at:
-            # Set expiration to 10 minutes from creation
-            self.expires_at = timezone.now() + timezone.timedelta(minutes=10)
-        super().save(*args, **kwargs)
+# Removed QR Code and OTP models for simplified workflow

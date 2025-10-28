@@ -1334,4 +1334,730 @@ def edit_product(request, product_id):
     
     return render(request, 'authentication/edit_product.html', context)
 
-# Removed all QR Code, OTP, and Kicks_life 250 views for simplified single-vendor workflow
+# KoraQuest Views
+@login_required
+@ensure_csrf_cookie
+def user_qr_code(request):
+    """Display user's QR code with their purchase information"""
+    # Update/create QR code for the user
+    user_qr = update_user_qr_code(request.user)
+    
+    # Get user's pending purchases (both pickup and delivery)
+    pending_purchases = Purchase.objects.filter(
+        buyer=request.user,
+        status__in=['awaiting_pickup', 'awaiting_delivery']
+    ).select_related('product')
+    
+    context = {
+        'user_qr': user_qr,
+        'pending_purchases': pending_purchases,
+        'qr_expires_at': user_qr.expires_at,
+    }
+    
+    return render(request, 'authentication/user_qr_code.html', context)
+
+@login_required
+def koraquest_dashboard(request):
+    """Dashboard for KoraQuest users to manage purchases and inventory"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    # Get all purchases awaiting pickup
+    awaiting_purchases = Purchase.objects.filter(
+        status='awaiting_pickup'
+    ).select_related('buyer', 'product', 'product__user').order_by('-created_at')
+    
+    # Get all purchases awaiting delivery
+    awaiting_deliveries = Purchase.objects.filter(
+        status='awaiting_delivery'
+    ).select_related('buyer', 'product', 'product__user').order_by('-created_at')
+    
+    # Get orders out for delivery
+    out_for_delivery = Purchase.objects.filter(
+        status='out_for_delivery'
+    ).select_related('buyer', 'product', 'product__user').order_by('-created_at')
+    
+    # Get completed purchases for revenue tracking
+    completed_purchases = Purchase.objects.filter(
+        status='completed',
+        koraquest_user=request.user
+    ).select_related('buyer', 'product')
+    
+    # Calculate revenue statistics
+    total_commission = completed_purchases.aggregate(
+        total=Sum('koraquest_commission_amount')
+    )['total'] or 0
+    
+    monthly_commission = completed_purchases.filter(
+        pickup_confirmed_at__month=timezone.now().month,
+        pickup_confirmed_at__year=timezone.now().year
+    ).aggregate(total=Sum('koraquest_commission_amount'))['total'] or 0
+    
+    context = {
+        'awaiting_purchases': awaiting_purchases,
+        'awaiting_deliveries': awaiting_deliveries,
+        'out_for_delivery': out_for_delivery,
+        'completed_purchases': completed_purchases[:10],  # Latest 10
+        'total_commission': total_commission,
+        'monthly_commission': monthly_commission,
+        'total_completed': completed_purchases.count(),
+    }
+    
+    return render(request, 'authentication/koraquest_dashboard.html', context)
+
+@login_required
+def scan_qr_code(request):
+    """QR code scanner interface for KoraQuest users"""
+    try:
+        if not request.user.is_koraquest():
+            messages.error(request, 'Access denied. KoraQuest role required.')
+            return redirect('dashboard')
+        
+        # Create context for rendering
+        context = {
+            'page_title': 'QR Code Scanner',
+            'error_message': None,
+            'success_message': None,
+        }
+        
+        if request.method == 'POST':
+            qr_data = request.POST.get('qr_data')
+            purchase_id = request.POST.get('purchase_id')
+            
+            if not qr_data:
+                context['error_message'] = 'No QR data provided'
+                messages.error(request, context['error_message'])
+                return render(request, 'authentication/scan_qr_code.html', context)
+            
+            try:
+                # Decode QR data
+                decoded_data = decode_qr_data(qr_data.strip())
+                
+                if isinstance(decoded_data, dict) and 'error' in decoded_data:
+                    context['error_message'] = decoded_data['error']
+                    messages.error(request, decoded_data['error'])
+                    return render(request, 'authentication/scan_qr_code.html', context)
+                
+                # Get purchase information
+                purchase_info = get_user_purchases_from_qr(decoded_data)
+                
+                # If no purchases found or empty QR data
+                if not purchase_info.get('purchases'):
+                    context['error_message'] = 'No pending purchases found in this QR code.'
+                    messages.warning(request, context['error_message'])
+                    return render(request, 'authentication/scan_qr_code.html', context)
+                
+                # If purchase_id is provided, complete that specific purchase
+                if purchase_id:
+                    try:
+                        # Find the specific purchase from the database
+                        purchase = Purchase.objects.get(id=purchase_id)
+                        
+                        # Verify the purchase belongs to the user in the QR code
+                        if purchase.buyer.id != purchase_info['user_id']:
+                            context['error_message'] = 'Purchase verification failed: User mismatch.'
+                            messages.error(request, context['error_message'])
+                            return render(request, 'authentication/scan_qr_code.html', context)
+                        
+                        # Complete the purchase directly (fallback from JS flow)
+                        purchase.status = 'completed'
+                        purchase.koraquest_user = request.user
+                        purchase.pickup_confirmed_at = timezone.now()
+                        purchase.save()
+                        
+                        # Update vendor and buyer stats
+                        vendor = purchase.product.user
+                        vendor.total_sales += purchase.vendor_payment_amount
+                        vendor.save()
+                        
+                        buyer = purchase.buyer
+                        buyer.total_purchases += (purchase.purchase_price * purchase.quantity)
+                        buyer.save()
+                        
+                        # Success message
+                        context['success_message'] = f'Purchase {purchase.order_id} confirmed successfully! Vendor payment: RWF{purchase.vendor_payment_amount}, KoraQuest commission: RWF{purchase.koraquest_commission_amount}'
+                        messages.success(request, context['success_message'])
+                        
+                        # Redirect to dashboard after successful completion
+                        return redirect('koraquest_dashboard')
+                    except Purchase.DoesNotExist:
+                        context['error_message'] = f'Purchase not found with ID: {purchase_id}'
+                        messages.error(request, context['error_message'])
+                        return render(request, 'authentication/scan_qr_code.html', context)
+                    except Exception as e:
+                        context['error_message'] = f'Error processing purchase: {str(e)}'
+                        messages.error(request, context['error_message'])
+                        return render(request, 'authentication/scan_qr_code.html', context)
+                
+                # If no specific purchase_id, show all purchases
+                user = get_object_or_404(User, id=purchase_info['user_id'])
+                
+                # Add data to context
+                context.update({
+                    'qr_data': purchase_info,
+                    'user_info': user,
+                    'success_message': f'Successfully retrieved purchase information for {user.username}.'
+                })
+                
+                messages.success(request, context['success_message'])
+                return render(request, 'authentication/scan_qr_code.html', context)
+                
+            except IOError as e:
+                error_msg = f"QR code processing error: {str(e)}"
+                context['error_message'] = error_msg
+                messages.error(request, error_msg)
+                return render(request, 'authentication/scan_qr_code.html', context)
+            except Exception as e:
+                error_msg = f"Unexpected error: {str(e)}"
+                context['error_message'] = error_msg
+                messages.error(request, error_msg)
+                return render(request, 'authentication/scan_qr_code.html', context)
+        
+        # For GET requests, just render the scan page
+        return render(request, 'authentication/scan_qr_code.html', context)
+        
+    except Exception as e:
+        messages.error(request, f"System error: {str(e)}")
+        return redirect('koraquest_dashboard')
+
+@login_required
+def confirm_purchase_pickup(request, purchase_id):
+    """Confirm purchase pickup and initiate OTP verification"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    purchase = get_object_or_404(Purchase, id=purchase_id, status='awaiting_pickup')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'request_otp':
+            # Create OTP for buyer
+            otp_result = create_otp(purchase.buyer, 'purchase_confirmation')
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'OTP sent to {purchase.buyer.email}',
+                'otp_id': otp_result['otp_id']
+            })
+        
+        elif action == 'verify_otp':
+            password = request.POST.get('password')
+            otp_code = request.POST.get('otp_code')
+            
+            # Verify buyer's password
+            if not purchase.buyer.check_password(password):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid password'
+                })
+            
+            # Verify OTP
+            otp_result = verify_otp(purchase.buyer, otp_code, 'purchase_confirmation')
+            
+            if not otp_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': otp_result['error']
+                })
+            
+            # Complete the purchase
+            purchase.status = 'completed'
+            purchase.koraquest_user = request.user
+            purchase.pickup_confirmed_at = timezone.now()
+            purchase.save()
+            
+            # Update vendor and buyer stats
+            vendor = purchase.product.user
+            vendor.total_sales += purchase.vendor_payment_amount
+            vendor.save()
+            
+            buyer = purchase.buyer
+            buyer.total_purchases += (purchase.purchase_price * purchase.quantity)
+            buyer.save()
+            
+            # Update product sales count only (inventory was already decremented during purchase)
+            product = purchase.product
+            product.total_purchases += purchase.quantity
+            product.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Purchase confirmed successfully!',
+                'vendor_payment': str(purchase.vendor_payment_amount),
+                'koraquest_commission': str(purchase.koraquest_commission_amount)
+            })
+    
+    context = {
+        'purchase': purchase,
+        'payment_split': purchase.calculate_payment_split()
+    }
+    
+    return render(request, 'authentication/confirm_purchase_pickup.html', context)
+
+@login_required
+def confirm_delivery(request, purchase_id):
+    """Confirm delivery completion and initiate OTP verification"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    purchase = get_object_or_404(Purchase, id=purchase_id, status__in=['awaiting_delivery', 'out_for_delivery'])
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'mark_out_for_delivery':
+            # Mark as out for delivery
+            purchase.status = 'out_for_delivery'
+            purchase.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Order marked as out for delivery!'
+            })
+        
+        elif action == 'request_otp':
+            # Create OTP for buyer
+            otp_result = create_otp(purchase.buyer, 'delivery_confirmation')
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'OTP sent to {purchase.buyer.email}',
+                'otp_id': otp_result['otp_id']
+            })
+        
+        elif action == 'verify_delivery':
+            password = request.POST.get('password')
+            otp_code = request.POST.get('otp_code')
+            
+            # Verify buyer's password
+            if not purchase.buyer.check_password(password):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid password'
+                })
+            
+            # Verify OTP
+            otp_result = verify_otp(purchase.buyer, otp_code, 'delivery_confirmation')
+            
+            if not otp_result['valid']:
+                return JsonResponse({
+                    'success': False,
+                    'error': otp_result['error']
+                })
+            
+            # Complete the delivery
+            purchase.status = 'completed'
+            purchase.koraquest_user = request.user
+            purchase.pickup_confirmed_at = timezone.now()  # Using same field for delivery confirmation time
+            purchase.save()
+            
+            # Update vendor and buyer stats
+            vendor = purchase.product.user
+            vendor.total_sales += purchase.vendor_payment_amount
+            vendor.save()
+            
+            buyer = purchase.buyer
+            buyer.total_purchases += purchase.purchase_price
+            buyer.save()
+            
+            # Update product sales count only (inventory was already decremented during purchase)
+            product = purchase.product
+            product.total_purchases += purchase.quantity
+            product.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Delivery confirmed successfully!',
+                'vendor_payment': str(purchase.vendor_payment_amount),
+                'koraquest_commission': str(purchase.koraquest_commission_amount)
+            })
+    
+    context = {
+        'purchase': purchase,
+        'payment_split': purchase.calculate_payment_split(),
+        'is_delivery': True
+    }
+    
+    return render(request, 'authentication/confirm_purchase_pickup.html', context)
+
+@login_required
+@ensure_csrf_cookie
+@require_http_methods(["POST"])
+def update_qr_code_ajax(request):
+    """AJAX endpoint to update user's QR code"""
+    print(f"Update QR request received:")
+    print(f"Method: {request.method}")
+    print(f"Headers: {dict(request.headers)}")
+    print(f"CSRF Token in POST: {request.POST.get('csrfmiddlewaretoken', 'Not found')}")
+    print(f"CSRF Token in META: {request.META.get('HTTP_X_CSRFTOKEN', 'Not found')}")
+    
+    if request.method == 'POST':
+        user_qr = update_user_qr_code(request.user)
+        
+        return JsonResponse({
+            'success': True,
+            'qr_image_url': user_qr.qr_image.url if user_qr.qr_image else None,
+            'expires_at': user_qr.expires_at.isoformat()
+        })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def koraquest_purchase_history(request):
+    """View purchase history for KoraQuest users"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    purchases = Purchase.objects.filter(
+        koraquest_user=request.user,
+        status='completed'
+    ).select_related('buyer', 'product', 'product__user').order_by('-pickup_confirmed_at')
+    
+    # Pagination could be added here
+    context = {
+        'purchases': purchases,
+        'total_commission': purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+    }
+    
+    return render(request, 'authentication/koraquest_purchase_history.html', context)
+
+@login_required
+def sales_statistics(request):
+    """Sales statistics view showing detailed financial breakdown for vendors and KoraQuest agents"""
+    
+    # Check if export is requested
+    export_format = request.GET.get('export')
+    
+    if request.user.is_vendor_role:
+        # Vendor statistics - show their earnings (80% of product price)
+        purchases = Purchase.objects.filter(
+            product__user=request.user,
+            status='completed'
+        ).select_related('product', 'buyer')
+        
+        # Calculate vendor statistics
+        total_sales = purchases.count()
+        total_revenue = purchases.aggregate(
+            total=Sum('vendor_payment_amount')
+        )['total'] or 0
+        
+        # Monthly statistics
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        monthly_purchases = purchases.filter(
+            pickup_confirmed_at__month=current_month,
+            pickup_confirmed_at__year=current_year
+        )
+        monthly_revenue = monthly_purchases.aggregate(
+            total=Sum('vendor_payment_amount')
+        )['total'] or 0
+        
+        # Product-wise breakdown
+        product_stats = purchases.values('product__title').annotate(
+            total_sales=Count('id'),
+            total_revenue=Sum('vendor_payment_amount'),
+            avg_price=Avg('vendor_payment_amount')
+        ).order_by('-total_revenue')
+        
+        # Recent transactions
+        recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+        
+        # Handle export for vendor
+        if export_format in ['csv', 'pdf']:
+            if export_format == 'csv':
+                headers = ['Product', 'Total Sales', 'Total Revenue', 'Average Price']
+                data = []
+                for product in product_stats:
+                    data.append([
+                        product['product__title'],
+                        product['total_sales'],
+                        f"RWF {product['total_revenue']:,.1f}",
+                        f"RWF {product['avg_price']:,.1f}"
+                    ])
+                filename = f"vendor_sales_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                return generate_csv_report(data, filename, headers)
+            elif export_format == 'pdf':
+                headers = ['Product', 'Total Sales', 'Total Revenue', 'Average Price']
+                data = []
+                for product in product_stats:
+                    data.append([
+                        product['product__title'],
+                        product['total_sales'],
+                        f"RWF {product['total_revenue']:,.1f}",
+                        f"RWF {product['avg_price']:,.1f}"
+                    ])
+                summary_data = {
+                    'Total Sales': total_sales,
+                    'Total Revenue': f"RWF {total_revenue:,.1f}",
+                    'Monthly Revenue': f"RWF {monthly_revenue:,.1f}",
+                    'Commission Rate': '80%',
+                    'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+                filename = f"vendor_sales_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                title = f"Vendor Sales Report - {request.user.get_full_name() or request.user.username}"
+                return generate_pdf_report(data, filename, title, headers, summary_data)
+        
+        context = {
+            'user_type': 'vendor',
+            'total_sales': total_sales,
+            'total_revenue': total_revenue,
+            'monthly_revenue': monthly_revenue,
+            'monthly_sales': monthly_purchases.count(),
+            'product_stats': product_stats,
+            'recent_transactions': recent_transactions,
+            'commission_rate': 80,  # Vendor gets 80%
+            'koraquest_rate': 20,   # KoraQuest gets 20%
+        }
+        
+    elif request.user.is_koraquest():
+        # KoraQuest agent statistics - show their commission (20% of product price + delivery fees)
+        purchases = Purchase.objects.filter(
+            koraquest_user=request.user,
+            status='completed'
+        ).select_related('product', 'buyer', 'product__user')
+        
+        # Calculate KoraQuest statistics
+        total_transactions = purchases.count()
+        total_commission = purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+        
+        # Monthly statistics
+        current_month = timezone.now().month
+        current_year = timezone.now().year
+        monthly_purchases = purchases.filter(
+            pickup_confirmed_at__month=current_month,
+            pickup_confirmed_at__year=current_year
+        )
+        monthly_commission = monthly_purchases.aggregate(
+            total=Sum('koraquest_commission_amount')
+        )['total'] or 0
+        
+        # Breakdown by commission type
+        total_product_price = purchases.aggregate(total=Sum('purchase_price'))['total'] or 0
+        total_delivery_fees = purchases.aggregate(total=Sum('delivery_fee'))['total'] or 0
+        total_commission_amount = purchases.aggregate(total=Sum('koraquest_commission_amount'))['total'] or 0
+        
+        commission_breakdown = {
+            'product_commission': total_product_price * Decimal('0.2'),
+            'delivery_fees': total_delivery_fees,
+            'total_commission': total_commission_amount
+        }
+        
+        # Vendor-wise breakdown - get unique vendors with their stats
+        vendor_stats = []
+        
+        # Use values() to get unique vendors with their aggregated stats
+        vendor_aggregates = purchases.values('product__user__id', 'product__user__username').annotate(
+            total_transactions=Count('id'),
+            total_commission=Sum('koraquest_commission_amount'),
+            avg_commission=Avg('koraquest_commission_amount')
+        ).order_by('-total_commission')
+        
+        for vendor_data in vendor_aggregates:
+            vendor_stats.append({
+                'vendor_id': vendor_data['product__user__id'],
+                'vendor_username': vendor_data['product__user__username'],
+                'total_transactions': vendor_data['total_transactions'],
+                'total_commission': vendor_data['total_commission'] or 0,
+                'avg_commission': vendor_data['avg_commission'] or 0
+            })
+        
+
+        
+        # Recent transactions
+        recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+        
+        # Handle export for KoraQuest
+        if export_format in ['csv', 'pdf']:
+            if export_format == 'csv':
+                headers = ['Vendor', 'Transactions', 'Total Commission', 'Average Commission']
+                data = []
+                for vendor in vendor_stats:
+                    data.append([
+                        vendor['vendor_username'],
+                        vendor['total_transactions'],
+                        f"RWF {vendor['total_commission']:,.1f}",
+                        f"RWF {vendor['avg_commission']:,.1f}"
+                    ])
+                filename = f"koraquest_commission_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                return generate_csv_report(data, filename, headers)
+            elif export_format == 'pdf':
+                headers = ['Vendor', 'Transactions', 'Total Commission', 'Average Commission']
+                data = []
+                for vendor in vendor_stats:
+                    data.append([
+                        vendor['vendor_username'],
+                        vendor['total_transactions'],
+                        f"RWF {vendor['total_commission']:,.1f}",
+                        f"RWF {vendor['avg_commission']:,.1f}"
+                    ])
+                summary_data = {
+                    'Total Transactions': total_transactions,
+                    'Total Commission': f"RWF {total_commission:,.1f}",
+                    'Monthly Commission': f"RWF {monthly_commission:,.1f}",
+                    'Commission Rate': '20% + Delivery Fees',
+                    'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+                filename = f"koraquest_commission_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                title = f"KoraQuest Commission Report - {request.user.get_full_name() or request.user.username}"
+                return generate_pdf_report(data, filename, title, headers, summary_data)
+        
+        context = {
+            'user_type': 'koraquest',
+            'total_transactions': total_transactions,
+            'total_commission': total_commission,
+            'monthly_commission': monthly_commission,
+            'monthly_transactions': monthly_purchases.count(),
+            'commission_breakdown': commission_breakdown,
+            'vendor_stats': vendor_stats,
+            'recent_transactions': recent_transactions,
+            'commission_rate': 20,  # KoraQuest gets 20%
+            'vendor_rate': 80,      # Vendor gets 80%
+        }
+        
+    else:
+        # Regular user - show their purchase history
+        purchases = Purchase.objects.filter(
+            buyer=request.user,
+            status='completed'
+        ).select_related('product', 'product__user')
+        
+        total_spent = purchases.aggregate(
+            total=Sum('purchase_price')
+        )['total'] or 0
+        
+        monthly_purchases = purchases.filter(
+            created_at__month=timezone.now().month,
+            created_at__year=timezone.now().year
+        )
+        monthly_spent = monthly_purchases.aggregate(
+            total=Sum('purchase_price')
+        )['total'] or 0
+        
+        # Handle export for customer
+        if export_format in ['csv', 'pdf']:
+            headers = ['Product', 'Seller', 'Date', 'Price', 'Status']
+            data = []
+            for purchase in purchases:
+                data.append([
+                    purchase.product.title,
+                    f"{purchase.product.user.first_name} {purchase.product.user.last_name}",
+                    purchase.created_at.strftime('%Y-%m-%d %H:%M'),
+                    f"RWF {purchase.purchase_price:,.1f}",
+                    purchase.status.title()
+                ])
+            
+            if export_format == 'csv':
+                filename = f"customer_purchases_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                return generate_csv_report(data, filename, headers)
+            elif export_format == 'pdf':
+                summary_data = {
+                    'Total Purchases': purchases.count(),
+                    'Total Spent': f"RWF {total_spent:,.1f}",
+                    'Monthly Spent': f"RWF {monthly_spent:,.1f}",
+                    'Report Generated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+                filename = f"customer_purchases_{request.user.username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                title = f"Customer Purchase Report - {request.user.get_full_name() or request.user.username}"
+                return generate_pdf_report(data, filename, title, headers, summary_data)
+        
+        context = {
+            'user_type': 'customer',
+            'total_purchases': purchases.count(),
+            'total_spent': total_spent,
+            'monthly_spent': monthly_spent,
+            'monthly_purchases': monthly_purchases.count(),
+            'recent_transactions': purchases.order_by('-created_at')[:10],
+        }
+    
+    return render(request, 'authentication/sales_statistics.html', context)
+
+@login_required
+def vendor_statistics_for_koraquest(request, vendor_id):
+    """KoraQuest users can view detailed statistics for a specific vendor"""
+    if not request.user.is_koraquest():
+        messages.error(request, 'Access denied. KoraQuest role required.')
+        return redirect('dashboard')
+    
+    # Get the vendor
+    vendor = get_object_or_404(User, id=vendor_id, is_vendor_role=True)
+    
+    # Get all purchases for this vendor
+    purchases = Purchase.objects.filter(
+        product__user=vendor,
+        status='completed'
+    ).select_related('product', 'buyer', 'koraquest_user')
+    
+    # Calculate vendor statistics (as if KoraQuest is viewing the vendor's dashboard)
+    total_sales = purchases.count()
+    total_revenue = purchases.aggregate(
+        total=Sum('vendor_payment_amount')
+    )['total'] or 0
+    
+    # Monthly statistics
+    current_month = timezone.now().month
+    current_year = timezone.now().year
+    monthly_purchases = purchases.filter(
+        pickup_confirmed_at__month=current_month,
+        pickup_confirmed_at__year=current_year
+    )
+    monthly_revenue = monthly_purchases.aggregate(
+        total=Sum('vendor_payment_amount')
+    )['total'] or 0
+    
+    # Product-wise breakdown
+    product_stats = purchases.values('product__title').annotate(
+        total_sales=Count('id'),
+        total_revenue=Sum('vendor_payment_amount'),
+        avg_price=Avg('vendor_payment_amount')
+    ).order_by('-total_revenue')
+    
+    # KoraQuest commission from this vendor
+    koraquest_commission = purchases.aggregate(
+        total=Sum('koraquest_commission_amount')
+    )['total'] or 0
+    
+    # Monthly KoraQuest commission
+    monthly_koraquest_commission = monthly_purchases.aggregate(
+        total=Sum('koraquest_commission_amount')
+    )['total'] or 0
+    
+    # Recent transactions
+    recent_transactions = purchases.order_by('-pickup_confirmed_at')[:10]
+    
+    # Commission breakdown
+    total_product_price = purchases.aggregate(total=Sum('purchase_price'))['total'] or 0
+    total_delivery_fees = purchases.aggregate(total=Sum('delivery_fee'))['total'] or 0
+    
+    commission_breakdown = {
+        'vendor_earnings': total_revenue,
+        'koraquest_commission': koraquest_commission,
+        'product_commission': total_product_price * Decimal('0.2'),
+        'delivery_fees': total_delivery_fees,
+        'total_transaction_value': total_product_price + total_delivery_fees
+    }
+    
+    context = {
+        'vendor': vendor,
+        'total_sales': total_sales,
+        'total_revenue': total_revenue,
+        'monthly_revenue': monthly_revenue,
+        'monthly_sales': monthly_purchases.count(),
+        'product_stats': product_stats,
+        'recent_transactions': recent_transactions,
+        'koraquest_commission': koraquest_commission,
+        'monthly_koraquest_commission': monthly_koraquest_commission,
+        'commission_breakdown': commission_breakdown,
+        'commission_rate': 80,  # Vendor gets 80%
+        'koraquest_rate': 20,   # KoraQuest gets 20%
+    }
+    
+    return render(request, 'authentication/vendor_statistics_for_koraquest.html', context)

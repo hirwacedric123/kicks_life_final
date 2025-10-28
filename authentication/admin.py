@@ -1,20 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Post, Purchase, Bookmark, ProductImage, UserQRCode, OTPVerification, ProductReview
+from .models import User, Post, Purchase, Bookmark, ProductImage, ProductReview
 
 class UserAdmin(BaseUserAdmin):
     # Add the custom fields to the admin interface
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Additional Info', {
-            'fields': ('phone_number', 'role', 'is_vendor_role', 'profile_picture', 'total_sales', 'total_purchases')
+            'fields': ('phone_number', 'role', 'profile_picture', 'total_purchases')
         }),
     )
     
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_vendor_role', 'is_staff', 'is_active')
-    list_filter = ('role', 'is_vendor_role', 'is_staff', 'is_active')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff', 'is_active')
+    list_filter = ('role', 'is_staff', 'is_active')
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'price', 'category', 'inventory', 'created_at')
+    list_display = ('title', 'price', 'category', 'inventory', 'created_at')
     list_filter = ('category', 'created_at')
     search_fields = ('title', 'description')
 
@@ -35,10 +35,8 @@ admin.site.register(Purchase, PurchaseAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(Bookmark)
 admin.site.register(ProductImage)
-admin.site.register(UserQRCode)
-admin.site.register(OTPVerification)
 
 # Customize Admin Site Branding
-admin.site.site_header = "Kicks_life 250 Admin"
-admin.site.site_title = "Kicks_life 250 Admin Portal"
-admin.site.index_title = "Welcome to Kicks_life 250 Shoe Marketplace Administration"
+admin.site.site_header = "KoraQuest Admin"
+admin.site.site_title = "KoraQuest Admin Portal"
+admin.site.index_title = "Welcome to KoraQuest Shoe Store Administration"
