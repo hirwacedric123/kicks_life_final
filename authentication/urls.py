@@ -4,6 +4,11 @@ from . import api_views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    # Public landing page
+    path('', views.landing_page, name='landing_page'),
+    path('home/', views.landing_page, name='home'),
+    
+    # Authentication
     path('register/', views.register, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),

@@ -22,9 +22,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('authentication.urls')),
-    # Add a redirect from home to login page
-    path('', lambda request: redirect('login')),
+    path('', include('authentication.urls')),  # Root URL goes to authentication app (includes landing page)
 ]
 
 # Serve media files in development

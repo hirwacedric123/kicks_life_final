@@ -899,52 +899,11 @@
                         <p>Unlock additional features and expand your opportunities</p>
                     </div>
                     
+                    <!-- Vendor upgrade removed - Single store model -->
                     <div class="settings-form">
-                        <div class="upgrade-options">
-                            <div class="upgrade-card {% if user.is_vendor_role %}active{% endif %}">
-                                <div class="upgrade-header">
-                                    <i class="bi bi-shop"></i>
-                                    <h3>Vendor Account</h3>
-                                    {% if user.is_vendor_role %}
-                                    <span class="status-badge">Active</span>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="upgrade-features">
-                                    <ul>
-                                        <li><i class="bi bi-check-circle"></i>Create and manage product listings</li>
-                                        <li><i class="bi bi-check-circle"></i>Connect directly with buyers</li>
-                                        <li><i class="bi bi-check-circle"></i>Build and showcase your brand</li>
-                                        <li><i class="bi bi-check-circle"></i>Access detailed analytics and insights</li>
-                                        <li><i class="bi bi-check-circle"></i>Priority customer support</li>
-                                    </ul>
-                                </div>
-                                
-                                {% if user.is_vendor_role %}
-                                <div class="upgrade-status">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    <span>You are already a vendor! Start selling today.</span>
-                                </div>
-                                {% else %}
-                                <form method="POST" class="upgrade-form">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="upgrade_type" value="vendor">
-                                    <div class="terms-check">
-                                        <input type="checkbox" id="vendor_terms" required>
-                                        <label for="vendor_terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Vendor Guidelines</a></label>
-                                    </div>
-                                    <button type="submit" class="btn-upgrade">
-                                        <i class="bi bi-arrow-up-circle"></i>
-                                        Become a Vendor
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="upgrade-note">
+                        <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i>
-                            <p><strong>Multi-Role Support:</strong> You can have multiple roles on KoraQuest. For example, you can be both a vendor and a buyer to maximize your earning potential.</p>
+                            <strong>Shopping Made Simple:</strong> KoraQuest is your one-stop shop for premium footwear. Browse our collection, save your favorites, and enjoy fast delivery!
                         </div>
                     </div>
                 </div>

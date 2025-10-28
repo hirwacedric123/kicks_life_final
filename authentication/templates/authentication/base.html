@@ -313,36 +313,24 @@
             <a href="{% url 'dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="bi bi-shop"></i>
             </a>
-            {% if user.is_vendor_role %}
-            <a href="{% url 'create_product' %}" class="nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}">
+            {% if user.is_admin %}
+            <a href="{% url 'admin_dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" title="Admin Dashboard">
+                <i class="bi bi-speedometer2"></i>
+            </a>
+            <a href="{% url 'create_product' %}" class="nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}" title="Add Product">
                 <i class="bi bi-plus-circle"></i>
             </a>
-            <a href="{% url 'sales_statistics' %}" class="nav-tab {% if request.resolver_match.url_name == 'sales_statistics' %}active{% endif %}">
-                <i class="bi bi-bar-chart"></i>
-            </a>
             {% endif %}
-            <a href="{% url 'purchase_history' %}" class="nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
+            <a href="{% url 'purchase_history' %}" class="nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}" title="Order History">
                 <i class="bi bi-clock-history"></i>
             </a>
-            <a href="{% url 'bookmarks' %}" class="nav-tab {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}">
+            <a href="{% url 'bookmarks' %}" class="nav-tab {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}" title="Wishlist">
                 <i class="bi bi-bookmark"></i>
             </a>
-            {% if not user.is_koraquest %}
-            <a href="{% url 'user_qr_code' %}" class="nav-tab {% if request.resolver_match.url_name == 'user_qr_code' %}active{% endif %}">
-                <i class="bi bi-qr-code"></i>
-            </a>
-            {% else %}
-            <a href="{% url 'scan_qr_code' %}" class="nav-tab {% if request.resolver_match.url_name == 'scan_qr_code' %}active{% endif %}">
-                <i class="bi bi-qr-code-scan"></i>
-            </a>
-            <a href="{% url 'sales_statistics' %}" class="nav-tab {% if request.resolver_match.url_name == 'sales_statistics' %}active{% endif %}">
-                <i class="bi bi-graph-up"></i>
-            </a>
-            {% endif %}
-            <a href="{% url 'user_settings' %}" class="nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
+            <a href="{% url 'user_settings' %}" class="nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}" title="Settings">
                 <i class="bi bi-gear"></i>
             </a>
-            <a href="{% url 'logout' %}" class="nav-tab">
+            <a href="{% url 'logout' %}" class="nav-tab" title="Logout">
                 <i class="bi bi-box-arrow-right"></i>
             </a>
         </nav>
@@ -355,14 +343,14 @@
                 <i class="bi bi-shop"></i>
                 <span>Shop</span>
             </a>
-            {% if user.is_vendor_role %}
+            {% if user.is_admin %}
+            <a href="{% url 'admin_dashboard' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Admin</span>
+            </a>
             <a href="{% url 'create_product' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}">
                 <i class="bi bi-plus-circle"></i>
                 <span>Add</span>
-            </a>
-            <a href="{% url 'sales_statistics' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'sales_statistics' %}active{% endif %}">
-                <i class="bi bi-bar-chart"></i>
-                <span>Stats</span>
             </a>
             {% endif %}
             <a href="{% url 'purchase_history' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
@@ -371,23 +359,8 @@
             </a>
             <a href="{% url 'bookmarks' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}">
                 <i class="bi bi-bookmark"></i>
-                <span>Saved</span>
+                <span>Wishlist</span>
             </a>
-            {% if not user.is_koraquest %}
-            <a href="{% url 'user_qr_code' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'user_qr_code' %}active{% endif %}">
-                <i class="bi bi-qr-code"></i>
-                <span>QR</span>
-            </a>
-            {% else %}
-            <a href="{% url 'scan_qr_code' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'scan_qr_code' %}active{% endif %}">
-                <i class="bi bi-qr-code-scan"></i>
-                <span>Scan</span>
-            </a>
-            <a href="{% url 'sales_statistics' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'sales_statistics' %}active{% endif %}">
-                <i class="bi bi-graph-up"></i>
-                <span>Stats</span>
-            </a>
-            {% endif %}
             <a href="{% url 'user_settings' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>

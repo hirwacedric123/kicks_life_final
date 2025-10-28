@@ -31,6 +31,69 @@ from .models import User, Post, Purchase, Bookmark, ProductImage, ProductReview
 # Removed QR and OTP utilities for simplified workflow
 from django.views.decorators.csrf import csrf_exempt
 
+# ============================================
+# LANDING PAGE (PUBLIC)
+# ============================================
+
+def landing_page(request):
+    """
+    Main landing page for KoraQuest - Public facing homepage
+    Shows featured products, categories, and promotional content
+    """
+    # Get featured/new products (latest 8 products)
+    new_arrivals = Post.objects.filter(
+        inventory__gt=0
+    ).order_by('-created_at')[:8]
+    
+    # Get best sellers (most purchased products)
+    best_sellers = Post.objects.filter(
+        inventory__gt=0
+    ).order_by('-total_purchases')[:8]
+    
+    # Get featured products (you can add is_featured field later)
+    featured_products = Post.objects.filter(
+        inventory__gt=0,
+        price__isnull=False
+    ).order_by('-created_at')[:4]
+    
+    # Get all categories with product counts
+    categories_with_counts = []
+    for category_code, category_name in Post.CATEGORY_CHOICES:
+        count = Post.objects.filter(
+            category=category_code,
+            inventory__gt=0
+        ).count()
+        if count > 0:  # Only show categories with products
+            categories_with_counts.append({
+                'code': category_code,
+                'name': category_name,
+                'count': count
+            })
+    
+    # Get recent reviews for testimonials
+    recent_reviews = ProductReview.objects.filter(
+        rating__gte=4  # Only show 4-5 star reviews
+    ).select_related('reviewer', 'product').order_by('-created_at')[:6]
+    
+    # Statistics for "Why Choose Us" section
+    stats = {
+        'total_products': Post.objects.filter(inventory__gt=0).count(),
+        'total_orders': Purchase.objects.filter(status='completed').count(),
+        'happy_customers': User.objects.filter(role='customer').count(),
+    }
+    
+    context = {
+        'new_arrivals': new_arrivals,
+        'best_sellers': best_sellers,
+        'featured_products': featured_products,
+        'categories': categories_with_counts,
+        'recent_reviews': recent_reviews,
+        'stats': stats,
+        'is_landing_page': True,  # Flag for template
+    }
+    
+    return render(request, 'authentication/landing_page.html', context)
+
 def generate_csv_report(data, filename, headers):
     """Generate CSV report from data"""
     response = HttpResponse(content_type='text/csv')

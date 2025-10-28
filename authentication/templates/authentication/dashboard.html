@@ -1394,9 +1394,9 @@
         {% if search_query or selected_category or min_price or max_price %}
             <p>Try adjusting your search criteria or <a href="{% url 'dashboard' %}">browse all products</a></p>
         {% else %}
-            <p>Be the first to add products to the marketplace!</p>
-            {% if user.is_vendor_role %}
-                <a href="{% url 'create_post' %}" class="btn btn-primary mt-3">Add A Product</a>
+            <p>Be the first to add products to the store!</p>
+            {% if user.is_admin %}
+                <a href="{% url 'create_product' %}" class="btn btn-primary mt-3">Add A Product</a>
             {% endif %}
         {% endif %}
     </div>
