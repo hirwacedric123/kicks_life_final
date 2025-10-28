@@ -15,7 +15,7 @@ from decimal import Decimal
 @require_POST
 def verify_buyer_credentials(request):
     """Verify buyer credentials for order confirmation (Admin only)"""
-    if not request.user.is_admin():
+    if not request.user.is_admin:
         return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
     
     try:
@@ -48,7 +48,7 @@ def verify_buyer_credentials(request):
 @require_POST
 def update_order_status_api(request):
     """Update order status (Admin only)"""
-    if not request.user.is_admin():
+    if not request.user.is_admin:
         return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
     
     try:
@@ -89,7 +89,7 @@ def update_order_status_api(request):
 @login_required
 def get_admin_statistics(request):
     """Get admin dashboard statistics (Admin only)"""
-    if not request.user.is_admin():
+    if not request.user.is_admin:
         return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
     
     try:
@@ -132,7 +132,7 @@ def get_admin_statistics(request):
 @login_required
 def get_order_details(request, order_id):
     """Get detailed order information (Admin only)"""
-    if not request.user.is_admin():
+    if not request.user.is_admin:
         return JsonResponse({'error': 'Access denied. Admin role required.'}, status=403)
     
     try:

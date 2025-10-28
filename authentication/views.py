@@ -742,7 +742,7 @@ def categories_api(request):
 @login_required
 def dashboard(request):
     # Redirect admin users to admin dashboard
-    if request.user.is_admin():
+    if request.user.is_admin:
         return redirect('admin_dashboard')
     
     # Get filter parameters from the request
@@ -1057,7 +1057,7 @@ def bookmarks(request):
 @login_required
 def admin_dashboard(request):
     """Simplified admin dashboard for store owner"""
-    if not request.user.is_admin():
+    if not request.user.is_admin:
         messages.error(request, 'Access denied. Admin role required.')
         return redirect('dashboard')
     
@@ -1099,7 +1099,7 @@ def admin_dashboard(request):
 @login_required
 def update_order_status(request, purchase_id):
     """Update order status for admin"""
-    if not request.user.is_admin():
+    if not request.user.is_admin:
         messages.error(request, 'Access denied. Admin role required.')
         return redirect('dashboard')
     

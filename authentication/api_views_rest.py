@@ -94,7 +94,7 @@ class UserViewSet(ModelViewSet):
     ordering = ['-date_joined']
     
     def get_queryset(self):
-        if self.request.user.is_admin():
+        if self.request.user.is_admin:
             return User.objects.all()
         else:
             return User.objects.filter(id=self.request.user.id)
@@ -246,7 +246,7 @@ class PurchaseViewSet(ModelViewSet):
     ordering = ['-created_at']
     
     def get_queryset(self):
-        if self.request.user.is_admin():
+        if self.request.user.is_admin:
             return Purchase.objects.all()
         else:
             return Purchase.objects.filter(buyer=self.request.user)
@@ -254,7 +254,7 @@ class PurchaseViewSet(ModelViewSet):
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         """Update purchase status (Admin only)"""
-        if not request.user.is_admin():
+        if not request.user.is_admin:
             return Response({'error': 'Permission denied. Admin role required.'}, status=status.HTTP_403_FORBIDDEN)
         
         purchase = self.get_object()
@@ -321,7 +321,7 @@ def dashboard_stats(request):
     user = request.user
     
     # Get user's posts (for admin)
-    if user.is_admin():
+    if user.is_admin:
         user_posts = Post.objects.all()
         total_posts = user_posts.count()
     else:
@@ -332,7 +332,7 @@ def dashboard_stats(request):
     total_purchases = user_purchases.count()
     
     # Get user's sales (if admin)
-    if user.is_admin():
+    if user.is_admin:
         admin_sales = Purchase.objects.filter(status='completed')
         total_sales = admin_sales.aggregate(total=Sum('purchase_price'))['total'] or 0
     else:

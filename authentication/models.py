@@ -23,9 +23,11 @@ class User(AbstractUser):
     # Stats
     total_purchases = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    @property
     def is_customer(self):
         return self.role == 'customer'
     
+    @property
     def is_admin(self):
         return self.role == 'admin'
 
