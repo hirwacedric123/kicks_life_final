@@ -40,6 +40,12 @@ This document summarizes all changes made to prepare KoraQuest for Render deploy
 ### 6. `DEPLOYMENT_CHANGES_SUMMARY.md` (this file)
 **Purpose:** Overview of all deployment changes
 
+### 7. `SUPERUSER_INFO.md`
+**Purpose:** Admin credentials and security information
+- Default superuser credentials
+- How to change password
+- Custom credential configuration
+
 ## Files Modified
 
 ### 1. `requirements.txt`
@@ -86,6 +92,14 @@ This document summarizes all changes made to prepare KoraQuest for Render deploy
 ### 3. `.gitignore`
 **Added:**
 - Exception for `env.example.txt` to ensure it's committed to repository
+
+### 4. `authentication/management/commands/createdefaultsuperuser.py`
+**Added:**
+- Custom Django management command
+- Automatically creates superuser on deployment
+- Default credentials: admin/admin123
+- Can be customized via environment variables
+- Skips creation if superuser already exists
 
 ## Configuration Overview
 

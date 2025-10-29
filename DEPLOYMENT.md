@@ -105,22 +105,37 @@ If you're using Gmail for sending emails:
 
 ## Post-Deployment Steps
 
-### 1. Create a Superuser
+### 1. Access Admin Panel
 
-After the first deployment, you need to create an admin user:
+A default superuser is automatically created during deployment!
 
-1. Go to your Render dashboard
-2. Open your web service
-3. Click on "Shell" in the left menu
-4. Run:
-   ```bash
-   python manage.py createsuperuser
-   ```
-5. Follow the prompts to create your admin account
+**Default Credentials:**
+- Username: `admin`
+- Email: `admin@koraquest.com`
+- Password: `admin123`
 
-### 2. Access Admin Panel
+**Admin URL:** `https://your-app.onrender.com/admin`
 
-Visit `https://your-app.onrender.com/admin` and log in with your superuser credentials.
+**⚠️ SECURITY WARNING:** Change the default password immediately after first login!
+
+#### Customizing Superuser Credentials
+
+To use custom credentials, add these environment variables in Render before deployment:
+
+| Variable | Default |
+|----------|---------|
+| `DJANGO_SUPERUSER_USERNAME` | `admin` |
+| `DJANGO_SUPERUSER_EMAIL` | `admin@koraquest.com` |
+| `DJANGO_SUPERUSER_PASSWORD` | `admin123` |
+
+For detailed superuser management, see `SUPERUSER_INFO.md`.
+
+### 2. Change Default Password
+
+1. Log in to admin panel with default credentials
+2. Click your username (top right) → "Change password"
+3. Enter current password and set a new secure password
+4. Save changes
 
 ## Important Notes
 

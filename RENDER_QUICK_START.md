@@ -46,14 +46,21 @@ After deployment starts, go to your web service and add:
 - `EMAIL_HOST_PASSWORD` = Your Gmail app password (see below)
 - `CORS_ALLOWED_ORIGINS` = Your frontend URLs (comma-separated)
 
-### Step 4: Create Superuser
-Once deployed, click **"Shell"** in your Render dashboard and run:
-```bash
-python manage.py createsuperuser
-```
+### Step 4: Access Admin Panel
+A superuser is automatically created during deployment!
+
+**Default credentials:**
+- Username: `admin`
+- Password: `admin123`
+
+**Login at:** `https://your-app-name.onrender.com/admin`
+
+**⚠️ IMPORTANT:** Change the password immediately after first login!
 
 ## Done! 🎉
 Your app is now live at: `https://your-app-name.onrender.com`
+
+For more details on superuser management, see `SUPERUSER_INFO.md`
 
 ---
 

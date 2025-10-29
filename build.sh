@@ -12,3 +12,6 @@ python manage.py collectstatic --no-input
 # Run migrations
 python manage.py migrate
 
+# Create default superuser if none exists
+python manage.py createdefaultsuperuser
+
