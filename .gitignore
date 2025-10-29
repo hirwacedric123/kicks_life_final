@@ -49,6 +49,7 @@ db.sqlite3-journal
 .env.local
 .env.*.local
 *.env
+!env.example.txt
 
 # IDEs and Editors
 .vscode/
