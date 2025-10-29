@@ -9,6 +9,14 @@ This is a quick reference guide to deploy KoraQuest to Render. For detailed inst
 - [x] Created `build.sh` script
 - [x] Created `render.yaml` for automated deployment
 - [x] Environment variables documented in `env.example.txt`
+- [x] Using SQLite (data will reset on restart - see warning below)
+
+## ⚠️ Important: Database Warning
+
+**This deployment uses SQLite which resets when the service restarts!**
+- All data (users, posts, etc.) will be lost on restart/redeploy
+- Suitable for testing and demos only
+- For production, add PostgreSQL (see DEPLOYMENT.md)
 
 ## Fastest Way to Deploy (5 minutes)
 
@@ -60,8 +68,9 @@ Your app is now live at: `https://your-app-name.onrender.com`
 
 - **Free tier**: Service sleeps after 15 minutes of inactivity
 - **First request**: May take 30-60 seconds (cold start)
-- **Database**: PostgreSQL created automatically
+- **Database**: SQLite (resets on restart - data not persistent!)
 - **Secret Key**: Generated automatically by Render
+- **For persistent data**: Add PostgreSQL (see DEPLOYMENT.md)
 
 ## Troubleshooting
 

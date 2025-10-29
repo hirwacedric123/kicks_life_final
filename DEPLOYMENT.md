@@ -14,7 +14,9 @@ You can deploy to Render in two ways:
 
 ### Option 1: Using render.yaml (Recommended)
 
-This is the easiest method as it automatically sets up both your web service and database.
+This is the easiest method as it automatically sets up your web service with SQLite database.
+
+**⚠️ Important Note:** This setup uses SQLite on Render's ephemeral filesystem. Your database will be reset when the service restarts or redeploys. This is suitable for testing/demo purposes. For production with persistent data, consider using PostgreSQL (see Alternative Setup below).
 
 1. **Push your code to GitHub**
    ```bash
@@ -28,10 +30,10 @@ This is the easiest method as it automatically sets up both your web service and
    - Click "New" → "Blueprint"
    - Connect your GitHub repository
    - Render will automatically detect the `render.yaml` file
-   - Click "Apply" to create the services
+   - Click "Apply" to create the service
 
 3. **Set environment variables**
-   After the services are created, go to your web service dashboard and set these environment variables:
+   After the service is created, go to your web service dashboard and set these environment variables:
    
    **Required:**
    - `ALLOWED_HOSTS`: Your Render domain (e.g., `your-app.onrender.com`)
@@ -49,19 +51,7 @@ This is the easiest method as it automatically sets up both your web service and
 
 If you prefer to set up services manually:
 
-#### Step 1: Create a PostgreSQL Database
-
-1. Go to https://dashboard.render.com
-2. Click "New" → "PostgreSQL"
-3. Fill in the details:
-   - Name: `koraquest-db`
-   - Database: `koraquest`
-   - User: `koraquest`
-   - Plan: Free (or your preferred plan)
-4. Click "Create Database"
-5. Once created, note down the **Internal Database URL**
-
-#### Step 2: Create a Web Service
+#### Step 1: Create a Web Service
 
 1. Click "New" → "Web Service"
 2. Connect your GitHub repository
@@ -81,15 +71,14 @@ If you prefer to set up services manually:
    | `PYTHON_VERSION` | `3.11.0` |
    | `SECRET_KEY` | Generate a secure key (see below) |
    | `DEBUG` | `False` |
-   | `DATABASE_URL` | The Internal Database URL from Step 1 |
    | `ALLOWED_HOSTS` | Your Render domain (e.g., `your-app.onrender.com`) |
-   | `EMAIL_HOST` | `smtp.gmail.com` (or your email provider) |
-   | `EMAIL_PORT` | `587` |
-   | `EMAIL_USE_TLS` | `True` |
-   | `EMAIL_HOST_USER` | Your email address |
-   | `EMAIL_HOST_PASSWORD` | Your email password |
-   | `DEFAULT_FROM_EMAIL` | `KoraQuest <noreply@koraquest.com>` |
-   | `CORS_ALLOWED_ORIGINS` | Comma-separated list of allowed origins |
+   | `EMAIL_HOST` | `smtp.gmail.com` (optional - for OTP emails) |
+   | `EMAIL_PORT` | `587` (optional) |
+   | `EMAIL_USE_TLS` | `True` (optional) |
+   | `EMAIL_HOST_USER` | Your email address (optional) |
+   | `EMAIL_HOST_PASSWORD` | Your email password (optional) |
+   | `DEFAULT_FROM_EMAIL` | `KoraQuest <noreply@koraquest.com>` (optional) |
+   | `CORS_ALLOWED_ORIGINS` | Comma-separated list of allowed origins (optional) |
 
 5. Click "Create Web Service"
 
@@ -135,12 +124,23 @@ Visit `https://your-app.onrender.com/admin` and log in with your superuser crede
 
 ## Important Notes
 
+### Database (SQLite) Limitations ⚠️
+
+**IMPORTANT:** This deployment uses SQLite on Render's ephemeral filesystem:
+- **Database resets** when the service restarts or redeploys
+- **All data is lost** (users, posts, etc.) on restart
+- **Suitable for:** Testing, demos, proof of concept
+- **Not suitable for:** Production with real user data
+
+**For production with persistent data:**
+- Use PostgreSQL (see Alternative Setup section below)
+- Or use a managed database service (AWS RDS, Supabase, etc.)
+
 ### Free Tier Limitations
 
 Render's free tier has some limitations:
 - Services spin down after 15 minutes of inactivity
 - First request after inactivity may take 30-60 seconds (cold start)
-- Database has 90-day expiration for free tier
 - Consider upgrading to paid plans for production use
 
 ### Static Files
@@ -162,8 +162,8 @@ The current setup stores media files on Render's disk, which is ephemeral on the
 |----------|----------|-------------|---------|
 | `SECRET_KEY` | Yes | Django secret key | Auto-generated |
 | `DEBUG` | Yes | Debug mode (False for production) | `False` |
-| `DATABASE_URL` | Yes | PostgreSQL connection string | Auto-provided by Render |
 | `ALLOWED_HOSTS` | Yes | Comma-separated list of allowed hosts | `your-app.onrender.com` |
+| `DATABASE_URL` | No | PostgreSQL connection string (if using PostgreSQL) | `postgresql://user:pass@host/db` |
 | `EMAIL_HOST` | No | SMTP server hostname | `smtp.gmail.com` |
 | `EMAIL_PORT` | No | SMTP server port | `587` |
 | `EMAIL_USE_TLS` | No | Use TLS for email | `True` |
@@ -250,11 +250,46 @@ As your application grows:
 - Django Documentation: https://docs.djangoproject.com
 - KoraQuest Issues: [Your GitHub Repository Issues]
 
+## Alternative Setup: Using PostgreSQL for Persistent Data
+
+If you need persistent data storage (recommended for production):
+
+### Option A: Add PostgreSQL via render.yaml
+
+1. Add this to your `render.yaml` file:
+   ```yaml
+   # PostgreSQL Database
+   - type: pgsql
+     name: koraquest-db
+     plan: free
+     databaseName: koraquest
+     user: koraquest
+   ```
+
+2. Add this to the web service envVars in `render.yaml`:
+   ```yaml
+   - key: DATABASE_URL
+     fromDatabase:
+       name: koraquest-db
+       property: connectionString
+   ```
+
+3. Redeploy via Blueprint
+
+### Option B: Create PostgreSQL Manually
+
+1. In Render dashboard: **New** → **PostgreSQL**
+2. Name: `koraquest-db`
+3. Copy the **Internal Database URL**
+4. Add to web service as `DATABASE_URL` environment variable
+
+The application will automatically detect `DATABASE_URL` and use PostgreSQL instead of SQLite.
+
 ## Next Steps
 
 1. Set up custom domain (optional)
 2. Configure monitoring and alerts
-3. Set up automated backups
+3. Set up automated backups (if using PostgreSQL)
 4. Configure cloud storage for media files
 5. Set up CI/CD pipeline (optional)
 
