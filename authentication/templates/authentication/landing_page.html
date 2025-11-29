@@ -1,26 +1,20 @@
 {% extends "authentication/landing_base.html" %}
 
-{% block title %}Kicks_life 250 - Premium Footwear{% endblock %}
+{% block title %}KoraQuest - Discover Amazing Products{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Modern Minimal Color Palette */
-    :root {
-        --primary: #2563eb;        /* Professional Blue */
-        --primary-dark: #1e40af;
-        --primary-light: #3b82f6;
-        --text-dark: #0f172a;
-        --text-medium: #334155;
-        --text-light: #64748b;
-        --bg-gray: #f8fafc;
-        --border: #e2e8f0;
-        --white: #ffffff;
-    }
+    /* ============================================
+       HERO SECTION
+       ============================================ */
     
-    /* Hero Section */
     .hero {
-        padding: 6rem 0;
-        background: var(--white);
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        padding: 4rem 0;
     }
     
     .hero-grid {
@@ -34,35 +28,218 @@
         max-width: 600px;
     }
     
-    /* Slideshow */
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        background: rgba(0, 245, 212, 0.1);
+        border: 1px solid rgba(0, 245, 212, 0.3);
+        border-radius: 50px;
+        color: var(--accent-cyan);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        animation: badgePulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes badgePulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0.2); }
+        50% { box-shadow: 0 0 0 10px rgba(0, 245, 212, 0); }
+    }
+    
+    .hero-title {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.02em;
+    }
+    
+    .hero-title .line {
+        display: block;
+        overflow: hidden;
+    }
+    
+    .hero-title .line span {
+        display: inline-block;
+        animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    
+    .hero-title .line:nth-child(2) span { animation-delay: 0.1s; }
+    .hero-title .line:nth-child(3) span { animation-delay: 0.2s; }
+    
+    @keyframes slideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .hero-title .gradient-text {
+        background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 50%, var(--accent-pink) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        background-size: 200% auto;
+        animation: gradientFlow 5s ease-in-out infinite;
+    }
+    
+    @keyframes gradientFlow {
+        0%, 100% { background-position: 0% center; }
+        50% { background-position: 100% center; }
+    }
+    
+    .hero-description {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+        animation: fadeInUp 1s ease forwards;
+        animation-delay: 0.4s;
+        opacity: 0;
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+    
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        animation: fadeInUp 1s ease forwards;
+        animation-delay: 0.5s;
+        opacity: 0;
+    }
+    
+    .btn-hero-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        background: var(--gradient-primary);
+        color: #0a0a0f;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-hero-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.6s ease;
+    }
+    
+    .btn-hero-primary:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 245, 212, 0.3);
+        color: #0a0a0f;
+    }
+    
+    .btn-hero-primary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-hero-primary i {
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-hero-primary:hover i {
+        transform: translateX(5px);
+    }
+    
+    .btn-hero-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        background: transparent;
+        color: var(--text-primary);
+        border: 2px solid var(--glass-border);
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-hero-secondary:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+        background: rgba(0, 245, 212, 0.05);
+    }
+    
+    /* Hero Slideshow */
     .hero-slideshow {
         position: relative;
+        animation: fadeInRight 1s ease forwards;
+        animation-delay: 0.3s;
+        opacity: 0;
+    }
+    
+    @keyframes fadeInRight {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
     }
     
     .slideshow-container {
         position: relative;
         width: 100%;
-        height: 500px;
-        border-radius: 20px;
+        height: 550px;
+        border-radius: 24px;
         overflow: hidden;
-        background: var(--bg-gray);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.05);
     }
     
     .slide {
         display: none;
         width: 100%;
         height: 100%;
-        animation: fadeIn 0.8s;
+        animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .slide.active {
         display: block;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.98); }
-        to { opacity: 1; transform: scale(1); }
+    @keyframes slideIn {
+        from { 
+            opacity: 0; 
+            transform: scale(1.05); 
+        }
+        to { 
+            opacity: 1; 
+            transform: scale(1); 
+        }
     }
     
     .slide-image-wrapper {
@@ -75,6 +252,11 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 8s ease;
+    }
+    
+    .slide.active .slide-image {
+        transform: scale(1.1);
     }
     
     .slide-placeholder {
@@ -84,8 +266,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        color: var(--text-medium);
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(67, 97, 238, 0.1) 100%);
+        color: var(--text-secondary);
         font-size: 1.25rem;
         font-weight: 600;
     }
@@ -95,33 +277,32 @@
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 2rem;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-        color: white;
+        padding: 3rem 2rem 2rem;
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
     }
     
     .slide-price {
-        display: block;
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: var(--primary);
-        background: white;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
         display: inline-block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0a0a0f;
+        background: var(--gradient-primary);
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        margin-bottom: 0.75rem;
     }
     
     .slide-title {
         font-size: 1.25rem;
         font-weight: 600;
+        color: white;
         margin: 0;
     }
     
     /* Slideshow Dots */
     .slideshow-dots {
         position: absolute;
-        bottom: 2rem;
+        bottom: 1.5rem;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -133,154 +314,112 @@
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.5);
-        border: 2px solid white;
+        background: rgba(255, 255, 255, 0.3);
+        border: none;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.3s ease;
         padding: 0;
     }
     
     .dot:hover {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.5);
         transform: scale(1.2);
     }
     
     .dot.active {
-        background: white;
+        background: var(--accent-cyan);
         width: 32px;
         border-radius: 6px;
+        box-shadow: 0 0 20px rgba(0, 245, 212, 0.5);
     }
     
-    .hero-badge {
-        display: inline-block;
-        padding: 0.5rem 1.25rem;
-        background: #eff6ff;
-        color: var(--primary);
-        border-radius: 50px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        margin-bottom: 2rem;
-        letter-spacing: 0.5px;
+    /* Floating shapes around slideshow */
+    .hero-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
     }
     
-    .hero-title {
-        font-size: clamp(2.5rem, 5vw, 4rem);
-        font-weight: 700;
-        color: var(--text-dark);
-        margin-bottom: 1.5rem;
-        line-height: 1.1;
-        letter-spacing: -0.02em;
+    .hero-shape {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.5;
     }
     
-    .hero-description {
-        font-size: 1.25rem;
-        color: var(--text-medium);
-        margin-bottom: 3rem;
-        line-height: 1.6;
+    .hero-shape-1 {
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(0, 245, 212, 0.2), transparent);
+        top: -50px;
+        right: -50px;
+        animation: float1 8s ease-in-out infinite;
     }
     
-    .hero-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
+    .hero-shape-2 {
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(247, 37, 133, 0.2), transparent);
+        bottom: -30px;
+        left: -30px;
+        animation: float2 10s ease-in-out infinite;
     }
     
-    .btn-primary {
-        padding: 1rem 2.5rem;
-        background: var(--primary);
-        color: white;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.2s;
-        border: 2px solid var(--primary);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
+    @keyframes float1 {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(-20px, 20px) rotate(180deg); }
     }
     
-    .btn-primary:hover {
-        background: var(--primary-dark);
-        border-color: var(--primary-dark);
-        transform: translateY(-1px);
-        color: white;
+    @keyframes float2 {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(20px, -20px); }
     }
     
-    .btn-secondary {
-        padding: 1rem 2.5rem;
-        background: white;
-        color: var(--text-dark);
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.2s;
-        border: 2px solid var(--border);
-    }
+    /* ============================================
+       STATS SECTION
+       ============================================ */
     
-    .btn-secondary:hover {
-        border-color: var(--text-dark);
-        transform: translateY(-1px);
-        color: var(--text-dark);
-    }
-    
-    /* Stats */
     .stats {
-        padding: 3rem 0;
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        background: var(--white);
+        padding: 4rem 0;
+        border-top: 1px solid var(--glass-border);
+        border-bottom: 1px solid var(--glass-border);
+        background: var(--glass-bg);
     }
     
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 3rem;
+    }
+    
+    .stat-item {
         text-align: center;
+        padding: 1.5rem;
     }
     
     .stat-number {
         display: block;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--primary);
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-bottom: 0.5rem;
+        line-height: 1;
     }
     
     .stat-label {
-        color: var(--text-medium);
-        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-size: 1rem;
         font-weight: 500;
     }
     
-    /* Section */
-    .section {
-        padding: 6rem 0;
-    }
+    /* ============================================
+       CATEGORIES SECTION
+       ============================================ */
     
-    .section-gray {
-        background: var(--bg-gray);
-    }
-    
-    .section-header {
-        max-width: 600px;
-        margin: 0 auto 4rem;
-        text-align: center;
-    }
-    
-    .section-title {
-        font-size: clamp(2rem, 4vw, 2.75rem);
-        font-weight: 700;
-        color: var(--text-dark);
-        margin-bottom: 1rem;
-    }
-    
-    .section-subtitle {
-        font-size: 1.125rem;
-        color: var(--text-medium);
-    }
-    
-    /* Categories */
     .categories-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -289,19 +428,48 @@
     
     .category-card {
         position: relative;
-        height: 280px;
-        border-radius: 12px;
+        height: 300px;
+        border-radius: 20px;
         overflow: hidden;
-        background: var(--bg-gray);
-        border: 1px solid var(--border);
-        transition: all 0.3s;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
         cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        text-decoration: none;
+    }
+    
+    .category-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1), rgba(247, 37, 133, 0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
     
     .category-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-        border-color: var(--primary);
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        border-color: var(--accent-cyan);
+    }
+    
+    .category-card:hover::before {
+        opacity: 1;
+    }
+    
+    .category-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 4rem;
+        color: var(--text-muted);
+        transition: all 0.4s ease;
+    }
+    
+    .category-card:hover .category-icon {
+        transform: translate(-50%, -70%) scale(1.1);
+        color: var(--accent-cyan);
     }
     
     .category-overlay {
@@ -310,7 +478,7 @@
         left: 0;
         right: 0;
         padding: 2rem;
-        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
     }
     
     .category-name {
@@ -321,11 +489,15 @@
     }
     
     .category-count {
-        color: rgba(255,255,255,0.9);
+        color: var(--accent-cyan);
         font-size: 0.9rem;
+        font-weight: 500;
     }
     
-    /* Products */
+    /* ============================================
+       PRODUCTS SECTION
+       ============================================ */
+    
     .products-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -333,48 +505,118 @@
     }
     
     .product-card {
-        background: white;
-        border-radius: 12px;
-        border: 1px solid var(--border);
+        background: var(--bg-card);
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
         overflow: hidden;
-        transition: all 0.3s;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    
+    .product-card::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink));
+        border-radius: 21px;
+        opacity: 0;
+        z-index: -1;
+        transition: opacity 0.3s ease;
     }
     
     .product-card:hover {
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-        transform: translateY(-4px);
-        border-color: var(--primary);
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        background: var(--bg-card-hover);
+    }
+    
+    .product-card:hover::before {
+        opacity: 1;
     }
     
     .product-image-container {
         position: relative;
         height: 280px;
-        background: var(--bg-gray);
         overflow: hidden;
+        background: var(--bg-secondary);
     }
     
     .product-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.4s;
+        transition: transform 0.6s ease;
     }
     
     .product-card:hover .product-image {
-        transform: scale(1.05);
+        transform: scale(1.1);
     }
     
     .product-badge {
         position: absolute;
         top: 1rem;
         right: 1rem;
-        background: var(--primary);
-        color: white;
+        background: var(--gradient-primary);
+        color: #0a0a0f;
         padding: 0.4rem 1rem;
-        border-radius: 6px;
+        border-radius: 50px;
         font-size: 0.75rem;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    
+    .product-actions {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .product-card:hover .product-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .product-action-btn {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .product-action-btn.primary {
+        background: var(--gradient-primary);
+        color: #0a0a0f;
+    }
+    
+    .product-action-btn.primary:hover {
+        box-shadow: 0 10px 30px rgba(0, 245, 212, 0.3);
+    }
+    
+    .product-action-btn.secondary {
+        background: var(--glass-bg);
+        color: white;
+        border: 1px solid var(--glass-border);
+    }
+    
+    .product-action-btn.secondary:hover {
+        background: rgba(247, 37, 133, 0.2);
+        border-color: var(--accent-pink);
+        color: var(--accent-pink);
     }
     
     .product-info {
@@ -382,9 +624,9 @@
     }
     
     .product-name {
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: var(--text-dark);
+        color: var(--text-primary);
         margin-bottom: 0.5rem;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -395,133 +637,135 @@
     .product-price {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 1rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.75rem;
     }
     
     .product-rating {
         display: flex;
         align-items: center;
         gap: 0.25rem;
-        margin-bottom: 1rem;
-        color: #fbbf24;
+        color: var(--accent-yellow);
+        font-size: 0.9rem;
     }
     
     .product-rating span {
-        color: var(--text-light);
-        font-size: 0.875rem;
-        margin-left: 0.25rem;
+        color: var(--text-muted);
+        margin-left: 0.5rem;
     }
     
-    .product-footer {
-        display: flex;
-        gap: 0.75rem;
-    }
+    /* ============================================
+       FEATURES SECTION
+       ============================================ */
     
-    .btn-view {
-        flex: 1;
-        padding: 0.75rem;
-        background: var(--primary);
-        color: white;
-        text-align: center;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-    
-    .btn-view:hover {
-        background: var(--primary-dark);
-        color: white;
-    }
-    
-    .btn-wishlist {
-        width: 44px;
-        height: 44px;
-        background: var(--bg-gray);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        color: var(--text-medium);
-    }
-    
-    .btn-wishlist:hover {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: #ef4444;
-    }
-    
-    /* Features */
     .features-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 3rem;
-    }
-    
-    .feature {
-        text-align: center;
-    }
-    
-    .feature-icon {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 1.5rem;
-        background: #eff6ff;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary);
-        font-size: 1.75rem;
-    }
-    
-    .feature-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-bottom: 0.5rem;
-    }
-    
-    .feature-description {
-        color: var(--text-medium);
-        line-height: 1.6;
-    }
-    
-    /* Testimonials */
-    .testimonials-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 2rem;
     }
     
-    .testimonial {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        transition: all 0.3s;
+    .feature-card {
+        text-align: center;
+        padding: 2.5rem 2rem;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        transition: all 0.4s ease;
     }
     
-    .testimonial:hover {
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+    .feature-card:hover {
+        transform: translateY(-10px);
+        background: var(--bg-card-hover);
+        border-color: var(--accent-cyan);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1), rgba(67, 97, 238, 0.1));
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--accent-cyan);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+        background: var(--gradient-primary);
+        color: #0a0a0f;
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+    
+    .feature-description {
+        color: var(--text-secondary);
+        line-height: 1.7;
+        font-size: 0.95rem;
+    }
+    
+    /* ============================================
+       TESTIMONIALS SECTION
+       ============================================ */
+    
+    .testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+    
+    .testimonial-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 2rem;
+        transition: all 0.4s ease;
+        position: relative;
+    }
+    
+    .testimonial-card::before {
+        content: '"';
+        position: absolute;
+        top: 1rem;
+        right: 2rem;
+        font-size: 6rem;
+        font-family: Georgia, serif;
+        color: var(--accent-cyan);
+        opacity: 0.1;
+        line-height: 1;
+    }
+    
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent-cyan);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
     
     .testimonial-rating {
-        color: #fbbf24;
-        font-size: 1.125rem;
-        margin-bottom: 1rem;
+        display: flex;
+        gap: 0.25rem;
+        color: var(--accent-yellow);
+        margin-bottom: 1.25rem;
     }
     
     .testimonial-text {
-        color: var(--text-medium);
-        line-height: 1.7;
-        margin-bottom: 1.5rem;
+        color: var(--text-secondary);
+        line-height: 1.8;
+        font-size: 1rem;
         font-style: italic;
+        margin-bottom: 1.5rem;
     }
     
     .testimonial-author {
@@ -531,84 +775,139 @@
     }
     
     .author-avatar {
-        width: 48px;
-        height: 48px;
-        background: var(--primary);
-        color: white;
+        width: 50px;
+        height: 50px;
+        background: var(--gradient-primary);
+        color: #0a0a0f;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        font-size: 1.125rem;
+        font-size: 1.25rem;
+    }
+    
+    .author-info {
+        flex: 1;
     }
     
     .author-name {
         font-weight: 600;
-        color: var(--text-dark);
-        margin: 0;
+        color: var(--text-primary);
+        margin: 0 0 0.25rem 0;
     }
     
     .author-verified {
-        font-size: 0.875rem;
-        color: var(--text-light);
+        font-size: 0.85rem;
+        color: var(--accent-cyan);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
     
-    /* Newsletter */
-    .newsletter {
-        padding: 5rem 0;
-        background: var(--primary);
-        color: white;
+    /* ============================================
+       NEWSLETTER / CTA SECTION
+       ============================================ */
+    
+    .cta-section {
+        padding: 6rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-container {
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(247, 37, 133, 0.1) 100%);
+        border: 1px solid var(--glass-border);
+        border-radius: 32px;
+        padding: 4rem;
         text-align: center;
+        position: relative;
+        overflow: hidden;
     }
     
-    .newsletter-title {
-        font-size: clamp(2rem, 4vw, 2.75rem);
+    .cta-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(0, 245, 212, 0.1) 0%, transparent 50%);
+        animation: ctaGlow 10s ease-in-out infinite;
+    }
+    
+    @keyframes ctaGlow {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(10%, 10%); }
+    }
+    
+    .cta-title {
+        font-size: clamp(2rem, 4vw, 3rem);
         font-weight: 700;
         margin-bottom: 1rem;
+        position: relative;
     }
     
-    .newsletter-subtitle {
-        font-size: 1.125rem;
+    .cta-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
         margin-bottom: 2.5rem;
-        opacity: 0.95;
+        position: relative;
     }
     
-    .newsletter-form {
+    .cta-form {
         max-width: 500px;
         margin: 0 auto;
         display: flex;
         gap: 1rem;
+        position: relative;
     }
     
-    .newsletter-input {
+    .cta-input {
         flex: 1;
         padding: 1rem 1.5rem;
-        border: none;
-        border-radius: 8px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 50px;
+        color: var(--text-primary);
         font-size: 1rem;
-        outline: none;
+        font-family: 'Outfit', sans-serif;
+        transition: all 0.3s ease;
     }
     
-    .newsletter-button {
+    .cta-input::placeholder {
+        color: var(--text-muted);
+    }
+    
+    .cta-input:focus {
+        outline: none;
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.1);
+    }
+    
+    .cta-button {
         padding: 1rem 2rem;
-        background: var(--text-dark);
-        color: white;
+        background: var(--gradient-primary);
         border: none;
-        border-radius: 8px;
+        border-radius: 50px;
+        color: #0a0a0f;
         font-weight: 600;
+        font-size: 1rem;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
         white-space: nowrap;
     }
     
-    .newsletter-button:hover {
-        background: #1e293b;
-        transform: translateY(-1px);
+    .cta-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 245, 212, 0.3);
     }
     
-    /* View All Link */
+    /* ============================================
+       VIEW ALL BUTTONS
+       ============================================ */
+    
     .view-all {
         text-align: center;
         margin-top: 3rem;
@@ -617,41 +916,85 @@
     .view-all-link {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
         padding: 1rem 2rem;
-        background: var(--primary);
-        color: white;
-        border-radius: 8px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 50px;
+        color: var(--text-primary);
         text-decoration: none;
         font-weight: 600;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
     }
     
     .view-all-link:hover {
-        background: var(--primary-dark);
-        transform: translateY(-1px);
-        color: white;
+        background: var(--gradient-primary);
+        color: #0a0a0f;
+        border-color: transparent;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0, 245, 212, 0.3);
     }
     
-    /* Responsive */
+    .view-all-link i {
+        transition: transform 0.3s ease;
+    }
+    
+    .view-all-link:hover i {
+        transform: translateX(5px);
+    }
+    
+    /* ============================================
+       SECTION BACKGROUNDS
+       ============================================ */
+    
+    .section-alt {
+        background: var(--bg-secondary);
+        position: relative;
+    }
+    
+    .section-alt::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+    }
+    
+    .section-alt::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+    }
+    
+    /* ============================================
+       RESPONSIVE DESIGN
+       ============================================ */
+    
     @media (max-width: 1024px) {
         .hero-grid {
-            gap: 2rem;
+            gap: 3rem;
         }
         
         .slideshow-container {
-            height: 400px;
+            height: 450px;
         }
     }
     
     @media (max-width: 768px) {
         .hero {
-            padding: 4rem 0 3rem;
+            padding: 2rem 0;
+            min-height: auto;
         }
         
         .hero-grid {
             grid-template-columns: 1fr;
-            gap: 3rem;
+            gap: 2rem;
         }
         
         .hero-content {
@@ -659,60 +1002,100 @@
             max-width: 100%;
         }
         
+        .hero-buttons {
+            justify-content: center;
+        }
+        
         .slideshow-container {
             height: 350px;
         }
         
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .cta-container {
+            padding: 3rem 1.5rem;
+        }
+        
+        .cta-form {
+            flex-direction: column;
+        }
+        
+        .testimonials-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 480px) {
         .hero-buttons {
             flex-direction: column;
             width: 100%;
         }
         
-        .btn-primary,
-        .btn-secondary {
+        .btn-hero-primary,
+        .btn-hero-secondary {
             width: 100%;
             justify-content: center;
         }
         
-        .newsletter-form {
-            flex-direction: column;
-        }
-        
-        .newsletter-input,
-        .newsletter-button {
-            width: 100%;
-        }
-        
-        .section {
-            padding: 4rem 0;
+        .stat-number {
+            font-size: 2.5rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section with Slideshow -->
+<!-- Hero Section -->
 <section class="hero">
     <div class="container">
         <div class="hero-grid">
             <!-- Left Side: Content -->
             <div class="hero-content">
-                <span class="hero-badge">PREMIUM FOOTWEAR</span>
-                <h1 class="hero-title">Step Into Style</h1>
-                <p class="hero-description">Discover comfort, quality, and timeless design. Your perfect pair awaits.</p>
+                <span class="hero-badge">
+                    <i class="bi bi-stars"></i>
+                    DISCOVER AMAZING PRODUCTS
+                </span>
+                <h1 class="hero-title">
+                    <span class="line"><span>Find What</span></span>
+                    <span class="line"><span>You <span class="gradient-text">Love</span></span></span>
+                    <span class="line"><span>Today</span></span>
+                </h1>
+                <p class="hero-description">
+                    Explore thousands of quality products from trusted vendors. 
+                    Enjoy seamless shopping with secure payments and fast delivery.
+                </p>
                 <div class="hero-buttons">
-                    <a href="{% url 'dashboard' %}" class="btn-primary">
-                        Shop Collection
+                    <a href="{% url 'dashboard' %}" class="btn-hero-primary">
+                        Start Shopping
                         <i class="bi bi-arrow-right"></i>
                     </a>
                     {% if not user.is_authenticated %}
-                    <a href="{% url 'register' %}" class="btn-secondary">Create Account</a>
+                    <a href="{% url 'register' %}" class="btn-hero-secondary">
+                        <i class="bi bi-person-plus"></i>
+                        Create Account
+                    </a>
                     {% endif %}
                 </div>
             </div>
             
             <!-- Right Side: Image Slideshow -->
             <div class="hero-slideshow">
+                <div class="hero-shapes">
+                    <div class="hero-shape hero-shape-1"></div>
+                    <div class="hero-shape hero-shape-2"></div>
+                </div>
                 <div class="slideshow-container">
                     {% if featured_products %}
                         {% for product in featured_products %}
@@ -727,19 +1110,18 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <!-- Placeholder slides if no products -->
                         <div class="slide active">
                             <div class="slide-image-wrapper">
                                 <div class="slide-placeholder">
-                                    <i class="bi bi-bag" style="font-size: 4rem; color: var(--primary);"></i>
-                                    <p>Premium Sneakers</p>
+                                    <i class="bi bi-bag-heart" style="font-size: 5rem; color: var(--accent-cyan); margin-bottom: 1rem;"></i>
+                                    <p>Premium Products</p>
                                 </div>
                             </div>
                         </div>
                         <div class="slide">
                             <div class="slide-image-wrapper">
                                 <div class="slide-placeholder">
-                                    <i class="bi bi-award" style="font-size: 4rem; color: var(--primary);"></i>
+                                    <i class="bi bi-shield-check" style="font-size: 5rem; color: var(--accent-pink); margin-bottom: 1rem;"></i>
                                     <p>Quality Guaranteed</p>
                                 </div>
                             </div>
@@ -747,8 +1129,8 @@
                         <div class="slide">
                             <div class="slide-image-wrapper">
                                 <div class="slide-placeholder">
-                                    <i class="bi bi-star" style="font-size: 4rem; color: var(--primary);"></i>
-                                    <p>Best Sellers</p>
+                                    <i class="bi bi-truck" style="font-size: 5rem; color: var(--accent-purple); margin-bottom: 1rem;"></i>
+                                    <p>Fast Delivery</p>
                                 </div>
                             </div>
                         </div>
@@ -772,43 +1154,43 @@
     </div>
 </section>
 
-<!-- Stats -->
+<!-- Stats Section -->
 <section class="stats">
     <div class="container">
         <div class="stats-grid">
-            <div>
-                <span class="stat-number">{{ stats.total_products }}+</span>
-                <span class="stat-label">Products</span>
+            <div class="stat-item fade-in">
+                <span class="stat-number" data-count="{{ stats.total_products }}">{{ stats.total_products }}+</span>
+                <span class="stat-label">Products Available</span>
             </div>
-            <div>
-                <span class="stat-number">{{ stats.total_orders }}+</span>
-                <span class="stat-label">Orders Delivered</span>
+            <div class="stat-item fade-in delay-1">
+                <span class="stat-number" data-count="{{ stats.total_orders }}">{{ stats.total_orders }}+</span>
+                <span class="stat-label">Orders Completed</span>
             </div>
-            <div>
-                <span class="stat-number">{{ stats.happy_customers }}+</span>
+            <div class="stat-item fade-in delay-2">
+                <span class="stat-number" data-count="{{ stats.happy_customers }}">{{ stats.happy_customers }}+</span>
                 <span class="stat-label">Happy Customers</span>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Categories -->
+<!-- Categories Section -->
 {% if categories %}
 <section class="section">
     <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Shop by Category</h2>
-            <p class="section-subtitle">Find the perfect footwear for every occasion</p>
+        <div class="section-header fade-in">
+            <span class="section-badge">Categories</span>
+            <h2 class="section-title">Shop by <span class="gradient-text">Category</span></h2>
+            <p class="section-subtitle">Browse our wide selection of product categories</p>
         </div>
         
         <div class="categories-grid">
             {% for category in categories|slice:":6" %}
-            <a href="{% url 'dashboard' %}?category={{ category.code }}" style="text-decoration: none;">
-                <div class="category-card">
-                    <div class="category-overlay">
-                        <h3 class="category-name">{{ category.name }}</h3>
-                        <p class="category-count">{{ category.count }} Products</p>
-                    </div>
+            <a href="{% url 'dashboard' %}?category={{ category.code }}" class="category-card fade-in delay-{{ forloop.counter }}">
+                <i class="bi bi-grid-3x3-gap category-icon"></i>
+                <div class="category-overlay">
+                    <h3 class="category-name">{{ category.name }}</h3>
+                    <p class="category-count">{{ category.count }} Products</p>
                 </div>
             </a>
             {% endfor %}
@@ -817,21 +1199,30 @@
 </section>
 {% endif %}
 
-<!-- New Arrivals -->
+<!-- New Arrivals Section -->
 {% if new_arrivals %}
-<section class="section section-gray">
+<section class="section section-alt">
     <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">New Arrivals</h2>
-            <p class="section-subtitle">Check out our latest collection</p>
+        <div class="section-header fade-in">
+            <span class="section-badge">Just In</span>
+            <h2 class="section-title">New <span class="gradient-text">Arrivals</span></h2>
+            <p class="section-subtitle">Check out our freshest additions</p>
         </div>
         
         <div class="products-grid">
             {% for product in new_arrivals|slice:":4" %}
-            <div class="product-card">
+            <div class="product-card fade-in delay-{{ forloop.counter }}">
                 <div class="product-image-container">
                     <span class="product-badge">NEW</span>
                     <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                    <div class="product-actions">
+                        <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <button class="product-action-btn secondary wishlist-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.title }}</h3>
@@ -841,19 +1232,15 @@
                         {% for i in "12345" %}
                         <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
                         {% endfor %}
-                        <span>({{ product.review_count }})</span>
+                        <span>({{ product.review_count }} reviews)</span>
                     </div>
                     {% endif %}
-                    <div class="product-footer">
-                        <a href="{% url 'post_detail' product.id %}" class="btn-view">View Details</a>
-                        <button class="btn-wishlist"><i class="bi bi-heart"></i></button>
-                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
         
-        <div class="view-all">
+        <div class="view-all fade-in">
             <a href="{% url 'dashboard' %}?sort=newest" class="view-all-link">
                 View All New Arrivals
                 <i class="bi bi-arrow-right"></i>
@@ -863,64 +1250,74 @@
 </section>
 {% endif %}
 
-<!-- Features -->
+<!-- Features Section -->
 <section class="section">
     <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Why Choose Kicks_life 250?</h2>
-            <p class="section-subtitle">Quality and service you can trust</p>
+        <div class="section-header fade-in">
+            <span class="section-badge">Why Us</span>
+            <h2 class="section-title">Why Choose <span class="gradient-text">KoraQuest</span>?</h2>
+            <p class="section-subtitle">We're committed to providing the best shopping experience</p>
         </div>
         
         <div class="features-grid">
-            <div class="feature">
+            <div class="feature-card fade-in delay-1">
                 <div class="feature-icon">
                     <i class="bi bi-truck"></i>
                 </div>
                 <h3 class="feature-title">Fast Delivery</h3>
-                <p class="feature-description">Quick and reliable shipping to your doorstep</p>
+                <p class="feature-description">Quick and reliable shipping to your doorstep, anywhere in Rwanda</p>
             </div>
             
-            <div class="feature">
+            <div class="feature-card fade-in delay-2">
                 <div class="feature-icon">
                     <i class="bi bi-shield-check"></i>
                 </div>
-                <h3 class="feature-title">Secure Payment</h3>
-                <p class="feature-description">Your transactions are safe with us</p>
+                <h3 class="feature-title">Secure Payments</h3>
+                <p class="feature-description">Your transactions are protected with industry-standard security</p>
             </div>
             
-            <div class="feature">
+            <div class="feature-card fade-in delay-3">
                 <div class="feature-icon">
-                    <i class="bi bi-star"></i>
+                    <i class="bi bi-award"></i>
                 </div>
-                <h3 class="feature-title">Top Quality</h3>
-                <p class="feature-description">100% authentic products guaranteed</p>
+                <h3 class="feature-title">Quality Products</h3>
+                <p class="feature-description">Every product is verified to ensure authentic, high-quality items</p>
             </div>
             
-            <div class="feature">
+            <div class="feature-card fade-in delay-4">
                 <div class="feature-icon">
                     <i class="bi bi-arrow-repeat"></i>
                 </div>
                 <h3 class="feature-title">Easy Returns</h3>
-                <p class="feature-description">30-day hassle-free return policy</p>
+                <p class="feature-description">Hassle-free 30-day return policy for your peace of mind</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Best Sellers -->
+<!-- Best Sellers Section -->
 {% if best_sellers %}
-<section class="section section-gray">
+<section class="section section-alt">
     <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Best Sellers</h2>
-            <p class="section-subtitle">Our most loved products</p>
+        <div class="section-header fade-in">
+            <span class="section-badge">Popular</span>
+            <h2 class="section-title">Best <span class="gradient-text">Sellers</span></h2>
+            <p class="section-subtitle">Our most loved products by customers</p>
         </div>
         
         <div class="products-grid">
             {% for product in best_sellers|slice:":4" %}
-            <div class="product-card">
+            <div class="product-card fade-in delay-{{ forloop.counter }}">
                 <div class="product-image-container">
                     <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                    <div class="product-actions">
+                        <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <button class="product-action-btn secondary wishlist-btn">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.title }}</h3>
@@ -930,19 +1327,15 @@
                         {% for i in "12345" %}
                         <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
                         {% endfor %}
-                        <span>({{ product.review_count }})</span>
+                        <span>({{ product.review_count }} reviews)</span>
                     </div>
                     {% endif %}
-                    <div class="product-footer">
-                        <a href="{% url 'post_detail' product.id %}" class="btn-view">View Details</a>
-                        <button class="btn-wishlist"><i class="bi bi-heart"></i></button>
-                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
         
-        <div class="view-all">
+        <div class="view-all fade-in">
             <a href="{% url 'dashboard' %}?sort=popular" class="view-all-link">
                 View All Best Sellers
                 <i class="bi bi-arrow-right"></i>
@@ -952,31 +1345,35 @@
 </section>
 {% endif %}
 
-<!-- Testimonials -->
+<!-- Testimonials Section -->
 {% if recent_reviews %}
 <section class="section">
     <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Customer Reviews</h2>
-            <p class="section-subtitle">What our customers are saying</p>
+        <div class="section-header fade-in">
+            <span class="section-badge">Testimonials</span>
+            <h2 class="section-title">What Customers <span class="gradient-text">Say</span></h2>
+            <p class="section-subtitle">Real reviews from our satisfied customers</p>
         </div>
         
         <div class="testimonials-grid">
             {% for review in recent_reviews|slice:":3" %}
-            <div class="testimonial">
+            <div class="testimonial-card fade-in delay-{{ forloop.counter }}">
                 <div class="testimonial-rating">
                     {% for i in "12345" %}
                     <i class="bi bi-star-fill" {% if forloop.counter > review.rating %}style="opacity:0.2"{% endif %}></i>
                     {% endfor %}
                 </div>
-                <p class="testimonial-text">"{{ review.comment|truncatewords:20 }}"</p>
+                <p class="testimonial-text">"{{ review.comment|truncatewords:25 }}"</p>
                 <div class="testimonial-author">
                     <div class="author-avatar">
                         {{ review.reviewer.first_name.0|default:review.reviewer.username.0|upper }}
                     </div>
-                    <div>
+                    <div class="author-info">
                         <p class="author-name">{{ review.reviewer.first_name }} {{ review.reviewer.last_name|default:"" }}</p>
-                        <p class="author-verified">Verified Customer</p>
+                        <p class="author-verified">
+                            <i class="bi bi-patch-check-fill"></i>
+                            Verified Customer
+                        </p>
                     </div>
                 </div>
             </div>
@@ -986,16 +1383,18 @@
 </section>
 {% endif %}
 
-<!-- Newsletter -->
-<section class="newsletter">
+<!-- CTA Section -->
+<section class="cta-section">
     <div class="container">
-        <h2 class="newsletter-title">Stay Updated</h2>
-        <p class="newsletter-subtitle">Get 10% off your first order + exclusive deals</p>
-        <form class="newsletter-form">
-            {% csrf_token %}
-            <input type="email" class="newsletter-input" placeholder="Enter your email" required>
-            <button type="submit" class="newsletter-button">Subscribe</button>
-        </form>
+        <div class="cta-container fade-in">
+            <h2 class="cta-title">Stay in the <span class="gradient-text">Loop</span></h2>
+            <p class="cta-subtitle">Get 10% off your first order + exclusive deals and updates</p>
+            <form class="cta-form">
+                {% csrf_token %}
+                <input type="email" class="cta-input" placeholder="Enter your email address" required>
+                <button type="submit" class="cta-button">Subscribe</button>
+            </form>
+        </div>
     </div>
 </section>
 {% endblock %}
@@ -1006,34 +1405,29 @@
     let slideIndex = 1;
     let slideInterval;
     
-    // Initialize slideshow
     document.addEventListener('DOMContentLoaded', function() {
         showSlides(slideIndex);
         startAutoSlide();
     });
     
-    // Auto slide every 4 seconds
     function startAutoSlide() {
         slideInterval = setInterval(function() {
             plusSlides(1);
-        }, 4000);
+        }, 5000);
     }
     
-    // Next/previous controls
     function plusSlides(n) {
         clearInterval(slideInterval);
         showSlides(slideIndex += n);
         startAutoSlide();
     }
     
-    // Dot controls
     function currentSlide(n) {
         clearInterval(slideInterval);
         showSlides(slideIndex = n);
         startAutoSlide();
     }
     
-    // Show slides
     function showSlides(n) {
         let slides = document.getElementsByClassName("slide");
         let dots = document.getElementsByClassName("dot");
@@ -1043,29 +1437,25 @@
         if (n > slides.length) { slideIndex = 1 }
         if (n < 1) { slideIndex = slides.length }
         
-        // Hide all slides
         for (let i = 0; i < slides.length; i++) {
             slides[i].classList.remove("active");
         }
         
-        // Remove active from all dots
         for (let i = 0; i < dots.length; i++) {
             dots[i].classList.remove("active");
         }
         
-        // Show current slide
         if (slides[slideIndex - 1]) {
             slides[slideIndex - 1].classList.add("active");
         }
         
-        // Activate current dot
         if (dots[slideIndex - 1]) {
             dots[slideIndex - 1].classList.add("active");
         }
     }
     
     // Wishlist toggle
-    document.querySelectorAll('.btn-wishlist').forEach(btn => {
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             {% if user.is_authenticated %}
@@ -1073,13 +1463,29 @@
             if (icon.classList.contains('bi-heart')) {
                 icon.classList.remove('bi-heart');
                 icon.classList.add('bi-heart-fill');
+                this.style.color = 'var(--accent-pink)';
             } else {
                 icon.classList.remove('bi-heart-fill');
                 icon.classList.add('bi-heart');
+                this.style.color = '';
             }
             {% else %}
             window.location.href = "{% url 'login' %}";
             {% endif %}
+        });
+    });
+    
+    // Parallax effect on mouse move
+    document.addEventListener('mousemove', function(e) {
+        const shapes = document.querySelectorAll('.hero-shape');
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
+        
+        shapes.forEach((shape, index) => {
+            const speed = (index + 1) * 30;
+            const xPos = (x - 0.5) * speed;
+            const yPos = (y - 0.5) * speed;
+            shape.style.transform = `translate(${xPos}px, ${yPos}px)`;
         });
     });
 </script>
