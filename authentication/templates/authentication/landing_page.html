@@ -1,6 +1,6 @@
 {% extends "authentication/landing_base.html" %}
 
-{% block title %}KoraQuest - Discover Amazing Products{% endblock %}
+{% block title %}KicksLife250 - Premium Sneakers in Kigali{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -1065,16 +1065,16 @@
             <div class="hero-content">
                 <span class="hero-badge">
                     <i class="bi bi-stars"></i>
-                    DISCOVER AMAZING PRODUCTS
+                    KIGALI'S #1 SNEAKER STORE
                 </span>
                 <h1 class="hero-title">
-                    <span class="line"><span>Find What</span></span>
-                    <span class="line"><span>You <span class="gradient-text">Love</span></span></span>
+                    <span class="line"><span>Step Into</span></span>
+                    <span class="line"><span>Your <span class="gradient-text">Style</span></span></span>
                     <span class="line"><span>Today</span></span>
                 </h1>
                 <p class="hero-description">
-                    Explore thousands of quality products from trusted vendors. 
-                    Enjoy seamless shopping with secure payments and fast delivery.
+                    Discover authentic sneakers from top brands. 
+                    Premium quality kicks with fast delivery across Kigali.
                 </p>
                 <div class="hero-buttons">
                     <a href="{% url 'dashboard' %}" class="btn-hero-primary">
@@ -1113,24 +1113,24 @@
                         <div class="slide active">
                             <div class="slide-image-wrapper">
                                 <div class="slide-placeholder">
-                                    <i class="bi bi-bag-heart" style="font-size: 5rem; color: var(--accent-cyan); margin-bottom: 1rem;"></i>
-                                    <p>Premium Products</p>
+                                    <i class="bi bi-shoe" style="font-size: 5rem; color: var(--accent-cyan); margin-bottom: 1rem;"></i>
+                                    <p>Premium Sneakers</p>
                                 </div>
                             </div>
                         </div>
                         <div class="slide">
                             <div class="slide-image-wrapper">
                                 <div class="slide-placeholder">
-                                    <i class="bi bi-shield-check" style="font-size: 5rem; color: var(--accent-pink); margin-bottom: 1rem;"></i>
-                                    <p>Quality Guaranteed</p>
+                                    <i class="bi bi-patch-check" style="font-size: 5rem; color: var(--accent-pink); margin-bottom: 1rem;"></i>
+                                    <p>100% Authentic</p>
                                 </div>
                             </div>
                         </div>
                         <div class="slide">
                             <div class="slide-image-wrapper">
                                 <div class="slide-placeholder">
-                                    <i class="bi bi-truck" style="font-size: 5rem; color: var(--accent-purple); margin-bottom: 1rem;"></i>
-                                    <p>Fast Delivery</p>
+                                    <i class="bi bi-geo-alt" style="font-size: 5rem; color: var(--accent-purple); margin-bottom: 1rem;"></i>
+                                    <p>Delivery in Kigali</p>
                                 </div>
                             </div>
                         </div>
@@ -1160,15 +1160,15 @@
         <div class="stats-grid">
             <div class="stat-item fade-in">
                 <span class="stat-number" data-count="{{ stats.total_products }}">{{ stats.total_products }}+</span>
-                <span class="stat-label">Products Available</span>
+                <span class="stat-label">Sneakers Available</span>
             </div>
             <div class="stat-item fade-in delay-1">
                 <span class="stat-number" data-count="{{ stats.total_orders }}">{{ stats.total_orders }}+</span>
-                <span class="stat-label">Orders Completed</span>
+                <span class="stat-label">Pairs Sold</span>
             </div>
             <div class="stat-item fade-in delay-2">
                 <span class="stat-number" data-count="{{ stats.happy_customers }}">{{ stats.happy_customers }}+</span>
-                <span class="stat-label">Happy Customers</span>
+                <span class="stat-label">Happy Sneakerheads</span>
             </div>
         </div>
     </div>
@@ -1180,17 +1180,17 @@
     <div class="container">
         <div class="section-header fade-in">
             <span class="section-badge">Categories</span>
-            <h2 class="section-title">Shop by <span class="gradient-text">Category</span></h2>
-            <p class="section-subtitle">Browse our wide selection of product categories</p>
+            <h2 class="section-title">Shop by <span class="gradient-text">Style</span></h2>
+            <p class="section-subtitle">Find the perfect kicks for every occasion</p>
         </div>
         
         <div class="categories-grid">
             {% for category in categories|slice:":6" %}
             <a href="{% url 'dashboard' %}?category={{ category.code }}" class="category-card fade-in delay-{{ forloop.counter }}">
                 <i class="bi bi-grid-3x3-gap category-icon"></i>
-                <div class="category-overlay">
-                    <h3 class="category-name">{{ category.name }}</h3>
-                    <p class="category-count">{{ category.count }} Products</p>
+                    <div class="category-overlay">
+                        <h3 class="category-name">{{ category.name }}</h3>
+                        <p class="category-count">{{ category.count }} Products</p>
                 </div>
             </a>
             {% endfor %}
@@ -1204,9 +1204,9 @@
 <section class="section section-alt">
     <div class="container">
         <div class="section-header fade-in">
-            <span class="section-badge">Just In</span>
-            <h2 class="section-title">New <span class="gradient-text">Arrivals</span></h2>
-            <p class="section-subtitle">Check out our freshest additions</p>
+            <span class="section-badge">Just Dropped</span>
+            <h2 class="section-title">Fresh <span class="gradient-text">Kicks</span></h2>
+            <p class="section-subtitle">The latest sneakers just landed in Kigali</p>
         </div>
         
         <div class="products-grid">
@@ -1255,41 +1255,41 @@
     <div class="container">
         <div class="section-header fade-in">
             <span class="section-badge">Why Us</span>
-            <h2 class="section-title">Why Choose <span class="gradient-text">KoraQuest</span>?</h2>
-            <p class="section-subtitle">We're committed to providing the best shopping experience</p>
+            <h2 class="section-title">Why Choose <span class="gradient-text">KicksLife250</span>?</h2>
+            <p class="section-subtitle">Kigali's trusted destination for authentic sneakers</p>
         </div>
         
         <div class="features-grid">
             <div class="feature-card fade-in delay-1">
                 <div class="feature-icon">
-                    <i class="bi bi-truck"></i>
+                    <i class="bi bi-patch-check"></i>
                 </div>
-                <h3 class="feature-title">Fast Delivery</h3>
-                <p class="feature-description">Quick and reliable shipping to your doorstep, anywhere in Rwanda</p>
+                <h3 class="feature-title">100% Authentic</h3>
+                <p class="feature-description">Every pair is verified authentic - no fakes, guaranteed</p>
             </div>
             
             <div class="feature-card fade-in delay-2">
                 <div class="feature-icon">
-                    <i class="bi bi-shield-check"></i>
+                    <i class="bi bi-geo-alt"></i>
                 </div>
-                <h3 class="feature-title">Secure Payments</h3>
-                <p class="feature-description">Your transactions are protected with industry-standard security</p>
+                <h3 class="feature-title">Kigali Delivery</h3>
+                <p class="feature-description">Fast delivery across Kigali - get your kicks the same day</p>
             </div>
             
             <div class="feature-card fade-in delay-3">
                 <div class="feature-icon">
-                    <i class="bi bi-award"></i>
+                    <i class="bi bi-fire"></i>
                 </div>
-                <h3 class="feature-title">Quality Products</h3>
-                <p class="feature-description">Every product is verified to ensure authentic, high-quality items</p>
+                <h3 class="feature-title">Latest Drops</h3>
+                <p class="feature-description">First access to the hottest releases and exclusive sneakers</p>
             </div>
             
             <div class="feature-card fade-in delay-4">
                 <div class="feature-icon">
-                    <i class="bi bi-arrow-repeat"></i>
+                    <i class="bi bi-cash-coin"></i>
                 </div>
-                <h3 class="feature-title">Easy Returns</h3>
-                <p class="feature-description">Hassle-free 30-day return policy for your peace of mind</p>
+                <h3 class="feature-title">Best Prices</h3>
+                <p class="feature-description">Competitive prices with Mobile Money payment options</p>
             </div>
         </div>
     </div>
@@ -1300,9 +1300,9 @@
 <section class="section section-alt">
     <div class="container">
         <div class="section-header fade-in">
-            <span class="section-badge">Popular</span>
-            <h2 class="section-title">Best <span class="gradient-text">Sellers</span></h2>
-            <p class="section-subtitle">Our most loved products by customers</p>
+            <span class="section-badge">Most Popular</span>
+            <h2 class="section-title">Top <span class="gradient-text">Sellers</span></h2>
+            <p class="section-subtitle">The kicks everyone in Kigali is wearing</p>
         </div>
         
         <div class="products-grid">
@@ -1387,13 +1387,13 @@
 <section class="cta-section">
     <div class="container">
         <div class="cta-container fade-in">
-            <h2 class="cta-title">Stay in the <span class="gradient-text">Loop</span></h2>
-            <p class="cta-subtitle">Get 10% off your first order + exclusive deals and updates</p>
+            <h2 class="cta-title">Join the <span class="gradient-text">Sneaker Fam</span></h2>
+            <p class="cta-subtitle">Get 10% off your first pair + early access to new drops</p>
             <form class="cta-form">
-                {% csrf_token %}
+            {% csrf_token %}
                 <input type="email" class="cta-input" placeholder="Enter your email address" required>
                 <button type="submit" class="cta-button">Subscribe</button>
-            </form>
+        </form>
         </div>
     </div>
 </section>

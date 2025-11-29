@@ -1,7 +1,7 @@
 {% extends "authentication/base.html" %}
 {% load static %}
 
-{% block title %}Vendor Statistics - {{ vendor.username }} - KoraQuest{% endblock %}
+{% block title %}Vendor Statistics - {{ vendor.username }} - KicksLife250{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -412,11 +412,11 @@
             <div class="stat-change">Current month earnings</div>
         </div>
         
-        <!-- KoraQuest Commission from this vendor -->
+        <!-- KicksLife250 Commission from this vendor -->
         <div class="main-stat-card koraquest-stat-card">
             <div class="stat-icon">💵</div>
             <div class="stat-value">RWF {{ koraquest_commission|floatformat:2 }}</div>
-            <div class="stat-label">KoraQuest Commission (20%)</div>
+            <div class="stat-label">KicksLife250 Commission (20%)</div>
             <div class="stat-change">+{{ monthly_koraquest_commission|floatformat:2 }} this month</div>
         </div>
     </div>
@@ -433,7 +433,7 @@
             </div>
             <div class="breakdown-item koraquest-item">
                 <div class="breakdown-value">RWF {{ commission_breakdown.koraquest_commission|floatformat:2 }}</div>
-                <div class="breakdown-label">KoraQuest Commission (20%)</div>
+                <div class="breakdown-label">KicksLife250 Commission (20%)</div>
             </div>
             <div class="breakdown-item">
                 <div class="breakdown-value">RWF {{ commission_breakdown.delivery_fees|floatformat:2 }}</div>
@@ -458,7 +458,7 @@
             </div>
             <div class="progress-item">
                 <div class="progress-label">
-                    <span>KoraQuest Commission (20%)</span>
+                    <span>KicksLife250 Commission (20%)</span>
                     <span>RWF {{ commission_breakdown.koraquest_commission|floatformat:2 }}</span>
                 </div>
                 <div class="progress-bar">
@@ -527,7 +527,7 @@
     <!-- Navigation -->
     <div style="text-align: center; margin-top: 2rem;">
         <a href="{% url 'sales_statistics' %}" class="btn btn-primary">Back to Statistics</a>
-        <a href="{% url 'koraquest_dashboard' %}" class="btn btn-secondary">KoraQuest Dashboard</a>
+        <a href="{% url 'koraquest_dashboard' %}" class="btn btn-secondary">KicksLife250 Dashboard</a>
     </div>
 </div>
 

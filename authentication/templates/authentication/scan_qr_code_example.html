@@ -715,7 +715,7 @@
         <div class="instruction-box">
             <h3>📋 How to Use QR Scanner</h3>
             <ul class="instruction-list">
-                <li>Ask customer to show their QR code from the KoraQuest app</li>
+                <li>Ask customer to show their QR code from the KicksLife250 app</li>
                 <li>Use the camera scanner below or manually enter QR code data</li>
                 <li>Verify purchase details and product information</li>
                 <li>Confirm physical product matches the order</li>
@@ -903,7 +903,7 @@
         <button class="popup-close" onclick="closePopup('auth-popup')">&times;</button>
         <div class="popup-header">
             <h2 class="popup-title">Buyer Verification</h2>
-            <p class="popup-subtitle">Please ask the buyer to enter their KoraQuest credentials</p>
+            <p class="popup-subtitle">Please ask the buyer to enter their KicksLife250 credentials</p>
         </div>
         <div id="auth-form-container">
             <div class="auth-form-group">
@@ -2010,7 +2010,7 @@ function completePurchasePickup() {
             debugLog('Purchase pickup completed successfully!');
             
             // Show success message with payment details
-            const successMessage = `Purchase confirmed! Vendor payment: RWF ${data.vendor_payment}, KoraQuest commission: RWF${data.koraquest_commission}`;
+            const successMessage = `Purchase confirmed! Vendor payment: RWF ${data.vendor_payment}, KicksLife250 commission: RWF${data.koraquest_commission}`;
             showCameraStatus(successMessage, 'success');
             
             // Redirect to dashboard after a short delay

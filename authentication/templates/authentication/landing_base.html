@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}KoraQuest - Discover Amazing Products{% endblock %}</title>
+    <title>{% block title %}KicksLife250 - Premium Sneakers in Kigali{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -156,7 +156,7 @@
         }
         
         /* ============================================
-           NAVBAR
+           NAVBAR - PREMIUM DESIGN
            ============================================ */
         
         .landing-navbar {
@@ -165,67 +165,104 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 1rem 0;
-            background: rgba(10, 10, 15, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            transition: all 0.3s ease;
-        }
-        
-        .landing-navbar.scrolled {
             padding: 0.75rem 0;
-            background: rgba(10, 10, 15, 0.95);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
-        .landing-navbar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .navbar-wrapper {
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 2rem;
         }
         
+        .navbar-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(18, 18, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            padding: 0.6rem 0.6rem 0.6rem 1.5rem;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Animated gradient border */
+        .navbar-inner::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(90deg, 
+                var(--accent-cyan), 
+                var(--accent-blue), 
+                var(--accent-purple), 
+                var(--accent-pink),
+                var(--accent-cyan));
+            background-size: 300% 100%;
+            border-radius: 102px;
+            z-index: -1;
+            opacity: 0;
+            animation: borderFlow 4s linear infinite;
+            transition: opacity 0.3s ease;
+        }
+        
+        .navbar-inner:hover::before {
+            opacity: 1;
+        }
+        
+        @keyframes borderFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        
+        .landing-navbar.scrolled {
+            padding: 0.5rem 0;
+        }
+        
+        .landing-navbar.scrolled .navbar-inner {
+            background: rgba(10, 10, 15, 0.95);
+            box-shadow: 
+                0 15px 50px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Logo */
         .navbar-brand {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: var(--text-primary);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .navbar-brand:hover {
-            color: var(--text-primary);
+            transform: scale(1.02);
         }
         
-        .navbar-brand .logo-icon {
-            font-size: 1.8rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: logoGlow 3s ease-in-out infinite;
+        .navbar-logo {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 8px rgba(0, 245, 212, 0.3));
+            transition: all 0.3s ease;
         }
         
-        @keyframes logoGlow {
-            0%, 100% { filter: drop-shadow(0 0 5px rgba(0, 245, 212, 0.5)); }
-            50% { filter: drop-shadow(0 0 15px rgba(247, 37, 133, 0.5)); }
+        .navbar-brand:hover .navbar-logo {
+            filter: drop-shadow(0 4px 15px rgba(0, 245, 212, 0.5));
         }
         
-        .navbar-brand span {
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
+        /* Navigation Links */
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 0.5rem;
             align-items: center;
             list-style: none;
             margin: 0;
@@ -236,29 +273,45 @@
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
             position: relative;
-            padding: 0.5rem 0;
+            padding: 0.6rem 1rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
         
-        .nav-links li a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--gradient-primary);
-            transition: width 0.3s ease;
+        .nav-links li a i {
+            font-size: 1rem;
+            opacity: 0;
+            transform: translateX(-5px);
+            transition: all 0.3s ease;
         }
         
         .nav-links li a:hover {
             color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
         }
         
-        .nav-links li a:hover::after {
-            width: 100%;
+        .nav-links li a:hover i {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Active link indicator */
+        .nav-links li a.active {
+            color: var(--accent-cyan);
+            background: rgba(0, 245, 212, 0.1);
+        }
+        
+        /* Nav Divider */
+        .nav-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--glass-border);
+            margin: 0 0.5rem;
         }
         
         /* Nav Buttons */
@@ -270,11 +323,15 @@
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             border: none;
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0, 245, 212, 0.25);
         }
         
         .btn-nav-primary::before {
@@ -284,13 +341,13 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
             transition: left 0.5s ease;
         }
         
         .btn-nav-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--glow-cyan);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 245, 212, 0.4);
             color: #0a0a0f;
         }
         
@@ -298,38 +355,74 @@
             left: 100%;
         }
         
+        .btn-nav-primary i {
+            font-size: 1rem;
+        }
+        
         .btn-nav-outline {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
-            padding: 0.65rem 1.5rem;
+            padding: 0.7rem 1.25rem;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 500;
             font-size: 0.9rem;
             border: 1px solid var(--glass-border);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
         
         .btn-nav-outline:hover {
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-            box-shadow: 0 0 20px rgba(0, 245, 212, 0.2);
+            border-color: var(--accent-pink);
+            color: var(--accent-pink);
+            background: rgba(247, 37, 133, 0.1);
+            box-shadow: 0 0 20px rgba(247, 37, 133, 0.2);
+        }
+        
+        .btn-nav-outline i {
+            font-size: 1rem;
         }
         
         /* Mobile Menu Toggle */
         .mobile-menu-toggle {
             display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            font-size: 1.25rem;
             color: var(--text-primary);
             cursor: pointer;
-            padding: 0.5rem;
-            transition: color 0.3s ease;
+            padding: 0.6rem 0.8rem;
+            transition: all 0.3s ease;
         }
         
         .mobile-menu-toggle:hover {
             color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            background: rgba(0, 245, 212, 0.1);
+        }
+        
+        /* User Avatar for logged in state */
+        .nav-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gradient-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-avatar:hover {
+            border-color: var(--accent-pink);
+            transform: scale(1.1);
         }
         
         /* ============================================
@@ -364,19 +457,14 @@
         }
         
         .footer-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
             margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
-        .footer-brand span {
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .footer-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 10px rgba(0, 245, 212, 0.3));
         }
         
         .footer-description {
@@ -518,24 +606,40 @@
             }
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 968px) {
             .nav-links {
                 display: none;
                 position: fixed;
-                top: 70px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(10, 10, 15, 0.98);
-                backdrop-filter: blur(20px);
+                top: 80px;
+                left: 1rem;
+                right: 1rem;
+                background: rgba(18, 18, 26, 0.98);
+                backdrop-filter: blur(30px);
+                -webkit-backdrop-filter: blur(30px);
                 flex-direction: column;
-                justify-content: flex-start;
-                padding: 2rem;
-                gap: 1.5rem;
+                padding: 1.5rem;
+                gap: 0.5rem;
+                border-radius: 24px;
+                border: 1px solid var(--glass-border);
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+                max-height: calc(100vh - 100px);
+                overflow-y: auto;
             }
             
             .nav-links.active {
                 display: flex;
+                animation: mobileMenuSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            
+            @keyframes mobileMenuSlide {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
             }
             
             .nav-links li {
@@ -543,27 +647,57 @@
             }
             
             .nav-links li a {
-                display: block;
-                padding: 1rem;
-                font-size: 1.1rem;
-                border-bottom: 1px solid var(--glass-border);
+                display: flex;
+                padding: 1rem 1.25rem;
+                font-size: 1rem;
+                border-radius: 16px;
+                justify-content: flex-start;
             }
             
-            .nav-links li a::after {
-                display: none;
+            .nav-links li a i {
+                opacity: 1;
+                transform: translateX(0);
+                font-size: 1.1rem;
+                width: 24px;
+            }
+            
+            .nav-links li a:hover {
+                background: rgba(255, 255, 255, 0.08);
+            }
+            
+            .nav-divider {
+                width: 100%;
+                height: 1px;
+                margin: 0.75rem 0;
             }
             
             .btn-nav-primary,
             .btn-nav-outline {
                 width: 100%;
-                text-align: center;
+                justify-content: center;
                 padding: 1rem;
+                margin-top: 0.25rem;
             }
             
             .mobile-menu-toggle {
-                display: block;
+                display: flex;
             }
             
+            .navbar-inner {
+                padding: 0.5rem 0.5rem 0.5rem 1rem;
+            }
+            
+            .logo-icon-wrapper {
+                width: 34px;
+                height: 34px;
+            }
+            
+            .navbar-brand .logo-main {
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
             .footer-content {
                 grid-template-columns: 1fr;
                 gap: 2rem;
@@ -575,6 +709,10 @@
             
             .container {
                 padding: 0 1.5rem;
+            }
+            
+            .navbar-wrapper {
+                padding: 0 1rem;
             }
         }
         
@@ -655,31 +793,35 @@
     
     <!-- Navigation -->
     <nav class="landing-navbar" id="navbar">
-        <div class="container">
+        <div class="navbar-wrapper">
+            <div class="navbar-inner">
             <a href="{% url 'landing_page' %}" class="navbar-brand">
-                <i class="bi bi-search logo-icon"></i>
-                Kora<span>Quest</span>
+                    {% load static %}
+                    <img src="{% static 'images/logo.png' %}" alt="KicksLife250" class="navbar-logo">
             </a>
             
-            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
-                <i class="bi bi-list" id="menuIcon"></i>
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                    <i class="bi bi-list" id="menuIcon"></i>
             </button>
             
             <ul class="nav-links" id="navLinks">
-                <li><a href="{% url 'landing_page' %}">Home</a></li>
-                <li><a href="{% url 'dashboard' %}">Shop</a></li>
+                    <li><a href="{% url 'landing_page' %}" class="active"><i class="bi bi-house"></i>Home</a></li>
+                    <li><a href="{% url 'dashboard' %}"><i class="bi bi-bag"></i>Shop</a></li>
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'purchase_history' %}">Orders</a></li>
-                    <li><a href="{% url 'bookmarks' %}">Wishlist</a></li>
+                        <li><a href="{% url 'purchase_history' %}"><i class="bi bi-box-seam"></i>Orders</a></li>
+                        <li><a href="{% url 'bookmarks' %}"><i class="bi bi-heart"></i>Wishlist</a></li>
                     {% if user.is_admin %}
-                        <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                            <li><a href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
                     {% endif %}
-                    <li><a href="{% url 'logout' %}" class="btn-nav-outline">Logout</a></li>
+                        <div class="nav-divider"></div>
+                        <li><a href="{% url 'logout' %}" class="btn-nav-outline"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
                 {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'register' %}" class="btn-nav-primary">Get Started</a></li>
+                        <div class="nav-divider"></div>
+                        <li><a href="{% url 'login' %}" class="btn-nav-outline"><i class="bi bi-person"></i>Login</a></li>
+                        <li><a href="{% url 'register' %}" class="btn-nav-primary"><i class="bi bi-rocket-takeoff"></i>Get Started</a></li>
                 {% endif %}
             </ul>
+            </div>
         </div>
     </nav>
 
@@ -690,56 +832,55 @@
 
     <!-- Footer -->
     <footer class="landing-footer">
-        <div class="footer-content">
-            <div class="footer-section">
+            <div class="footer-content">
+                <div class="footer-section">
                 <div class="footer-brand">
-                    <i class="bi bi-search"></i>
-                    Kora<span>Quest</span>
+                    <img src="{% static 'images/logo.png' %}" alt="KicksLife250" class="footer-logo">
                 </div>
                 <p class="footer-description">
-                    Discover amazing products from trusted vendors. Quality you can trust, prices you'll love.
+                    Kigali's premier destination for authentic sneakers. Step into style with quality kicks you can trust.
                 </p>
-                <div class="social-links">
+                    <div class="social-links">
                     <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
                     <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
                     <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
                     <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Shop</h4>
+                    <ul>
+                    <li><a href="{% url 'dashboard' %}">All Sneakers</a></li>
+                    <li><a href="{% url 'dashboard' %}?sort=newest">New Drops</a></li>
+                    <li><a href="{% url 'dashboard' %}?sort=popular">Top Sellers</a></li>
+                    <li><a href="{% url 'dashboard' %}?category=sneakers">Running</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Returns</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                <h4>Company</h4>
+                    <ul>
+                    <li><a href="#">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
                 </div>
             </div>
             
-            <div class="footer-section">
-                <h4>Shop</h4>
-                <ul>
-                    <li><a href="{% url 'dashboard' %}">All Products</a></li>
-                    <li><a href="{% url 'dashboard' %}?sort=newest">New Arrivals</a></li>
-                    <li><a href="{% url 'dashboard' %}?sort=popular">Best Sellers</a></li>
-                    <li><a href="{% url 'dashboard' %}">Categories</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Shipping Info</a></li>
-                    <li><a href="#">Returns</a></li>
-                    <li><a href="#">FAQ</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h4>Company</h4>
-                <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Careers</a></li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p>&copy; 2025 KoraQuest. All rights reserved. Made with <i class="bi bi-heart-fill" style="color: var(--accent-pink);"></i> in Rwanda</p>
+            <div class="footer-bottom">
+            <p>&copy; 2025 KicksLife250. All rights reserved. Made with <i class="bi bi-heart-fill" style="color: var(--accent-pink);"></i> in Kigali, Rwanda</p>
         </div>
     </footer>
 
