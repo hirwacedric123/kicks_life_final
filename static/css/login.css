@@ -92,11 +92,11 @@ body::before {
 .body-container::after {
     content: '';
     position: fixed;
-    bottom: -20px;
+    bottom: 0;
     left: 5%;
-    width: 500px;
-    height: 550px;
-    background: url('../images/young-african-american-girl-holding-swiss-franc-banknotes-sitting-table-pointing-thumb-up-side-smiling-happy-with-open-mouth.png') center bottom/contain no-repeat;
+    width: 480px;
+    height: 600px;
+    background: url('../images/login.png') center bottom/contain no-repeat;
     z-index: 10;
     animation: characterFloat 6s ease-in-out infinite, characterEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
@@ -206,10 +206,10 @@ body::before {
 }
 
 .auth-logo {
-    height: 60px;
+    height: 80px;
     width: auto;
     object-fit: contain;
-    filter: drop-shadow(0 4px 20px rgba(0, 245, 212, 0.4));
+    filter: drop-shadow(0 4px 25px rgba(0, 245, 212, 0.4));
     animation: logoFloat 4s ease-in-out infinite;
 }
 
