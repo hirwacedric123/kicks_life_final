@@ -35,8 +35,8 @@
         }
 
         body {
-            background-color: #ffffff;
-            color: var(--kora-text);
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             display: flex;
@@ -53,17 +53,20 @@
 
         /* Navigation styles */
         .header-container {
-            background: white;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            padding: 0.5rem 3rem;
+            align-items: center;
+            padding: 0.75rem 2rem;
             position: sticky;
-            top: 0;
+            top: 10px;
             z-index: 1000;
-            /* border-radius: 100px; */
-            height: 50px;
-            width: 98%;
+            border-radius: 20px;
+            height: auto;
+            width: 96%;
+            margin: 10px auto;
         }
 
         .nav-brand-section {
@@ -86,28 +89,40 @@
         }
 
         .nav-tab {
-            color: rgb(255, 255, 255);
+            color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
             transition: all 0.3s ease;
             white-space: nowrap;
             background: transparent;
-            padding: 10px 20px;
+            padding: 12px;
+            border-radius: 12px;
+            position: relative;
         }
 
-        .nav-tab:hover > i{
-            font-size: 20px;
-            transition: all 0.3s ease;
+        .nav-tab:hover {
+            color: #00f5d4;
+            background: rgba(0, 245, 212, 0.1);
+        }
+
+        .nav-tab:hover i {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px rgba(0, 245, 212, 0.5));
         }
 
         .nav-tab.active {
-            color: rgb(0, 0, 0);
-            background-color: white;
-            border-radius: 10px;
-            padding: 10px 15px;
+            color: #0a0a0f;
+            background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 245, 212, 0.4);
+        }
+
+        .nav-tab.active i {
+            filter: none;
         }
 
         .nav-tab i {
-            font-size: 14px;
+            font-size: 18px;
+            transition: all 0.3s ease;
         }
 
         .user-section {
@@ -135,7 +150,7 @@
         .main-wrapper {
             flex: 1;
             width: 100%;
-            background-color: #ffffff;
+            background: transparent;
             margin: 0 auto;
             border-radius: 20px;
             display: flex;
@@ -158,6 +173,8 @@
             width: 98%;
             transition: all 0.3s ease;
             margin-left: 100px; /* Add margin to prevent content from being hidden behind nav */
+            position: relative;
+            z-index: 1;
         }
         
         .nav-container{
@@ -174,7 +191,8 @@
         }
         
         .nav-tabs{
-            background-color: black;
+            background: linear-gradient(180deg, rgba(0, 245, 212, 0.1) 0%, rgba(10, 10, 15, 0.95) 20%, rgba(10, 10, 15, 0.98) 80%, rgba(247, 37, 133, 0.1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             height: 90%;
             display: flex;
             justify-content: space-evenly;
@@ -182,6 +200,7 @@
             align-items: center;
             border-radius: 100px;
             transition: all 0.3s ease;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
         /* Mobile Navigation Styles */
@@ -191,11 +210,12 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(180deg, rgba(10, 10, 15, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%);
+            backdrop-filter: blur(20px);
             z-index: 1000;
-            padding: 10px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 10px;
+            border-top: 1px solid rgba(0, 245, 212, 0.2);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
         }
 
         .mobile-nav-tabs {
@@ -206,7 +226,7 @@
         }
 
         .mobile-nav-tab {
-            color: rgb(255, 255, 255);
+            color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
             transition: all 0.3s ease;
             background: transparent;
@@ -220,19 +240,21 @@
         }
 
         .mobile-nav-tab:hover {
-            color: rgb(255, 255, 255);
+            color: #00f5d4;
             text-decoration: none;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 245, 212, 0.1);
         }
 
         .mobile-nav-tab.active {
-            color: rgb(0, 0, 0);
-            background-color: white;
+            color: #0a0a0f;
+            background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
             border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 245, 212, 0.3);
         }
 
         .mobile-nav-tab i {
             font-size: 18px;
+            transition: all 0.3s ease;
         }
 
         /* Responsive adjustments */

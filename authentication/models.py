@@ -30,6 +30,11 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == 'admin'
+    
+    @property
+    def is_vendor_role(self):
+        """Alias for is_admin - admins can create products"""
+        return self.role == 'admin'
 
 class Post(models.Model):
     CATEGORY_CHOICES = (

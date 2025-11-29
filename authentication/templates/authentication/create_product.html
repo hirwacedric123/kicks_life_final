@@ -68,12 +68,13 @@
                                 <label for="category">Category</label>
                                 <select id="category" name="category" required>
                                     <option value="" selected disabled>Select category</option>
-                                    <option value="electronics">Electronics</option>
-                                    <option value="books_media">Books & Media</option>
-                                    <option value="home_kitchen">Home & Kitchen</option>
-                                    <option value="beauty_care">Beauty & Personal Care</option>
-                                    <option value="software_services">Software & Services</option>
-                                    <option value="health_fitness">Health & Fitness</option>
+                                    <option value="sneakers">Sneakers</option>
+                                    <option value="boots">Boots</option>
+                                    <option value="formal">Formal Shoes</option>
+                                    <option value="sandals">Sandals & Slippers</option>
+                                    <option value="athletic">Athletic & Sports</option>
+                                    <option value="casual">Casual Shoes</option>
+                                    <option value="kids">Kids Shoes</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
@@ -160,10 +161,27 @@
 </div>
 
 <style>
+    /* Dark Theme Variables */
+    :root {
+        --bg-primary: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-muted: rgba(255, 255, 255, 0.5);
+        --accent-cyan: #00f5d4;
+        --accent-pink: #f72585;
+        --gradient-primary: linear-gradient(135deg, #00f5d4 0%, #00bbf9 50%, #9b5de5 100%);
+        --input-bg: rgba(255, 255, 255, 0.05);
+        --input-border: rgba(255, 255, 255, 0.1);
+    }
+
     .marketplace-container {
         max-width: 1600px;
         margin: 0 auto;
         padding: 40px;
+        position: relative;
+        z-index: 10;
     }
 
     .create-product-grid {
@@ -175,16 +193,18 @@
 
     /* Form Card Styles */
     .form-card, .preview-card {
-        background: white;
-        border-radius: 20px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border: 1px solid rgba(0,0,0,0.05);
+        border: 1px solid var(--card-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .form-header {
-        background: rgb(223, 223, 223);
-        color: rgb(0, 0, 0);
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(247, 37, 133, 0.05) 100%);
+        border-bottom: 1px solid var(--card-border);
+        color: var(--text-primary);
         padding: 30px;
         display: flex;
         justify-content: space-between;
@@ -195,30 +215,36 @@
         font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 8px;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .header-content p {
         margin: 0;
-        opacity: 0.9;
+        color: var(--text-secondary);
     }
 
     .btn-cancel {
-        padding: 8px 16px;
-        background: rgb(0, 0, 0);
-        color: white;
-        border: none;
-        border-radius: 12px;
+        padding: 10px 20px;
+        background: rgba(247, 37, 133, 0.1);
+        border: 1px solid rgba(247, 37, 133, 0.3);
+        color: var(--accent-pink);
+        border-radius: 50px;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         text-decoration: none;
         transition: all 0.3s ease;
+        font-weight: 500;
     }
 
     .btn-cancel:hover {
-        background: rgba(255,255,255,0.3);
+        background: var(--accent-pink);
         color: white;
         transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(247, 37, 133, 0.3);
     }
 
     /* Form Styles */
@@ -231,10 +257,21 @@
     }
 
     .form-section-group h2 {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--accent-cyan);
         margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-section-group h2::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
     }
 
     .form-field {
@@ -250,8 +287,9 @@
     label {
         display: block;
         font-weight: 500;
-        color: #1f2937;
-        margin-bottom: 8px;
+        color: var(--text-secondary);
+        margin-bottom: 10px;
+        font-size: 14px;
     }
 
     input[type="text"],
@@ -259,22 +297,43 @@
     textarea,
     select {
         width: 100%;
-        padding: 12px;
-        border: 1px solid #e5e7eb;
+        padding: 14px 16px;
+        border: 1px solid var(--input-border);
         border-radius: 12px;
-        background: #f9fafb;
-        color: #1f2937;
+        background: var(--input-bg);
+        color: var(--text-primary);
         font-size: 1rem;
+        font-family: inherit;
         transition: all 0.3s ease;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--text-muted);
     }
 
     input:focus,
     textarea:focus,
     select:focus {
         outline: none;
-        border-color: #2563eb;
-        background: white;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        border-color: var(--accent-cyan);
+        background: rgba(0, 245, 212, 0.05);
+        box-shadow: 0 0 20px rgba(0, 245, 212, 0.15);
+    }
+
+    select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300f5d4' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 45px;
+    }
+
+    select option {
+        background: #1a1a2e;
+        color: var(--text-primary);
+        padding: 12px;
     }
 
     .price-input {
@@ -285,36 +344,38 @@
 
     .currency-symbol {
         position: absolute;
-        left: 12px;
-        color: #6b7280;
+        left: 16px;
+        color: var(--accent-cyan);
+        font-weight: 600;
     }
 
     .price-input input {
-        padding-left: 50px;
+        padding-left: 55px;
     }
 
     .field-hint {
         display: block;
-        margin-top: 6px;
-        color: #6b7280;
-        font-size: 14px;
+        margin-top: 8px;
+        color: var(--text-muted);
+        font-size: 13px;
     }
 
     /* Image Upload Styles */
     .image-upload-container {
         position: relative;
-        border: 2px dashed #e5e7eb;
-        border-radius: 12px;
-        padding: 30px;
+        border: 2px dashed var(--input-border);
+        border-radius: 16px;
+        padding: 40px 30px;
         text-align: center;
-        background: #f9fafb;
+        background: var(--input-bg);
         transition: all 0.3s ease;
         cursor: pointer;
     }
 
     .image-upload-container:hover {
-        border-color: #2563eb;
-        background: #f3f4f6;
+        border-color: var(--accent-cyan);
+        background: rgba(0, 245, 212, 0.05);
+        box-shadow: 0 0 30px rgba(0, 245, 212, 0.1);
     }
 
     .image-upload-container input[type="file"] {
@@ -331,27 +392,32 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
-        color: #6b7280;
+        gap: 12px;
+        color: var(--text-secondary);
     }
 
     .upload-placeholder i {
-        font-size: 2rem;
-        color: #2563eb;
+        font-size: 2.5rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .upload-placeholder span {
         font-weight: 500;
+        color: var(--text-primary);
     }
 
     .upload-placeholder small {
-        color: #9ca3af;
+        color: var(--text-muted);
     }
 
     .image-preview {
         margin-top: 20px;
-        border-radius: 12px;
+        border-radius: 16px;
         overflow: hidden;
+        border: 1px solid var(--card-border);
     }
 
     .gallery-preview {
@@ -365,73 +431,84 @@
     .form-actions {
         display: flex;
         justify-content: flex-end;
-        gap: 12px;
+        gap: 16px;
         margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
+        padding-top: 24px;
+        border-top: 1px solid var(--card-border);
     }
 
     .btn-primary {
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        color: white;
+        padding: 14px 28px;
+        background: var(--gradient-primary);
+        color: #0a0a0f;
         border: none;
-        border-radius: 12px;
-        font-weight: 500;
+        border-radius: 50px;
+        font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        cursor: pointer;
         transition: all 0.3s ease;
+        font-size: 15px;
     }
 
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0, 245, 212, 0.4);
     }
 
     .btn-secondary {
-        padding: 12px 24px;
-        background: #f3f4f6;
-        color: #4b5563;
-        border: none;
-        border-radius: 12px;
+        padding: 14px 28px;
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        color: var(--text-secondary);
+        border-radius: 50px;
         font-weight: 500;
         display: flex;
         align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
+        gap: 10px;
         text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 15px;
     }
 
     .btn-secondary:hover {
-        background: #e5e7eb;
-        color: #1f2937;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
         transform: translateY(-2px);
     }
 
     /* Preview Card Styles */
     .preview-header {
         padding: 25px 30px;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        border-bottom: 1px solid var(--card-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.05) 0%, rgba(247, 37, 133, 0.03) 100%);
     }
 
     .preview-header h2 {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--text-primary);
         margin: 0;
     }
 
     .preview-badge {
-        background: #dcfce7;
-        color: #166534;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 500;
+        background: rgba(0, 245, 212, 0.15);
+        color: var(--accent-cyan);
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid rgba(0, 245, 212, 0.3);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0.3); }
+        50% { box-shadow: 0 0 0 8px rgba(0, 245, 212, 0); }
     }
 
     .product-preview {
@@ -439,35 +516,39 @@
     }
 
     .preview-image {
-        background: #f9fafb;
-        border-radius: 12px;
+        background: var(--input-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
         height: 300px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 24px;
+        overflow: hidden;
     }
 
     .image-placeholder {
         text-align: center;
-        color: #9ca3af;
+        color: var(--text-muted);
     }
 
     .image-placeholder i {
         font-size: 3rem;
         margin-bottom: 12px;
+        opacity: 0.5;
     }
 
     .preview-content {
-        padding: 20px;
-        background: #f9fafb;
-        border-radius: 12px;
+        padding: 24px;
+        background: var(--input-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
     }
 
     .preview-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--text-primary);
         margin-bottom: 12px;
     }
 
@@ -475,36 +556,43 @@
         display: flex;
         gap: 12px;
         margin-bottom: 16px;
+        flex-wrap: wrap;
     }
 
     .preview-category {
-        background: #eff6ff;
-        color: #2563eb;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 14px;
+        background: rgba(0, 245, 212, 0.1);
+        color: var(--accent-cyan);
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 13px;
         font-weight: 500;
+        border: 1px solid rgba(0, 245, 212, 0.2);
     }
 
     .preview-stock {
-        background: #dcfce7;
-        color: #166534;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 14px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 13px;
         font-weight: 500;
+        border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
     .preview-price {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
         font-weight: 700;
-        color: #2563eb;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-bottom: 16px;
     }
 
     .preview-description {
-        color: #6b7280;
-        line-height: 1.6;
+        color: var(--text-secondary);
+        line-height: 1.7;
+        font-size: 14px;
     }
 
     /* Responsive Design */
@@ -536,6 +624,9 @@
 
         .form-header {
             padding: 20px;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
         }
 
         .product-form {
