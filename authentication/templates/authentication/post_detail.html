@@ -10,8 +10,125 @@
     ::-webkit-scrollbar{
         display: none;
     }
+    
+    /* Enhanced Product Detail Page */
+    .marketplace-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px 40px;
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Guest Banner */
+    .guest-banner {
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(67, 97, 238, 0.15) 100%);
+        border: 1px solid rgba(0, 245, 212, 0.3);
+        border-radius: 16px;
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        animation: slideDown 0.5s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .guest-banner-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .guest-banner-content i {
+        font-size: 24px;
+        color: #00f5d4;
+    }
+    
+    .guest-banner-content p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+    }
+    
+    .guest-banner-actions {
+        display: flex;
+        gap: 12px;
+    }
+    
+    .guest-banner-btn {
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .guest-banner-btn.primary {
+        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+        color: #0a0a0f;
+    }
+    
+    .guest-banner-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.4);
+    }
+    
+    .guest-banner-btn.secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .guest-banner-btn.secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    @media (max-width: 768px) {
+        .guest-banner {
+            flex-direction: column;
+            text-align: center;
+            padding: 16px;
+        }
+        
+        .guest-banner-content {
+            flex-direction: column;
+        }
+        
+        .guest-banner-actions {
+            width: 100%;
+        }
+        
+        .guest-banner-btn {
+            flex: 1;
+            text-align: center;
+        }
+    }
 </style>
 <div class="marketplace-container">
+    {% if not user.is_authenticated %}
+    <div class="guest-banner">
+        <div class="guest-banner-content">
+            <i class="bi bi-stars"></i>
+            <p><strong>Welcome to KicksLife250!</strong> Create an account to purchase, save favorites, and track your orders.</p>
+        </div>
+        <div class="guest-banner-actions">
+            <a href="{% url 'register' %}" class="guest-banner-btn primary">Sign Up Free</a>
+            <a href="{% url 'login' %}?next={% url 'post_detail' post.id %}" class="guest-banner-btn secondary">Login</a>
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="product-detail-grid">
         <!-- Left Column: Product Images -->
         <div class="product-gallery-section">
@@ -108,36 +225,65 @@
 
                 <!-- Action Buttons -->
                 <div class="action-section">
-                    {% if has_purchased %}
-                    <div class="purchase-status">
-                        <div class="status-message">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>You have already purchased this product</span>
+                    {% if user.is_authenticated %}
+                        {% if has_purchased %}
+                        <div class="purchase-status">
+                            <div class="status-message">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>You have already purchased this product</span>
+                            </div>
+                            <a href="{% url 'purchase_history' %}" class="btn-secondary">
+                                <i class="bi bi-bag-check"></i>
+                                View Your Purchases
+                            </a>
                         </div>
-                        <a href="{% url 'purchase_history' %}" class="btn-secondary">
-                            <i class="bi bi-bag-check"></i>
-                            View Your Purchases
-                        </a>
-                    </div>
-                    {% elif is_owner %}
-                    <div class="purchase-status">
-                        <div class="status-message">
-                            <i class="bi bi-info-circle-fill"></i>
-                            <span>This is your own product</span>
+                        {% elif is_owner %}
+                        <div class="purchase-status">
+                            <div class="status-message">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <span>This is your own product</span>
+                            </div>
+                            <a href="{% url 'edit_product' post.id %}" class="btn-secondary">
+                                <i class="bi bi-pencil"></i>
+                                Edit Product
+                            </a>
                         </div>
-                        <a href="{% url 'edit_product' post.id %}" class="btn-secondary">
-                            <i class="bi bi-pencil"></i>
-                            Edit Product
-                        </a>
-                    </div>
+                        {% else %}
+                            {% if post.price %}
+                                {% if post.inventory > 0 %}
+                                <div class="purchase-actions">
+                                    <button type="button" class="btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                                        <i class="bi bi-bag-plus"></i>
+                                        Buy Now
+                                    </button>
+                                    <p class="security-note">
+                                        <i class="bi bi-shield-check"></i>
+                                        Secure payment • KicksLife250 Protection
+                                    </p>
+                                </div>
+                                {% else %}
+                                <div class="out-of-stock">
+                                    <div class="status-message">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        <span>This product is currently out of stock</span>
+                                    </div>
+                                    <button class="btn-disabled" disabled>
+                                        <i class="bi bi-bag-x"></i>
+                                        Out of Stock
+                                    </button>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
                     {% else %}
+                        <!-- Guest User: Show login prompt for purchase -->
                         {% if post.price %}
                             {% if post.inventory > 0 %}
                             <div class="purchase-actions">
-                                <button type="button" class="btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                                <a href="{% url 'login' %}?next={% url 'post_detail' post.id %}" class="btn-primary">
                                     <i class="bi bi-bag-plus"></i>
-                                    Buy Now
-                                </button>
+                                    Login to Buy
+                                </a>
                                 <p class="security-note">
                                     <i class="bi bi-shield-check"></i>
                                     Secure payment • KicksLife250 Protection
@@ -156,25 +302,25 @@
                             </div>
                             {% endif %}
                         {% endif %}
+                    {% endif %}
 
-                        {% if not is_owner %}
-                        <div class="social-actions">
-                            <button class="btn-action bookmark-btn" data-post-id="{{ post.id }}">
-                                <i class="bi {% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
-                                <span>{% if is_bookmarked %}Saved{% else %}Save for Later{% endif %}</span>
-                            </button>
-                            
-                            <button class="btn-action like-btn" data-post-id="{{ post.id }}">
-                                <i class="bi {% if user in post.likes.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                                <span>{{ post.total_likes }}</span>
-                            </button>
-                            
-                            <button class="btn-action share-btn">
-                                <i class="bi bi-share"></i>
-                                <span>Share</span>
-                            </button>
-                        </div>
-                        {% endif %}
+                    {% if not is_owner %}
+                    <div class="social-actions">
+                        <button class="btn-action bookmark-btn {% if not user.is_authenticated %}guest-action{% endif %}" data-post-id="{{ post.id }}">
+                            <i class="bi {% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                            <span>{% if is_bookmarked %}Saved{% else %}Save for Later{% endif %}</span>
+                        </button>
+                        
+                        <button class="btn-action like-btn" data-post-id="{{ post.id }}">
+                            <i class="bi {% if is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                            <span>{{ post.total_likes }}</span>
+                        </button>
+                        
+                        <button class="btn-action share-btn">
+                            <i class="bi bi-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -383,11 +529,12 @@
 
     /* Product Gallery Section */
     .product-gallery-card {
-        background: white;
-        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
         overflow: hidden;
-        /* box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border: 1px solid rgba(0,0,0,0.05); */
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 
     .product-gallery {
@@ -397,27 +544,41 @@
     .main-image-container {
         width: 100%;
         height: 500px;
-        background: #ffffff;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
+        position: relative;
+    }
+    
+    .main-image-container::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 30% 30%, rgba(0, 245, 212, 0.05) 0%, transparent 50%);
+        pointer-events: none;
     }
 
     #main-product-image {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        transition: all 0.3s ease;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    #main-product-image:hover {
+        transform: scale(1.02);
     }
 
     .auxiliary-images-container {
         display: flex;
         gap: 12px;
         padding: 20px;
-        background: #e7e7e7;
+        background: rgba(255, 255, 255, 0.02);
         overflow-x: auto;
-        border-radius: 20px;
+        border-radius: 0 0 24px 24px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .thumbnail-item {
@@ -426,8 +587,9 @@
         border-radius: 12px;
         overflow: hidden;
         cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
     }
 
     .thumbnail-item img {
@@ -438,12 +600,14 @@
     }
 
     .thumbnail-item:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        border-color: rgba(0, 245, 212, 0.5);
+        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.2);
     }
 
     .thumbnail-item.active {
-        border-color: #2563eb;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        border-color: #00f5d4;
+        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.3);
     }
 
     .empty-image {
@@ -452,22 +616,24 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: #f8f9fa;
-        color: #6b7280;
+        background: rgba(255, 255, 255, 0.02);
+        color: rgba(255, 255, 255, 0.5);
     }
 
     .empty-image i {
         font-size: 5rem;
         margin-bottom: 1rem;
+        color: rgba(0, 245, 212, 0.3);
     }
 
     /* Product Info Section */
     .product-info-card {
-        background: white;
-        border-radius: 20px;
-        padding: 3px;
-        /* box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border: 1px solid rgba(0,0,0,0.05); */
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 
     .product-header {
@@ -480,97 +646,115 @@
     .product-title-section h1 {
         font-size: 2rem;
         font-weight: 700;
-        color: #1f2937;
+        color: #ffffff;
         margin-bottom: 12px;
+        line-height: 1.3;
     }
 
     .product-meta {
         display: flex;
-        gap: 8px;
+        gap: 10px;
         flex-wrap: wrap;
     }
 
     .category-badge {
-        padding: 6px 12px;
-        background: #eff6ff;
-        color: #2563eb;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 500;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(67, 97, 238, 0.15) 100%);
+        color: #00f5d4;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid rgba(0, 245, 212, 0.3);
     }
 
     .status-badge {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
     }
 
     .status-success {
-        background: #dcfce7;
-        color: #166534;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
     .status-warning {
-        background: #fef3c7;
-        color: #92400e;
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .status-danger {
-        background: #fee2e2;
-        color: #991b1b;
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
     .btn-edit {
-        padding: 8px 16px;
-        background: #f3f4f6;
-        color: #4b5563;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
         border-radius: 12px;
         text-decoration: none;
         font-size: 14px;
         display: flex;
         align-items: center;
-        gap: 6px;
-        transition: all 0.3s ease;
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .btn-edit:hover {
-        background: #e5e7eb;
-        color: #1f2937;
+        background: rgba(0, 245, 212, 0.1);
+        color: #00f5d4;
+        border-color: rgba(0, 245, 212, 0.3);
         transform: translateY(-2px);
     }
 
     .price-section {
-        margin-bottom: 24px;
+        margin-bottom: 28px;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(67, 97, 238, 0.05) 100%);
+        border-radius: 16px;
+        border: 1px solid rgba(0, 245, 212, 0.2);
     }
 
     .current-price {
         font-size: 2.5rem;
-        font-weight: 700;
-        color: #2563eb;
+        font-weight: 800;
+        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .description-section {
-        margin-bottom: 24px;
+        margin-bottom: 28px;
     }
 
     .description-section h2 {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: #1f2937;
+        color: rgba(255, 255, 255, 0.7);
         margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     .description-section p {
-        color: #4b5563;
-        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.8;
+        font-size: 15px;
     }
 
     .seller-section {
         padding: 20px;
-        background: #f8f9fa;
-        border-radius: 12px;
-        margin-bottom: 24px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        margin-bottom: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .seller-info {
@@ -581,179 +765,260 @@
     }
 
     .seller-avatar {
-        width: 48px;
-        height: 48px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid rgba(0, 245, 212, 0.3);
     }
 
     .seller-avatar-placeholder {
-        width: 48px;
-        height: 48px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        color: white;
+        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+        color: #0a0a0f;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
-        font-size: 16px;
+        font-weight: 700;
+        font-size: 18px;
     }
 
     .seller-details h3 {
         font-size: 1rem;
         font-weight: 600;
-        color: #1f2937;
+        color: #ffffff;
         margin-bottom: 4px;
     }
 
     .seller-username {
-        color: #6b7280;
+        color: rgba(255, 255, 255, 0.5);
         font-size: 14px;
         margin: 0;
     }
 
     .post-time {
-        color: #6b7280;
+        color: rgba(255, 255, 255, 0.5);
         font-size: 14px;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
+    }
+    
+    .post-time i {
+        color: #00f5d4;
     }
 
     .action-section {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 20px;
     }
 
     .purchase-status {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
     }
 
     .status-message {
         display: flex;
         align-items: center;
-        gap: 8px;
-        color: #4b5563;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.7);
         font-size: 14px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+    }
+    
+    .status-message i {
+        color: #00f5d4;
+        font-size: 18px;
     }
 
     .purchase-actions {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
     }
 
     .btn-primary {
-        padding: 16px 24px;
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        color: white;
+        padding: 18px 28px;
+        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+        color: #0a0a0f;
         border: none;
-        border-radius: 12px;
-        font-weight: 500;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        transition: all 0.3s ease;
+        gap: 10px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         text-decoration: none;
         width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-primary:hover::before {
+        left: 100%;
     }
 
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
-        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 245, 212, 0.4);
+        color: #0a0a0f;
     }
 
     .btn-secondary {
         padding: 16px 24px;
-        background: #f3f4f6;
-        color: #4b5563;
-        border: none;
-        border-radius: 12px;
-        font-weight: 500;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
         transition: all 0.3s ease;
         text-decoration: none;
         width: 100%;
     }
 
     .btn-secondary:hover {
-        background: #e5e7eb;
-        color: #1f2937;
+        background: rgba(0, 245, 212, 0.1);
+        color: #00f5d4;
+        border-color: rgba(0, 245, 212, 0.3);
         transform: translateY(-2px);
     }
 
     .btn-disabled {
         padding: 16px 24px;
-        background: #f3f4f6;
-        color: #9ca3af;
-        border: none;
-        border-radius: 12px;
-        font-weight: 500;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 14px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
         width: 100%;
         cursor: not-allowed;
     }
 
     .security-note {
-        color: #059669;
+        color: #34d399;
         font-size: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 8px;
         margin: 0;
+    }
+    
+    .security-note i {
+        font-size: 16px;
     }
 
     .social-actions {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 12px;
-        margin-top: 12px;
+        margin-top: 16px;
     }
 
     .btn-action {
-        padding: 12px;
-        background: #f3f4f6;
-        color: #4b5563;
-        border: none;
-        border-radius: 12px;
+        padding: 16px 12px;
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
-        transition: all 0.3s ease;
+        gap: 6px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
     }
 
     .btn-action:hover {
-        background: #e5e7eb;
-        color: #1f2937;
-        transform: translateY(-2px);
+        background: rgba(0, 245, 212, 0.1);
+        color: #00f5d4;
+        border-color: rgba(0, 245, 212, 0.3);
+        transform: translateY(-3px);
     }
 
     .btn-action i {
-        font-size: 1.25rem;
+        font-size: 1.4rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-action:hover i {
+        transform: scale(1.1);
     }
 
     .btn-action span {
-        font-size: 14px;
+        font-size: 13px;
+        font-weight: 500;
     }
 
-    .bookmark-btn.active,
+    .bookmark-btn.active {
+        background: rgba(0, 245, 212, 0.15);
+        color: #00f5d4;
+        border-color: rgba(0, 245, 212, 0.3);
+    }
+    
     .like-btn.active {
-        background: #eff6ff;
-        color: #2563eb;
+        background: rgba(247, 37, 133, 0.15);
+        color: #f72585;
+        border-color: rgba(247, 37, 133, 0.3);
+    }
+    
+    .like-btn.active i {
+        color: #f72585;
+        animation: heartBeat 0.5s ease;
+    }
+    
+    @keyframes heartBeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+    }
+    
+    .guest-action {
+        position: relative;
+    }
+    
+    .guest-action::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 10px;
+        height: 10px;
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.2); }
     }
 
     /* Responsive Design */
@@ -874,7 +1139,7 @@
         bookmarkBtn.addEventListener('click', function(e) {
             e.preventDefault();
             const postId = this.getAttribute('data-post-id');
-            const bookmarkBtn = this;
+            const btn = this;
             
             fetch(`/auth/bookmark/${postId}/`, {
                 method: 'POST',
@@ -884,24 +1149,45 @@
                 },
                 body: JSON.stringify({})
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status === 401) {
+                    // User needs to login
+                    return response.json().then(data => {
+                        if (data.requires_login) {
+                            // Show login prompt or redirect
+                            if (confirm('Please log in to save items. Would you like to log in now?')) {
+                                window.location.href = "{% url 'login' %}?next={% url 'post_detail' post.id %}";
+                            }
+                        }
+                        throw new Error('Login required');
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.is_bookmarked || data.status === 'added') {
-                    bookmarkBtn.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i> Saved';
+                    btn.innerHTML = '<i class="bi bi-bookmark-fill"></i><span>Saved</span>';
+                    btn.classList.add('active');
                 } else {
-                    bookmarkBtn.innerHTML = '<i class="bi bi-bookmark me-2"></i> Save for Later';
+                    btn.innerHTML = '<i class="bi bi-bookmark"></i><span>Save for Later</span>';
+                    btn.classList.remove('active');
+                }
+            })
+            .catch(error => {
+                if (error.message !== 'Login required') {
+                    console.error('Error toggling bookmark:', error);
                 }
             });
         });
     }
     
-    // Handle like functionality
+    // Handle like functionality (works for both authenticated and anonymous users)
     const likeBtn = document.querySelector('.like-btn');
     if (likeBtn) {
         likeBtn.addEventListener('click', function(e) {
             e.preventDefault();
             const postId = this.getAttribute('data-post-id');
-            const likeBtn = this;
+            const btn = this;
             
             fetch(`/auth/like-post/${postId}/`, {
                 method: 'POST',
@@ -913,11 +1199,20 @@
             })
             .then(response => response.json())
             .then(data => {
+                const icon = btn.querySelector('i');
+                const span = btn.querySelector('span');
+                
                 if (data.liked) {
-                    likeBtn.innerHTML = `<i class="bi bi-heart-fill me-2"></i> Like (${data.total_likes})`;
+                    icon.className = 'bi bi-heart-fill';
+                    btn.classList.add('active');
                 } else {
-                    likeBtn.innerHTML = `<i class="bi bi-heart me-2"></i> Like (${data.total_likes})`;
+                    icon.className = 'bi bi-heart';
+                    btn.classList.remove('active');
                 }
+                span.textContent = data.total_likes;
+            })
+            .catch(error => {
+                console.error('Error toggling like:', error);
             });
         });
     }

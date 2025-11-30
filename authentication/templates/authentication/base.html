@@ -332,65 +332,92 @@
     <!-- Desktop Navigation -->
     <div class="nav-container"> 
         <nav class="nav-tabs">
-            <a href="{% url 'dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <a href="{% url 'landing_page' %}" class="nav-tab {% if request.resolver_match.url_name == 'landing_page' %}active{% endif %}" title="Home">
+                <i class="bi bi-house"></i>
+            </a>
+            <a href="{% url 'dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" title="Shop">
                 <i class="bi bi-shop"></i>
             </a>
-            {% if user.is_admin %}
-            <a href="{% url 'admin_dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" title="Admin Dashboard">
-                <i class="bi bi-speedometer2"></i>
-            </a>
-            <a href="{% url 'create_product' %}" class="nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}" title="Add Product">
-                <i class="bi bi-plus-circle"></i>
-            </a>
+            {% if user.is_authenticated %}
+                {% if user.is_admin %}
+                <a href="{% url 'admin_dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" title="Admin Dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                </a>
+                <a href="{% url 'create_product' %}" class="nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}" title="Add Product">
+                    <i class="bi bi-plus-circle"></i>
+                </a>
+                {% endif %}
+                <a href="{% url 'purchase_history' %}" class="nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}" title="Order History">
+                    <i class="bi bi-clock-history"></i>
+                </a>
+                <a href="{% url 'bookmarks' %}" class="nav-tab {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}" title="Wishlist">
+                    <i class="bi bi-bookmark"></i>
+                </a>
+                <a href="{% url 'user_settings' %}" class="nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}" title="Settings">
+                    <i class="bi bi-gear"></i>
+                </a>
+                <a href="{% url 'logout' %}" class="nav-tab" title="Logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-tab {% if request.resolver_match.url_name == 'login' %}active{% endif %}" title="Login">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </a>
+                <a href="{% url 'register' %}" class="nav-tab {% if request.resolver_match.url_name == 'register' %}active{% endif %}" title="Sign Up">
+                    <i class="bi bi-person-plus"></i>
+                </a>
             {% endif %}
-            <a href="{% url 'purchase_history' %}" class="nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}" title="Order History">
-                <i class="bi bi-clock-history"></i>
-            </a>
-            <a href="{% url 'bookmarks' %}" class="nav-tab {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}" title="Wishlist">
-                <i class="bi bi-bookmark"></i>
-            </a>
-            <a href="{% url 'user_settings' %}" class="nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}" title="Settings">
-                <i class="bi bi-gear"></i>
-            </a>
-            <a href="{% url 'logout' %}" class="nav-tab" title="Logout">
-                <i class="bi bi-box-arrow-right"></i>
-            </a>
         </nav>
     </div>
 
     <!-- Mobile Navigation -->
     <div class="mobile-nav-container">
         <nav class="mobile-nav-tabs">
+            <a href="{% url 'landing_page' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'landing_page' %}active{% endif %}">
+                <i class="bi bi-house"></i>
+                <span>Home</span>
+            </a>
             <a href="{% url 'dashboard' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="bi bi-shop"></i>
                 <span>Shop</span>
             </a>
-            {% if user.is_admin %}
-            <a href="{% url 'admin_dashboard' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Admin</span>
-            </a>
-            <a href="{% url 'create_product' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}">
-                <i class="bi bi-plus-circle"></i>
-                <span>Add</span>
-            </a>
+            {% if user.is_authenticated %}
+                {% if user.is_admin %}
+                <a href="{% url 'admin_dashboard' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Admin</span>
+                </a>
+                <a href="{% url 'create_product' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'purchase_history' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>History</span>
+                </a>
+                <a href="{% url 'bookmarks' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}">
+                    <i class="bi bi-bookmark"></i>
+                    <span>Wishlist</span>
+                </a>
+                <a href="{% url 'user_settings' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
+                    <i class="bi bi-gear"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{% url 'logout' %}" class="mobile-nav-tab">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Login</span>
+                </a>
+                <a href="{% url 'register' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
+                    <i class="bi bi-person-plus"></i>
+                    <span>Sign Up</span>
+                </a>
             {% endif %}
-            <a href="{% url 'purchase_history' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'purchase_history' %}active{% endif %}">
-                <i class="bi bi-clock-history"></i>
-                <span>History</span>
-            </a>
-            <a href="{% url 'bookmarks' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'bookmarks' %}active{% endif %}">
-                <i class="bi bi-bookmark"></i>
-                <span>Wishlist</span>
-            </a>
-            <a href="{% url 'user_settings' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'user_settings' %}active{% endif %}">
-                <i class="bi bi-gear"></i>
-                <span>Settings</span>
-            </a>
-            <a href="{% url 'logout' %}" class="mobile-nav-tab">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Logout</span>
-            </a>
         </nav>
     </div>
 

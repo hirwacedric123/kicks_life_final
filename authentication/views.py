@@ -739,10 +739,9 @@ def categories_api(request):
             'errors': {'server': [str(e)]}
         }, status=500)
 
-@login_required
 def dashboard(request):
     # Redirect admin users to admin dashboard
-    if request.user.is_admin:
+    if request.user.is_authenticated and request.user.is_admin:
         return redirect('admin_dashboard')
     
     # Get filter parameters from the request
@@ -800,11 +799,16 @@ def dashboard(request):
     # Get all categories for the filter dropdown
     categories = Post.CATEGORY_CHOICES
     
-    # Get user's bookmarked posts for easier template rendering
-    bookmarked_posts = [bookmark.post.id for bookmark in Bookmark.objects.filter(user=request.user)]
+    # Get user's bookmarked posts for easier template rendering (only for authenticated users)
+    bookmarked_posts = []
+    liked_posts = []
     
-    # Get user's liked posts for easier template rendering
-    liked_posts = [post.id for post in Post.objects.filter(likes=request.user)]
+    if request.user.is_authenticated:
+        bookmarked_posts = [bookmark.post.id for bookmark in Bookmark.objects.filter(user=request.user)]
+        liked_posts = [post.id for post in Post.objects.filter(likes=request.user)]
+    else:
+        # For anonymous users, get likes from session
+        liked_posts = request.session.get('guest_likes', [])
     
     # Pagination
     paginator = Paginator(posts, 20)  # 20 products per page
@@ -826,32 +830,38 @@ def dashboard(request):
     
     return render(request, 'authentication/dashboard.html', context)
 
-@login_required
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    is_bookmarked = Bookmark.objects.filter(user=request.user, post=post).exists()
     
-    # Check if the user is the owner of the post
-    is_owner = (post.user == request.user)
+    # Initialize default values for anonymous users
+    is_bookmarked = False
+    is_owner = False
+    has_purchased = False
+    user_review = None
+    is_liked = False
     
     # Get auxiliary images for the product
     auxiliary_images = ProductImage.objects.filter(product=post).order_by('display_order')
     
-    # Allow repeat purchases - remove the restriction
-    # has_purchased = Purchase.objects.filter(
-    #     buyer=request.user, 
-    #     product=post, 
-    #     status__in=['completed', 'processing']
-    # ).exists()
-    has_purchased = False  # Always allow purchases
-    
     # Get product reviews
     reviews = ProductReview.objects.filter(product=post).order_by('-created_at')
     
-    # Check if current user has already reviewed this product
-    user_review = None
     if request.user.is_authenticated:
+        # Check if the user has bookmarked this post
+        is_bookmarked = Bookmark.objects.filter(user=request.user, post=post).exists()
+        
+        # Check if the user is the owner of the post
+        is_owner = (post.user == request.user)
+        
+        # Check if current user has already reviewed this product
         user_review = ProductReview.objects.filter(product=post, reviewer=request.user).first()
+        
+        # Check if user has liked the post
+        is_liked = request.user in post.likes.all()
+    else:
+        # For anonymous users, check session for likes
+        guest_likes = request.session.get('guest_likes', [])
+        is_liked = post_id in guest_likes
     
     context = {
         'post': post,
@@ -861,6 +871,7 @@ def post_detail(request, post_id):
         'auxiliary_images': auxiliary_images,
         'reviews': reviews,
         'user_review': user_review,
+        'is_liked': is_liked,
     }
     
     return render(request, 'authentication/post_detail.html', context)
@@ -964,8 +975,15 @@ def purchase_product(request, post_id):
     
     return redirect('post_detail', post_id=post_id)
 
-@login_required
 def bookmark_toggle(request, post_id):
+    """Handle bookmark toggle - requires authentication"""
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'requires_login': True,
+            'error': 'Please log in to save items'
+        }, status=401)
+    
     if request.method == 'POST':
         try:
             post = get_object_or_404(Post, id=post_id)
@@ -1268,22 +1286,40 @@ def create_product(request):
     
     return render(request, 'authentication/create_product.html')
 
-@login_required
 def like_post(request, post_id):
+    """Handle like/unlike for both authenticated and anonymous users"""
     if request.method == 'POST':
         try:
             post = get_object_or_404(Post, id=post_id)
             
-            if request.user in post.likes.all():
-                post.likes.remove(request.user)
-                liked = False
+            if request.user.is_authenticated:
+                # Authenticated user - use database
+                if request.user in post.likes.all():
+                    post.likes.remove(request.user)
+                    liked = False
+                else:
+                    post.likes.add(request.user)
+                    liked = True
             else:
-                post.likes.add(request.user)
-                liked = True
+                # Anonymous user - use session storage
+                guest_likes = request.session.get('guest_likes', [])
+                
+                if post_id in guest_likes:
+                    guest_likes.remove(post_id)
+                    liked = False
+                else:
+                    guest_likes.append(post_id)
+                    liked = True
+                
+                request.session['guest_likes'] = guest_likes
+                request.session.modified = True
+            
+            # Calculate total likes (database likes only for consistency)
+            total_likes = post.total_likes()
                 
             return JsonResponse({
                 'liked': liked,
-                'total_likes': post.total_likes()
+                'total_likes': total_likes
             })
         except Exception as e:
             return JsonResponse({

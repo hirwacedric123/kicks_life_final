@@ -1462,12 +1462,13 @@
         }
     }
     
-    // Wishlist toggle
+    // Wishlist toggle (works for both authenticated and anonymous users)
     document.querySelectorAll('.wishlist-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            {% if user.is_authenticated %}
             const icon = this.querySelector('i');
+            
+            // Toggle the heart icon visually (local state)
             if (icon.classList.contains('bi-heart')) {
                 icon.classList.remove('bi-heart');
                 icon.classList.add('bi-heart-fill');
@@ -1477,9 +1478,6 @@
                 icon.classList.add('bi-heart');
                 this.style.color = '';
             }
-            {% else %}
-            window.location.href = "{% url 'login' %}";
-            {% endif %}
         });
     });
     
