@@ -35,6 +35,27 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+# Add PythonAnywhere domain if available (detect from environment or server name)
+PYTHONANYWHERE_USERNAME = os.environ.get('PYTHONANYWHERE_USERNAME')
+if PYTHONANYWHERE_USERNAME:
+    # Add PythonAnywhere subdomain
+    pythonanywhere_domain = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
+    ALLOWED_HOSTS.append(pythonanywhere_domain)
+
+# Also check if we're running on PythonAnywhere by checking the server name
+# This is useful if PYTHONANYWHERE_USERNAME is not set
+import socket
+try:
+    hostname = socket.gethostname()
+    if 'pythonanywhere' in hostname.lower():
+        # Extract username from hostname if possible
+        if '.' in hostname:
+            pythonanywhere_domain = hostname
+            if pythonanywhere_domain not in ALLOWED_HOSTS:
+                ALLOWED_HOSTS.append(pythonanywhere_domain)
+except:
+    pass
+
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8000'
@@ -43,6 +64,37 @@ CSRF_TRUSTED_ORIGINS = [
 # Add production domains to CSRF trusted origins
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+
+# Add PythonAnywhere domains to CSRF trusted origins
+if PYTHONANYWHERE_USERNAME:
+    pythonanywhere_domain = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
+    CSRF_TRUSTED_ORIGINS.extend([
+        f'https://{pythonanywhere_domain}',
+        f'http://{pythonanywhere_domain}'
+    ])
+
+# Add Fly.io domain if available
+FLY_APP_NAME = os.environ.get('FLY_APP_NAME')
+if FLY_APP_NAME:
+    fly_domain = f'{FLY_APP_NAME}.fly.dev'
+    if fly_domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(fly_domain)
+    CSRF_TRUSTED_ORIGINS.extend([
+        f'https://{fly_domain}',
+        f'http://{fly_domain}'
+    ])
+
+# Add custom domain (kickslife250.com) if specified
+CUSTOM_DOMAIN = os.environ.get('CUSTOM_DOMAIN')
+if CUSTOM_DOMAIN:
+    # Add both with and without www
+    for domain in [CUSTOM_DOMAIN, f'www.{CUSTOM_DOMAIN}']:
+        if domain not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(domain)
+        CSRF_TRUSTED_ORIGINS.extend([
+            f'https://{domain}',
+            f'http://{domain}'
+        ])
 
 # CSRF Configuration
 CSRF_COOKIE_SECURE = not DEBUG  # Secure in production
@@ -249,6 +301,30 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 # Add Render domain to CORS if available
 if RENDER_EXTERNAL_HOSTNAME:
     CORS_ALLOWED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+
+# Add PythonAnywhere domain to CORS if available
+if PYTHONANYWHERE_USERNAME:
+    pythonanywhere_domain = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
+    CORS_ALLOWED_ORIGINS.extend([
+        f'https://{pythonanywhere_domain}',
+        f'http://{pythonanywhere_domain}'
+    ])
+
+# Add Fly.io domain to CORS if available
+if FLY_APP_NAME:
+    fly_domain = f'{FLY_APP_NAME}.fly.dev'
+    CORS_ALLOWED_ORIGINS.extend([
+        f'https://{fly_domain}',
+        f'http://{fly_domain}'
+    ])
+
+# Add custom domain to CORS if available
+if CUSTOM_DOMAIN:
+    for domain in [CUSTOM_DOMAIN, f'www.{CUSTOM_DOMAIN}']:
+        CORS_ALLOWED_ORIGINS.extend([
+            f'https://{domain}',
+            f'http://{domain}'
+        ])
 
 CORS_ALLOW_CREDENTIALS = True
 

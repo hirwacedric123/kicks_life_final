@@ -122,6 +122,63 @@ python manage.py runserver
 - Main site: http://127.0.0.1:8000
 - Admin interface: http://127.0.0.1:8000/admin
 
+## 🌐 Deployment
+
+This project can be deployed to various platforms. Choose the one that best fits your needs:
+
+### Free Hosting Options (with Custom Domain Support)
+
+1. **Render** (Recommended - Free with custom domain)
+   - ✅ Free tier available
+   - ✅ Custom domain support (FREE)
+   - ✅ Automatic SSL certificates
+   - 📖 See `DEPLOYMENT.md` for detailed instructions
+
+2. **Fly.io** (Free tier with custom domain)
+   - ✅ Free tier available
+   - ✅ Custom domain support (FREE)
+   - ✅ Global edge network
+   - 📖 See `FLYIO_DEPLOYMENT.md` for detailed instructions
+
+### Other Deployment Options
+
+3. **PythonAnywhere**
+   - Free tier available (subdomain only)
+   - Custom domain requires $5/month (Hacker plan)
+   - 📖 See `PYTHONANYWHERE_DEPLOYMENT.md` for detailed instructions
+
+### Quick Start
+
+**For Render:**
+```bash
+# See DEPLOYMENT.md
+```
+
+**For Fly.io:**
+```bash
+# Install Fly.io CLI
+brew install flyctl  # macOS
+# or
+curl -L https://fly.io/install.sh | sh  # Linux
+
+# Login and deploy
+flyctl auth login
+flyctl launch
+flyctl deploy
+# See FLYIO_DEPLOYMENT.md for full instructions
+```
+
+**For PythonAnywhere:**
+```bash
+# See PYTHONANYWHERE_DEPLOYMENT.md
+```
+
+For more information, see:
+- `DEPLOYMENT.md` - Render deployment guide
+- `FLYIO_DEPLOYMENT.md` - Fly.io deployment guide
+- `PYTHONANYWHERE_DEPLOYMENT.md` - PythonAnywhere deployment guide
+- `FREE_HOSTING_OPTIONS.md` - Comparison of free hosting options
+
 ## 📁 Project Structure
 
 ```
