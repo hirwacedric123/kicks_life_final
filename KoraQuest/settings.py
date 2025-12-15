@@ -267,8 +267,8 @@ else:
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
     DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'KoraQuest <noreply@koraquest.com>')
 
-# QR Code Settings
-QR_CODE_UPDATE_INTERVAL = 600  # 10 minutes in seconds
+# QR Code Settings - Removed (not used)
+# QR_CODE_UPDATE_INTERVAL = 600  # 10 minutes in seconds
 
 # Django REST Framework Settings
 REST_FRAMEWORK = {

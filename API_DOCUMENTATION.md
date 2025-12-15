@@ -234,19 +234,7 @@ PATCH /auth/api/rest/reviews/{review_id}/
 DELETE /auth/api/rest/reviews/{review_id}/
 ```
 
-### QR Code Management
-
-#### Get User QR Codes
-```http
-GET /auth/api/rest/qr-codes/
-```
-
-#### Generate QR Code
-```http
-POST /auth/api/rest/qr-codes/generate_qr/
-```
-
-### OTP Management
+### OTP Management (Removed - Not Used)
 
 #### Send OTP
 ```http
@@ -287,16 +275,7 @@ GET /auth/api/rest/vendors/{vendor_id}/statistics/
 
 ### Kicks_life 250 Specific Endpoints
 
-#### Get Purchases by QR Code
-```http
-POST /auth/api/rest/qr/purchases/
-```
-**Request Body:**
-```json
-{
-    "qr_data": "encoded_qr_data"
-}
-```
+#### Get Purchases (Removed - QR Code functionality removed)
 
 #### Complete Purchase Pickup
 ```http
@@ -371,7 +350,7 @@ All API responses follow this format:
 - Full access to all endpoints
 - Can manage all purchases
 - Can view vendor statistics
-- Can process QR code purchases
+- Can process purchase confirmations
 - Can complete purchase pickups
 
 ## Filtering and Search

@@ -155,10 +155,6 @@
                class="koraquest-nav-btn {% if request.resolver_match.url_name == 'koraquest_dashboard' %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
-            <a href="{% url 'scan_qr_code' %}" 
-               class="koraquest-nav-btn {% if request.resolver_match.url_name == 'scan_qr_code' %}active{% endif %}">
-                <i class="bi bi-qr-code-scan"></i> QR Scanner
-            </a>
             <a href="{% url 'koraquest_purchase_history' %}" 
                class="koraquest-nav-btn {% if request.resolver_match.url_name == 'koraquest_purchase_history' %}active{% endif %}">
                 <i class="bi bi-clock-history"></i> History
@@ -176,9 +172,6 @@
         <div style="margin-top: 1rem;">
             <a href="{% url 'sales_statistics' %}" class="btn" style="background: #4caf50; margin-right: 1rem;">
                 📊 Commission Statistics
-            </a>
-            <a href="{% url 'scan_qr_code' %}" class="btn" style="background: #2196f3;">
-                📱 QR Scanner
             </a>
         </div>
     </div>    <!-- Statistics -->
@@ -199,14 +192,7 @@
             <div class="stat-value">RWF{{ total_commission|floatformat:2 }}</div>
             <div>Total Commission</div>
         </div>
-    </div><!-- QR Scanner Section -->
-    <div class="scanner-section">
-        <h2>📱 QR Code Scanner</h2>
-        <p>Scan customer QR codes to verify purchases and manage pickups</p>
-        <a href="{% url 'scan_qr_code' %}" class="btn btn-scan">
-            Start QR Scanner
-        </a>
-    </div>    <!-- Pending Purchases -->
+    <!-- Pending Purchases -->
     <div class="section">
         <h2>📦 Pending Pickups ({{ awaiting_purchases.count }})</h2>
         {% for purchase in awaiting_purchases %}
@@ -344,7 +330,6 @@
     <!-- Navigation -->
     <div style="text-align: center; margin-top: 30px;">
         <a href="{% url 'dashboard' %}" class="btn">Back to Main Dashboard</a>
-        <a href="{% url 'scan_qr_code' %}" class="btn" style="background: #4caf50;">QR Scanner</a>
         <a href="{% url 'koraquest_purchase_history' %}" class="btn">Purchase History</a>
     </div>
 </div>

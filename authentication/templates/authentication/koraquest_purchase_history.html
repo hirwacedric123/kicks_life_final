@@ -279,10 +279,6 @@
                class="koraquest-nav-btn {% if request.resolver_match.url_name == 'koraquest_dashboard' %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
-            <a href="{% url 'scan_qr_code' %}" 
-               class="koraquest-nav-btn {% if request.resolver_match.url_name == 'scan_qr_code' %}active{% endif %}">
-                <i class="bi bi-qr-code-scan"></i> QR Scanner
-            </a>
             <a href="{% url 'koraquest_purchase_history' %}" 
                class="koraquest-nav-btn {% if request.resolver_match.url_name == 'koraquest_purchase_history' %}active{% endif %}">
                 <i class="bi bi-clock-history"></i> History
@@ -465,7 +461,6 @@
     <!-- Navigation -->
     <div style="text-align: center; margin-top: 30px;">
         <a href="{% url 'koraquest_dashboard' %}" class="btn">Back to Dashboard</a>
-        <a href="{% url 'scan_qr_code' %}" class="btn">QR Scanner</a>
     </div>
 </div>
 

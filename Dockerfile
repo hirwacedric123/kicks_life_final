@@ -31,5 +31,5 @@ RUN python manage.py collectstatic --noinput || true
 EXPOSE 8080
 
 # Run gunicorn
-CMD gunicorn KoraQuest.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120
+CMD sh -c "gunicorn KoraQuest.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 2 --timeout 120"
 

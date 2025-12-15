@@ -87,20 +87,17 @@ The API uses Django's session-based authentication. Most endpoints require authe
 - `PUT /reviews/{id}/` - Update review
 - `DELETE /reviews/{id}/` - Delete review
 
-#### QR Codes
-- `GET /qr-codes/` - List user QR codes
-- `POST /qr-codes/generate_qr/` - Generate QR code
+#### QR Codes (Removed - Not Used)
+- QR code functionality has been removed from the application
 
-#### OTP
-- `POST /otp/send_otp/` - Send OTP
-- `POST /otp/verify_otp/` - Verify OTP
+#### OTP (Removed - Not Used)
+- OTP functionality has been removed from the application
 
 #### Dashboard & Statistics
 - `GET /dashboard/stats/` - Get dashboard statistics
 - `GET /vendors/{id}/statistics/` - Get vendor statistics (KoraQuest only)
 
 #### KoraQuest Specific
-- `POST /qr/purchases/` - Get purchases by QR code
 - `POST /purchases/complete-pickup/` - Complete purchase pickup
 
 ## 🔐 Role-Based Access Control
@@ -125,7 +122,7 @@ The API uses Django's session-based authentication. Most endpoints require authe
 - Full access to all endpoints
 - Manage all purchases
 - View vendor statistics
-- Process QR code purchases
+- Process purchase confirmations
 - Complete purchase pickups
 
 ## 📊 Features
@@ -136,8 +133,6 @@ The API uses Django's session-based authentication. Most endpoints require authe
 - ✅ Purchase system with status tracking
 - ✅ Bookmark system
 - ✅ Product reviews and ratings
-- ✅ QR code generation and scanning
-- ✅ OTP verification system
 - ✅ Role-based access control
 
 ### Advanced Features

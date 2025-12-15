@@ -160,7 +160,7 @@ Changes:
 
 ### Value Proposition
 - Wide variety of shoe categories
-- Secure transactions with QR codes
+- Secure transactions
 - Home delivery or pickup options
 - Vendor commission model (80/20)
 - Trusted platform for shoe trading

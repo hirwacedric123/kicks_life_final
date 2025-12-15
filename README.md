@@ -15,7 +15,6 @@ Kicks_life 250 is a Django-based e-commerce web application specialized in buyin
 - Advanced search and filtering
 - Product reviews and ratings
 - Wishlist/Bookmark system
-- QR Code-based secure checkout
 - Order tracking
 
 ### 🏪 Vendor Features
@@ -26,10 +25,9 @@ Kicks_life 250 is a Django-based e-commerce web application specialized in buyin
 - Commission system (80/20 split)
 
 ### 🎯 Platform Features
-- QR Code Generation and Processing
 - Account Upgrading (From Buyer to Vendor)
 - Media File Management
-- Email Integration (with OTP support)
+- Email Integration
 - Secure payment processing
 - Home delivery or pickup options
 
@@ -224,7 +222,6 @@ kicks_life_final/
 
 ## 📝 Additional Notes
 
-- QR codes are configured to update every 10 minutes for security
 - Static files are served from the 'staticfiles' directory
 - Media files (product images) are stored in the 'media' directory
 - The project uses Django's built-in authentication system with custom user model

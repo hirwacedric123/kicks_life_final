@@ -49,5 +49,5 @@ primary_region = "iad"  # Change to your preferred region (iad = Washington DC, 
     tls_skip_verify = false
 
 [processes]
-  app = "gunicorn KoraQuest.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120"
+  app = "sh -c 'gunicorn KoraQuest.wsgi:application --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 2 --timeout 120'"
 
