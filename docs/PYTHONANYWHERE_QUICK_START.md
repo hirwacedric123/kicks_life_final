@@ -1,25 +1,21 @@
-# PythonAnywhere Quick Start Guide
+# PythonAnywhere Quick Start Guide (Free Plan)
 
-## ⚠️ Custom Domain Requirement
-
-**PythonAnywhere FREE plan does NOT support custom domains.**
-
-You need the **Hacker plan ($5/month)** to use `kickslife250.com`.
+## Your Deployment Info
+- **PythonAnywhere Username**: `kickslife250`
+- **Site URL**: `https://kickslife250.pythonanywhere.com`
+- **Plan**: FREE (no custom domain support)
 
 ## Quick Deployment Steps
 
-### 1. Upgrade Account
-- Go to PythonAnywhere → Account → Upgrade
-- Select **Hacker plan ($5/month)**
-
-### 2. Upload Code
+### 1. Upload Code
 ```bash
 cd ~
 git clone https://github.com/yourusername/kicks_life_final.git
 cd kicks_life_final
 ```
+(Replace `yourusername` with your actual GitHub username)
 
-### 3. Set Up Virtual Environment
+### 2. Set Up Virtual Environment
 ```bash
 python3.10 -m venv venv
 source venv/bin/activate
@@ -27,15 +23,13 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
+### 3. Configure Environment Variables
 In **Web** tab → **Environment variables**, add:
 - `SECRET_KEY` - Generate with: `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`
 - `DEBUG=False`
-- `ALLOWED_HOSTS=kickslife250.com,www.kickslife250.com,yourusername.pythonanywhere.com`
-- `CUSTOM_DOMAIN=kickslife250.com`
-- `PYTHONANYWHERE_USERNAME=yourusername` (your PythonAnywhere username)
+- `PYTHONANYWHERE_USERNAME=kickslife250` (automatically configures ALLOWED_HOSTS)
 
-### 5. Run Setup Commands
+### 4. Run Setup Commands
 ```bash
 cd ~/kicks_life_final
 source venv/bin/activate
@@ -44,28 +38,19 @@ python manage.py collectstatic --noinput
 python manage.py createsuperuser  # Optional
 ```
 
-### 6. Configure Web App
-1. **Web** tab → **Add a new web app** → **Manual configuration**
-2. Edit **WSGI configuration file** (see full guide for code)
+### 5. Configure Web App
+1. **Web** tab → **Add a new web app** → **Manual configuration** → Python 3.10
+2. Edit **WSGI configuration file** (see below for code)
 3. **Static files** mapping:
-   - `/static/` → `/home/yourusername/kicks_life_final/staticfiles`
-   - `/media/` → `/home/yourusername/kicks_life_final/media`
-4. **Domain**: Set to `www.kickslife250.com`
+   - `/static/` → `/home/kickslife250/kicks_life_final/staticfiles`
+   - `/media/` → `/home/kickslife250/kicks_life_final/media`
 
-### 7. Configure DNS (DreamHost)
-1. Log in to DreamHost
-2. Go to **Domains** → **DNS**
-3. Add CNAME record:
-   - Name: `www`
-   - Value: `webapp-XXXX.pythonanywhere.com` (from PythonAnywhere)
-4. Set up redirect: `kickslife250.com` → `www.kickslife250.com`
-
-### 8. Enable SSL
+### 6. Enable SSL (Optional but Recommended)
 1. **Web** tab → **Security** → **HTTPS certificate**
 2. Select **Auto-renewed Let's Encrypt certificate**
-3. Enter domain: `www.kickslife250.com`
+3. Enter domain: `kickslife250.pythonanywhere.com`
 
-### 9. Reload
+### 7. Reload
 Click the green **Reload** button in **Web** tab
 
 ## WSGI Configuration
@@ -76,13 +61,14 @@ Replace content of WSGI file with:
 import os
 import sys
 
-path = '/home/yourusername/kicks_life_final'
+path = '/home/kickslife250/kicks_life_final'
 if path not in sys.path:
     sys.path.insert(0, path)
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'KoraQuest.settings'
+os.environ['PYTHONANYWHERE_USERNAME'] = 'kickslife250'
 
-activate_this = '/home/yourusername/kicks_life_final/venv/bin/activate_this.py'
+activate_this = '/home/kickslife250/kicks_life_final/venv/bin/activate_this.py'
 if os.path.exists(activate_this):
     exec(open(activate_this).read(), {'__file__': activate_this})
 
@@ -90,23 +76,23 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 ```
 
-**Replace `yourusername` with your actual PythonAnywhere username!**
-
 ## Common Issues
 
 ### 502 Bad Gateway
-- Check WSGI file path
+- Check WSGI file path is `/home/kickslife250/kicks_life_final`
 - Verify virtual environment path
 - Check error logs in **Web** tab
+- Ensure `PYTHONANYWHERE_USERNAME` is set in environment variables
 
 ### Static Files Not Loading
 - Run `python manage.py collectstatic --noinput`
 - Verify static files mapping in **Web** tab
+- Check that `STATIC_ROOT` is set correctly
 
 ### Domain Not Working
-- Wait for DNS propagation (up to 48 hours)
-- Verify DNS records in DreamHost
-- Check domain is set in PythonAnywhere **Web** tab
+- Verify `PYTHONANYWHERE_USERNAME=kickslife250` is set
+- Check that site is accessible at `kickslife250.pythonanywhere.com`
+- Check error logs in **Web** tab
 
 ## Updating Your App
 
@@ -121,7 +107,21 @@ python manage.py collectstatic --noinput
 
 Then **Reload** in **Web** tab.
 
+## Free Plan Limitations
+
+- ✅ Site available at `kickslife250.pythonanywhere.com`
+- ✅ SSL/HTTPS support
+- ❌ No custom domain (requires Hacker plan $5/month)
+- ⚠️ Web app sleeps after 3 months of inactivity
+- ⚠️ Limited CPU time (100 seconds per day)
+
+## Quick Reference
+
+- **Project Path**: `/home/kickslife250/kicks_life_final`
+- **Virtual Environment**: `/home/kickslife250/kicks_life_final/venv`
+- **Static Files**: `/home/kickslife250/kicks_life_final/staticfiles`
+- **Media Files**: `/home/kickslife250/kicks_life_final/media`
+
 ## Full Documentation
 
 See `PYTHONANYWHERE_DEPLOYMENT.md` for detailed instructions.
-
