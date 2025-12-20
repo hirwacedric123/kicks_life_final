@@ -32,10 +32,41 @@ Quick reference guide for configuring `kickslife250.com` DNS records to point to
 
 ### Step 1: Access DNS Management
 
+**⚠️ IMPORTANT: Do NOT change nameservers!** Keep DreamHost's nameservers and just add DNS records.
+
+**Method 1: Through Manage Registrations (Most Common)**
+
 1. Log in to DreamHost panel: https://panel.dreamhost.com
 2. Click **Domains** in the left sidebar
-3. Click **DNS** (or **Manage DNS**)
+3. Click **Manage Registrations** (under Domain Names section)
 4. Find `kickslife250.com` in the list and click on it
+5. You should see tabs at the top: **Contact Information**, **DNS**, **Nameservers**, etc.
+6. Click on the **DNS** tab
+7. You should now see a section to add DNS records (A, CNAME, MX, TXT, etc.)
+
+**Method 2: Direct DNS Link**
+
+1. Log in to DreamHost panel: https://panel.dreamhost.com
+2. Go directly to: https://panel.dreamhost.com/index.cgi?tree=domain.dns
+3. Find `kickslife250.com` in the list and click on it
+4. You should see DNS records management
+
+**Method 3: Search in Panel**
+
+1. Log in to DreamHost panel: https://panel.dreamhost.com
+2. Use the search bar at the top and type: "DNS" or "kickslife250.com"
+3. Look for options related to DNS management
+
+**What You Should See:**
+- A list of existing DNS records (A, CNAME, MX, TXT, etc.)
+- An "Add" or "+" button to add new records
+- Options to edit or delete existing records
+- Fields for Type, Name, Value, TTL
+
+**What You Should NOT See:**
+- "Use DreamHost's nameservers" buttons
+- Nameserver input fields
+- "Use another host's nameservers" option
 
 ### Step 2: Add Root Domain A Record
 
@@ -85,6 +116,22 @@ If there are existing A records pointing to DreamHost IPs:
 - Make sure you're logged into the correct DreamHost account
 - The domain must be registered/transferred to DreamHost
 - Try: **Domains** → **Manage Domains** → Click domain → **DNS** tab
+- **Make sure you're adding DNS records, NOT changing nameservers**
+- Look for a section that lists existing DNS records (A, CNAME, MX, etc.)
+
+### Wrong Section - Nameservers vs DNS Records
+
+**If you see "Nameservers" section:**
+- ❌ You're in the wrong place
+- ❌ Do NOT change nameservers to PythonAnywhere
+- ✅ Keep DreamHost's nameservers
+- ✅ Look for "DNS" or "DNS Records" section instead
+- ✅ You need to add A and CNAME records, not change nameservers
+
+**Correct section should show:**
+- List of existing DNS records (A, CNAME, MX, TXT, etc.)
+- "Add Record" or "+" button to add new records
+- Options to edit/delete existing records
 
 ### Records Not Saving
 

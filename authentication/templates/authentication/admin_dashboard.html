@@ -714,7 +714,7 @@
             {% for product in products %}
             <div class="product-card">
                 {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali" class="product-image">
                 {% else %}
                 <div class="product-image" style="background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
                     <i class="bi bi-image" style="font-size: 2rem; color: var(--text-muted);"></i>

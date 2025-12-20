@@ -1,0 +1,75 @@
+{% load static %}
+{% comment %}
+SEO Meta Tags Component
+Usage: {% include 'authentication/seo_meta.html' %}
+Context variables (optional):
+- seo_title: Page title (defaults to block title or site name)
+- seo_description: Meta description
+- seo_keywords: Meta keywords
+- seo_image: Image URL for social sharing
+- seo_type: og:type (default: "website")
+- seo_url: Canonical URL (defaults to current URL)
+{% endcomment %}
+
+{% comment %} Set default values {% endcomment %}
+{% if not seo_title %}{% if title %}{% else %}KicksLife250 - Premium Sneakers in Kigali, Rwanda{% endif %}{% endif %}
+{% if not seo_description %}Shop authentic sneakers and shoes in Kigali, Rwanda. Best prices, fast delivery, 100% authentic. Buy shoes online in Kigali today!{% endif %}
+{% if not seo_keywords %}shoes in Kigali, sneakers Rwanda, buy shoes online Kigali, authentic sneakers Rwanda, shoe store Kigali, best shoes Kigali, affordable sneakers Rwanda{% endif %}
+{% if not seo_type %}website{% endif %}
+
+{% comment %} Build absolute URLs {% endcomment %}
+{% if not seo_url %}{{ request.build_absolute_uri }}{% endif %}
+{% if not seo_image %}
+    {% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{% static 'images/logo.png' %}
+{% else %}
+    {% if 'http' not in seo_image %}
+        {% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{{ seo_image }}
+    {% else %}
+        {{ seo_image }}
+    {% endif %}
+{% endif %}
+
+<!-- Primary Meta Tags -->
+<meta name="title" content="{% if seo_title %}{{ seo_title }}{% elif title %}{{ title }}{% else %}KicksLife250 - Premium Sneakers in Kigali, Rwanda{% endif %}">
+<meta name="description" content="{% if seo_description %}{{ seo_description }}{% else %}Shop authentic sneakers and shoes in Kigali, Rwanda. Best prices, fast delivery, 100% authentic. Buy shoes online in Kigali today!{% endif %}">
+<meta name="keywords" content="{% if seo_keywords %}{{ seo_keywords }}{% else %}shoes in Kigali, sneakers Rwanda, buy shoes online Kigali, authentic sneakers Rwanda, shoe store Kigali, best shoes Kigali, affordable sneakers Rwanda{% endif %}">
+<meta name="author" content="KicksLife250">
+<meta name="robots" content="index, follow">
+<meta name="language" content="English">
+<meta name="revisit-after" content="7 days">
+<meta name="geo.region" content="RW">
+<meta name="geo.placename" content="Kigali">
+<meta name="geo.position" content="-1.9441;30.0619">
+<meta name="ICBM" content="-1.9441, 30.0619">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="{% if seo_type %}{{ seo_type }}{% else %}website{% endif %}">
+<meta property="og:url" content="{% if seo_url %}{{ seo_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+<meta property="og:title" content="{% if seo_title %}{{ seo_title }}{% elif title %}{{ title }}{% else %}KicksLife250 - Premium Sneakers in Kigali, Rwanda{% endif %}">
+<meta property="og:description" content="{% if seo_description %}{{ seo_description }}{% else %}Shop authentic sneakers and shoes in Kigali, Rwanda. Best prices, fast delivery, 100% authentic. Buy shoes online in Kigali today!{% endif %}">
+<meta property="og:image" content="{% if seo_image %}{% if 'http' not in seo_image %}{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{{ seo_image }}{% else %}{{ seo_image }}{% endif %}{% else %}{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{% static 'images/logo.png' %}{% endif %}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="KicksLife250">
+<meta property="og:locale" content="en_RW">
+<meta property="og:locale:alternate" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="{% if seo_url %}{{ seo_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+<meta name="twitter:title" content="{% if seo_title %}{{ seo_title }}{% elif title %}{{ title }}{% else %}KicksLife250 - Premium Sneakers in Kigali, Rwanda{% endif %}">
+<meta name="twitter:description" content="{% if seo_description %}{{ seo_description }}{% else %}Shop authentic sneakers and shoes in Kigali, Rwanda. Best prices, fast delivery, 100% authentic. Buy shoes online in Kigali today!{% endif %}">
+<meta name="twitter:image" content="{% if seo_image %}{% if 'http' not in seo_image %}{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{{ seo_image }}{% else %}{{ seo_image }}{% endif %}{% else %}{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{% static 'images/logo.png' %}{% endif %}">
+<meta name="twitter:site" content="@kickslife250">
+<meta name="twitter:creator" content="@kickslife250">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="{% if seo_url %}{{ seo_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+
+<!-- Alternate Languages -->
+<link rel="alternate" hreflang="en" href="{% if seo_url %}{{ seo_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+<link rel="alternate" hreflang="x-default" href="{% if seo_url %}{{ seo_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+<link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">

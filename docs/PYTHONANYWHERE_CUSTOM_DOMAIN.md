@@ -37,6 +37,9 @@ Since your domain `kickslife250.com` is registered with DreamHost, follow these 
    - Click on **Domains** in the left sidebar
    - Click on **DNS** (or **Manage DNS**)
    - Find and click on `kickslife250.com` in the domain list
+   - **⚠️ IMPORTANT:** Make sure you're in the DNS Records section, NOT the Nameservers section
+   - You should see existing DNS records (A, CNAME, MX, etc.) or an "Add Record" button
+   - **Do NOT change nameservers** - keep DreamHost's nameservers and just add DNS records
 
 3. **Add CNAME Record for www:**
    - Click **Add Record** or **+ Add**

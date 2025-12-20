@@ -5,6 +5,16 @@
 
 {% block title %}{{ post.title }} - KicksLife250{% endblock %}
 
+{% block seo_meta %}
+<!-- SEO Meta Tags for Product -->
+{% include 'authentication/seo_meta.html' with seo_title=seo_title seo_description=seo_description seo_keywords=seo_keywords seo_image=seo_image seo_type=seo_type %}
+{% endblock %}
+
+{% block structured_data %}
+<!-- Structured Data for Product -->
+{% include 'authentication/structured_data.html' with product=product breadcrumbs=breadcrumbs %}
+{% endblock %}
+
 {% block content %}
 <style>
     ::-webkit-scrollbar{
@@ -137,7 +147,7 @@
                 <div class="product-gallery">
                     <!-- Main product image display -->
                     <div class="main-image-container">
-                        <img src="{{ post.image.url }}" id="main-product-image" alt="{{ post.title }}" loading="lazy">
+                        <img src="{{ post.image.url }}" id="main-product-image" alt="{{ post.title }} - {{ post.get_category_display }} in Kigali, Rwanda | Buy Online at KicksLife250" loading="lazy">
                     </div>
                     
                     <!-- Auxiliary image thumbnails -->
@@ -145,12 +155,12 @@
                     <div class="auxiliary-images-container">
                         <!-- Include main image as first thumbnail -->
                         <div class="thumbnail-item active" data-img-url="{{ post.image.url }}">
-                            <img src="{{ post.image.url }}" alt="Main image" loading="lazy">
+                            <img src="{{ post.image.url }}" alt="{{ post.title }} - Main View" loading="lazy">
                         </div>
                         
                         {% for aux_image in auxiliary_images %}
                         <div class="thumbnail-item" data-img-url="{{ aux_image.image.url }}">
-                            <img src="{{ aux_image.image.url }}" alt="Product view {{ forloop.counter }}" loading="lazy">
+                            <img src="{{ aux_image.image.url }}" alt="{{ post.title }} - View {{ forloop.counter }} - {{ post.get_category_display }} in Kigali" loading="lazy">
                         </div>
                         {% endfor %}
                     </div>
@@ -171,7 +181,7 @@
                 <!-- Product Header -->
                 <div class="product-header">
                     <div class="product-title-section">
-                        <h1>{{ post.title }}</h1>
+                        <h1>{{ post.title }} - Buy in Kigali, Rwanda</h1>
                         <div class="product-meta">
                             <span class="category-badge">{{ post.get_category_display }}</span>
                             {% if post.inventory > 10 %}
@@ -198,8 +208,12 @@
 
                 <!-- Description Section -->
                 <div class="description-section">
-                    <h2>Description</h2>
+                    <h2>Product Description</h2>
                     <p>{{ post.description|linebreaksbr }}</p>
+                    <p style="margin-top: 1rem; color: var(--text-secondary);">
+                        <strong>Buy {{ post.get_category_display }} in Kigali:</strong> This {{ post.get_category_display|lower }} is available for purchase in Kigali, Rwanda. 
+                        Order online and get fast delivery across Kigali. Authentic {{ post.get_category_display|lower }} with secure payment options.
+                    </p>
                 </div>
 
                 <!-- Seller Info -->
@@ -327,6 +341,50 @@
         </div>
     </div>
 </div>
+
+<!-- Related Products Section for Internal Linking -->
+{% if related_products %}
+<section class="related-products-section" style="padding: 4rem 0; background: var(--bg-secondary, #1a1a1a); margin-top: 3rem;">
+    <div class="marketplace-container">
+        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary, #ffffff);">
+            More <span style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ post.get_category_display }}</span> in Kigali
+        </h2>
+        <p style="color: var(--text-secondary, rgba(255, 255, 255, 0.7)); margin-bottom: 2rem; font-size: 1.1rem;">
+            Shop more {{ post.get_category_display|lower }} in Kigali, Rwanda. Browse related shoes and sneakers available for purchase online.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem;">
+            {% for related in related_products %}
+            <div style="background: var(--bg-card, rgba(0, 0, 0, 0.4)); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border, rgba(251, 191, 36, 0.25)); transition: all 0.3s ease;">
+                <a href="{% url 'post_detail' related.id %}" style="text-decoration: none; color: inherit;">
+                    <div style="position: relative; height: 200px; overflow: hidden;">
+                        <img src="{{ related.image.url }}" alt="{{ related.title }} - {{ related.get_category_display }} in Kigali" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary, #ffffff);">
+                            {{ related.title }}
+                        </h3>
+                        <p style="color: var(--accent-gold, #fbbf24); font-size: 1.25rem; font-weight: 700; margin: 0;">
+                            RWF {{ related.price|floatformat:0 }}
+                        </p>
+                        <p style="color: var(--text-muted, rgba(255, 255, 255, 0.5)); font-size: 0.9rem; margin-top: 0.5rem;">
+                            {{ related.get_category_display }} • Buy in Kigali
+                        </p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{% url 'dashboard' %}?category={{ post.category }}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #0a0a0a; text-decoration: none; border-radius: 50px; font-weight: 600; transition: all 0.3s ease;">
+                View All {{ post.get_category_display }} in Kigali
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <!-- Payment Modal -->
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">

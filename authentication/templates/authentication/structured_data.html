@@ -1,0 +1,149 @@
+{% load static %}
+{% comment %}
+Structured Data (Schema.org JSON-LD) Component
+Usage: {% include 'authentication/structured_data.html' %}
+Context variables:
+- structured_data_type: "organization", "product", "localbusiness", etc.
+- product: Post object (for product schema)
+- organization_data: dict with organization info
+{% endcomment %}
+
+{% comment %} Organization Schema (default for all pages) {% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "KicksLife250",
+  "alternateName": "KicksLife250 - Premium Sneakers in Kigali",
+  "url": "{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}",
+  "logo": "{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{% static 'images/logo.png' %}",
+  "description": "Kigali's premier destination for authentic sneakers and shoes. Shop quality kicks with fast delivery across Rwanda.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Kigali",
+    "addressCountry": "RW",
+    "addressRegion": "Kigali"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+250-792-033-104",
+    "contactType": "Customer Service",
+    "areaServed": "RW",
+    "availableLanguage": ["en"]
+  },
+  "sameAs": [
+    "https://www.facebook.com/kickslife250",
+    "https://www.instagram.com/kickslife250",
+    "https://twitter.com/kickslife250"
+  ]
+}
+</script>
+
+{% comment %} LocalBusiness Schema {% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "KicksLife250",
+  "image": "{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{% static 'images/logo.png' %}",
+  "description": "Premium sneaker store in Kigali, Rwanda. Buy authentic shoes online with fast delivery.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Kigali",
+    "addressRegion": "Kigali",
+    "addressCountry": "RW"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": -1.9441,
+    "longitude": 30.0619
+  },
+  "url": "{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}",
+  "telephone": "+250-792-033-104",
+  "priceRange": "$$",
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "opens": "09:00",
+      "closes": "20:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Sunday",
+      "opens": "10:00",
+      "closes": "18:00"
+    }
+  ],
+  "areaServed": {
+    "@type": "City",
+    "name": "Kigali"
+  }
+}
+</script>
+
+{% comment %} Product Schema (if product is provided) {% endcomment %}
+{% if product %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ product.title|escapejs }}",
+  "description": "{{ product.description|truncatewords:50|escapejs }}",
+  "image": [
+    "{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{{ product.image.url }}"
+  ],
+  "brand": {
+    "@type": "Brand",
+    "name": "KicksLife250"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{% url 'post_detail' product.id %}",
+    "priceCurrency": "RWF",
+    "price": "{{ product.price }}",
+    "priceValidUntil": "2025-12-31",
+    "availability": "{% if product.inventory > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+    "itemCondition": "https://schema.org/NewCondition",
+    "seller": {
+      "@type": "Organization",
+      "name": "KicksLife250"
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": "Kigali"
+    }
+  },
+  "aggregateRating": {% if product.review_count > 0 %}{
+    "@type": "AggregateRating",
+    "ratingValue": "{{ product.average_rating|floatformat:1 }}",
+    "reviewCount": "{{ product.review_count }}",
+    "bestRating": "5",
+    "worstRating": "1"
+  }{% else %}null{% endif %},
+  "category": "{{ product.get_category_display }}",
+  "sku": "{{ product.id }}"
+}
+</script>
+{% endif %}
+
+{% comment %} BreadcrumbList Schema (if breadcrumbs provided) {% endcomment %}
+{% if breadcrumbs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {% for crumb in breadcrumbs %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "name": "{{ crumb.name|escapejs }}",
+      "item": "{% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{{ crumb.url }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+

@@ -863,8 +863,25 @@ def post_detail(request, post_id):
         guest_likes = request.session.get('guest_likes', [])
         is_liked = post_id in guest_likes
     
+    # Get related products (same category, different product)
+    related_products = Post.objects.filter(
+        category=post.category,
+        inventory__gt=0
+    ).exclude(id=post.id).order_by('-total_purchases', '-created_at')[:4]
+    
+    # Get products from same category for internal linking
+    category_products = Post.objects.filter(
+        category=post.category,
+        inventory__gt=0
+    ).exclude(id=post.id).order_by('-created_at')[:6]
+    
+    # SEO context
+    seo_description = f"{post.title} - {post.description[:150]}... Buy now in Kigali, Rwanda. Price: RWF {post.price}. Fast delivery available."
+    seo_keywords = f"{post.title}, {post.get_category_display}, shoes in Kigali, sneakers Rwanda, buy online, {post.get_category_display} Kigali"
+    
     context = {
         'post': post,
+        'product': post,  # For structured data
         'is_bookmarked': is_bookmarked,
         'has_purchased': has_purchased,
         'is_owner': is_owner,
@@ -872,6 +889,20 @@ def post_detail(request, post_id):
         'reviews': reviews,
         'user_review': user_review,
         'is_liked': is_liked,
+        'related_products': related_products,
+        'category_products': category_products,
+        # SEO
+        'seo_title': f"{post.title} - KicksLife250 | Buy in Kigali, Rwanda",
+        'seo_description': seo_description,
+        'seo_keywords': seo_keywords,
+        'seo_image': post.image.url if post.image else None,
+        'seo_type': 'product',
+        'breadcrumbs': [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Shop', 'url': '/dashboard/'},
+            {'name': post.get_category_display, 'url': f'/dashboard/?category={post.category}'},
+            {'name': post.title, 'url': request.path}
+        ],
     }
     
     return render(request, 'authentication/post_detail.html', context)
@@ -1434,3 +1465,86 @@ def edit_product(request, product_id):
     return render(request, 'authentication/edit_product.html', context)
 
 # Removed all QR Code, OTP, and Kicks_life 250 views for simplified single-vendor workflow
+
+# ============================================
+# SEO: Robots.txt and Sitemap
+# ============================================
+
+def robots_txt(request):
+    """Generate robots.txt file"""
+    content = """User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /settings/
+Disallow: /purchases/
+Disallow: /bookmarks/
+Disallow: /create-product/
+Disallow: /edit-product/
+
+# Sitemap
+Sitemap: {protocol}://{host}/sitemap.xml
+""".format(
+        protocol='https' if request.is_secure() else 'http',
+        host=request.get_host()
+    )
+    return HttpResponse(content, content_type='text/plain')
+
+def sitemap_xml(request):
+    """Generate XML sitemap"""
+    from django.urls import reverse
+    
+    protocol = 'https' if request.is_secure() else 'http'
+    host = request.get_host()
+    base_url = f"{protocol}://{host}"
+    
+    # Get all products
+    products = Post.objects.filter(inventory__gt=0).order_by('-updated_at')
+    
+    # Get current time
+    now = timezone.now()
+    
+    # Build sitemap XML
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    # Homepage
+    xml.append('  <url>')
+    xml.append(f'    <loc>{base_url}/</loc>')
+    xml.append('    <lastmod>{}</lastmod>'.format(now.strftime('%Y-%m-%d')))
+    xml.append('    <changefreq>daily</changefreq>')
+    xml.append('    <priority>1.0</priority>')
+    xml.append('  </url>')
+    
+    # Dashboard/Shop page
+    xml.append('  <url>')
+    xml.append(f'    <loc>{base_url}/dashboard/</loc>')
+    xml.append('    <lastmod>{}</lastmod>'.format(now.strftime('%Y-%m-%d')))
+    xml.append('    <changefreq>daily</changefreq>')
+    xml.append('    <priority>0.9</priority>')
+    xml.append('  </url>')
+    
+    # Product pages
+    for product in products:
+        product_url = f"{base_url}{reverse('post_detail', args=[product.id])}"
+        lastmod = product.updated_at.strftime('%Y-%m-%d') if product.updated_at else now.strftime('%Y-%m-%d')
+        xml.append('  <url>')
+        xml.append(f'    <loc>{product_url}</loc>')
+        xml.append(f'    <lastmod>{lastmod}</lastmod>')
+        xml.append('    <changefreq>weekly</changefreq>')
+        xml.append('    <priority>0.8</priority>')
+        xml.append('  </url>')
+    
+    # Category pages
+    for category_code, category_name in Post.CATEGORY_CHOICES:
+        category_url = f"{base_url}/dashboard/?category={category_code}"
+        xml.append('  <url>')
+        xml.append(f'    <loc>{category_url}</loc>')
+        xml.append('    <lastmod>{}</lastmod>'.format(now.strftime('%Y-%m-%d')))
+        xml.append('    <changefreq>weekly</changefreq>')
+        xml.append('    <priority>0.7</priority>')
+        xml.append('  </url>')
+    
+    xml.append('</urlset>')
+    
+    return HttpResponse('\n'.join(xml), content_type='application/xml')

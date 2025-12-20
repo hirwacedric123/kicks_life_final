@@ -110,7 +110,7 @@
                             <td>
                                 <div class="product-info">
                                     {% if product.image %}
-                                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                                    <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda" class="product-image">
                                     {% endif %}
                                     <span class="product-title">{{ product.title|truncatechars:25 }}</span>
                                 </div>

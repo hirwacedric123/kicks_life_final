@@ -1410,13 +1410,13 @@
                     KIGALI'S #1 SNEAKER STORE
                 </span>
                 <h1 class="hero-title">
-                    <span class="line"><span>Step Into</span></span>
-                    <span class="line"><span>Your <span class="gradient-text">Style</span></span></span>
-                    <span class="line"><span>Today</span></span>
+                    <span class="line"><span>Premium <span class="gradient-text">Sneakers</span> in Kigali</span></span>
+                    <span class="line"><span>Buy Authentic <span class="gradient-text">Shoes</span> Online</span></span>
+                    <span class="line"><span>Fast Delivery Across Rwanda</span></span>
                 </h1>
                 <p class="hero-description">
-                    Discover authentic sneakers from top brands. 
-                    Premium quality kicks with fast delivery across Kigali.
+                    Shop authentic sneakers and shoes in Kigali, Rwanda. Best prices on premium quality kicks with same-day delivery. 
+                    Buy shoes online in Kigali - 100% authentic, trusted by thousands of customers.
                 </p>
                 <div class="hero-buttons">
                     <a href="{% url 'dashboard' %}" class="btn-hero-primary">
@@ -1443,7 +1443,7 @@
                         {% for product in featured_products %}
                         <div class="slide {% if forloop.first %}active{% endif %}">
                             <div class="slide-image-wrapper">
-                                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="slide-image">
+                                <img src="{{ product.image.url }}" alt="{{ product.title }} - Buy Authentic Sneakers in Kigali, Rwanda" class="slide-image">
                                 <div class="slide-overlay">
                                     <span class="slide-price">RWF {{ product.price|floatformat:0 }}</span>
                                     <h3 class="slide-title">{{ product.title }}</h3>
@@ -1522,8 +1522,8 @@
     <div class="container">
         <div class="section-header fade-in">
             <span class="section-badge">Categories</span>
-            <h2 class="section-title">Shop by <span class="gradient-text">Style</span></h2>
-            <p class="section-subtitle">Find the perfect kicks for every occasion</p>
+            <h2 class="section-title">Shop <span class="gradient-text">Sneakers & Shoes</span> in Kigali</h2>
+            <p class="section-subtitle">Find the perfect kicks for every occasion - Running shoes, casual sneakers, and more in Rwanda</p>
         </div>
         
         <div class="categories-grid">
@@ -1547,8 +1547,8 @@
     <div class="container">
         <div class="section-header fade-in">
             <span class="section-badge">Just Dropped</span>
-            <h2 class="section-title">Fresh <span class="gradient-text">Kicks</span></h2>
-            <p class="section-subtitle">The latest sneakers just landed in Kigali</p>
+            <h2 class="section-title">New <span class="gradient-text">Sneakers</span> in Kigali</h2>
+            <p class="section-subtitle">The latest authentic sneakers just arrived in Kigali, Rwanda. Shop new releases and trending shoes online.</p>
         </div>
         
         <div class="products-grid">
@@ -1556,7 +1556,7 @@
             <div class="product-card fade-in delay-{{ forloop.counter }}">
                 <div class="product-image-container">
                     <span class="product-badge">NEW</span>
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image">
                     <div class="product-actions">
                         <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
                             <i class="bi bi-eye"></i> View
@@ -1597,8 +1597,8 @@
     <div class="container">
         <div class="section-header fade-in">
             <span class="section-badge">Why Us</span>
-            <h2 class="section-title">Why Choose <span class="gradient-text">KicksLife250</span>?</h2>
-            <p class="section-subtitle">Kigali's trusted destination for authentic sneakers</p>
+            <h2 class="section-title">Why Buy <span class="gradient-text">Shoes in Kigali</span> from Us?</h2>
+            <p class="section-subtitle">Kigali's #1 trusted destination for authentic sneakers and shoes in Rwanda. Best prices, fast delivery, 100% authentic.</p>
         </div>
         
         <div class="features-grid">
@@ -1643,15 +1643,15 @@
     <div class="container">
         <div class="section-header fade-in">
             <span class="section-badge">Most Popular</span>
-            <h2 class="section-title">Top <span class="gradient-text">Sellers</span></h2>
-            <p class="section-subtitle">The kicks everyone in Kigali is wearing</p>
+            <h2 class="section-title">Best Selling <span class="gradient-text">Sneakers</span> in Kigali</h2>
+            <p class="section-subtitle">The most popular shoes and sneakers everyone in Kigali, Rwanda is buying. Top-rated authentic kicks.</p>
         </div>
         
         <div class="products-grid">
             {% for product in best_sellers|slice:":4" %}
             <div class="product-card fade-in delay-{{ forloop.counter }}">
                 <div class="product-image-container">
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image">
                     <div class="product-actions">
                         <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
                             <i class="bi bi-eye"></i> View
@@ -1736,6 +1736,67 @@
                 <input type="email" class="cta-input" placeholder="Enter your email address" required>
                 <button type="submit" class="cta-button">Subscribe</button>
         </form>
+        </div>
+    </div>
+</section>
+
+<!-- Location-Specific SEO Content Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header fade-in">
+            <h2 class="section-title">Buy <span class="gradient-text">Shoes in Kigali</span>, Rwanda</h2>
+            <p class="section-subtitle">Your trusted online shoe store in Rwanda's capital</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="feature-card" style="height: 100%;">
+                    <div class="feature-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h3 class="feature-title">Shoes in Kigali</h3>
+                    <p class="feature-description">
+                        Looking for the best shoes in Kigali? KicksLife250 is Kigali's premier destination for authentic sneakers and shoes. 
+                        We offer same-day delivery across Kigali, making it easy to buy shoes online in Rwanda's capital city. 
+                        From running shoes to casual sneakers, find your perfect pair in Kigali.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="feature-card" style="height: 100%;">
+                    <div class="feature-icon">
+                        <i class="bi bi-globe"></i>
+                    </div>
+                    <h3 class="feature-title">Sneakers in Rwanda</h3>
+                    <p class="feature-description">
+                        Shop authentic sneakers in Rwanda with KicksLife250. We deliver quality shoes across Rwanda with secure payment options. 
+                        Whether you're in Kigali, Huye, or anywhere in Rwanda, buy shoes online and get fast delivery. 
+                        Best prices on authentic sneakers in Rwanda.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="feature-card">
+                    <h3 class="feature-title">Why Shop for Shoes Online in Kigali?</h3>
+                    <p class="feature-description" style="text-align: left;">
+                        <strong>Convenience:</strong> Buy shoes in Kigali without leaving your home. Browse our collection of authentic sneakers and shoes, 
+                        place your order, and get same-day delivery in Kigali.<br><br>
+                        
+                        <strong>Best Selection:</strong> We offer the widest selection of sneakers in Rwanda. From Nike and Adidas to premium brands, 
+                        find the perfect shoes in Kigali for any occasion.<br><br>
+                        
+                        <strong>Authentic Guarantee:</strong> Every pair of shoes in Kigali from KicksLife250 is 100% authentic. 
+                        We verify all products to ensure you get genuine sneakers in Rwanda.<br><br>
+                        
+                        <strong>Fast Delivery:</strong> Order shoes online in Kigali and get same-day delivery. We deliver across Kigali and throughout Rwanda, 
+                        making it easy to buy sneakers in Rwanda.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </section>

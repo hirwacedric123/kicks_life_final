@@ -38,6 +38,10 @@ urlpatterns = [
     
     # REST API endpoints
     path('api/rest/', include('authentication.api_urls')),
+    
+    # SEO: Robots.txt and Sitemap
+    path('robots.txt', views.robots_txt, name='robots_txt'),
+    path('sitemap.xml', views.sitemap_xml, name='sitemap_xml'),
 ]
 
 # API endpoints
