@@ -24,10 +24,10 @@
         to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Guest Banner */
+    /* Guest Banner - Gold & Black Theme */
     .guest-banner {
-        background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(67, 97, 238, 0.15) 100%);
-        border: 1px solid rgba(0, 245, 212, 0.3);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+        border: 1px solid rgba(251, 191, 36, 0.3);
         border-radius: 16px;
         padding: 16px 24px;
         margin-bottom: 24px;
@@ -51,7 +51,7 @@
     
     .guest-banner-content i {
         font-size: 24px;
-        color: #00f5d4;
+        color: #fbbf24;
     }
     
     .guest-banner-content p {
@@ -75,13 +75,13 @@
     }
     
     .guest-banner-btn.primary {
-        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
-        color: #0a0a0f;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #0a0a0a;
     }
     
     .guest-banner-btn.primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.4);
+        box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
     }
     
     .guest-banner-btn.secondary {
@@ -518,13 +518,25 @@
     .marketplace-container {
         max-width: 1600px;
         margin: 0 auto;
-        padding: 40px;
+        padding: 20px;
     }
 
     .product-detail-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 40px;
+        gap: 30px;
+    }
+    
+    /* Mobile Responsive - Stack columns */
+    @media (max-width: 968px) {
+        .marketplace-container {
+            padding: 16px;
+        }
+        
+        .product-detail-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
     }
 
     /* Product Gallery Section */
@@ -556,8 +568,14 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: radial-gradient(circle at 30% 30%, rgba(0, 245, 212, 0.05) 0%, transparent 50%);
+        background: radial-gradient(circle at 30% 30%, rgba(251, 191, 36, 0.05) 0%, transparent 50%);
         pointer-events: none;
+    }
+    
+    @media (max-width: 768px) {
+        .main-image-container {
+            height: 350px;
+        }
     }
 
     #main-product-image {
@@ -601,13 +619,25 @@
 
     .thumbnail-item:hover {
         transform: translateY(-4px);
-        border-color: rgba(0, 245, 212, 0.5);
-        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.2);
+        border-color: rgba(251, 191, 36, 0.5);
+        box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
     }
 
     .thumbnail-item.active {
-        border-color: #00f5d4;
-        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.3);
+        border-color: #fbbf24;
+        box-shadow: 0 8px 25px rgba(251, 191, 36, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+        .auxiliary-images-container {
+            padding: 16px;
+            gap: 8px;
+        }
+        
+        .thumbnail-item {
+            width: 60px;
+            height: 60px;
+        }
     }
 
     .empty-image {
@@ -623,7 +653,7 @@
     .empty-image i {
         font-size: 5rem;
         margin-bottom: 1rem;
-        color: rgba(0, 245, 212, 0.3);
+        color: rgba(251, 191, 36, 0.3);
     }
 
     /* Product Info Section */
@@ -644,11 +674,22 @@
     }
 
     .product-title-section h1 {
-        font-size: 2rem;
+        font-size: clamp(1.5rem, 4vw, 2rem);
         font-weight: 700;
         color: #ffffff;
         margin-bottom: 12px;
         line-height: 1.3;
+    }
+    
+    @media (max-width: 768px) {
+        .product-info-card {
+            padding: 20px;
+        }
+        
+        .product-header {
+            flex-direction: column;
+            gap: 16px;
+        }
     }
 
     .product-meta {
@@ -659,12 +700,12 @@
 
     .category-badge {
         padding: 8px 16px;
-        background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(67, 97, 238, 0.15) 100%);
-        color: #00f5d4;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+        color: #fbbf24;
         border-radius: 50px;
         font-size: 13px;
         font-weight: 600;
-        border: 1px solid rgba(0, 245, 212, 0.3);
+        border: 1px solid rgba(251, 191, 36, 0.3);
     }
 
     .status-badge {
@@ -707,24 +748,24 @@
     }
 
     .btn-edit:hover {
-        background: rgba(0, 245, 212, 0.1);
-        color: #00f5d4;
-        border-color: rgba(0, 245, 212, 0.3);
+        background: rgba(251, 191, 36, 0.1);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.3);
         transform: translateY(-2px);
     }
 
     .price-section {
         margin-bottom: 28px;
         padding: 20px;
-        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(67, 97, 238, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
         border-radius: 16px;
-        border: 1px solid rgba(0, 245, 212, 0.2);
+        border: 1px solid rgba(251, 191, 36, 0.2);
     }
 
     .current-price {
-        font-size: 2.5rem;
+        font-size: clamp(1.8rem, 5vw, 2.5rem);
         font-weight: 800;
-        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -769,15 +810,15 @@
         height: 52px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid rgba(0, 245, 212, 0.3);
+        border: 2px solid rgba(251, 191, 36, 0.3);
     }
 
     .seller-avatar-placeholder {
         width: 52px;
         height: 52px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
-        color: #0a0a0f;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #0a0a0a;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -807,7 +848,7 @@
     }
     
     .post-time i {
-        color: #00f5d4;
+        color: #fbbf24;
     }
 
     .action-section {
@@ -834,7 +875,7 @@
     }
     
     .status-message i {
-        color: #00f5d4;
+        color: #fbbf24;
         font-size: 18px;
     }
 
@@ -846,8 +887,8 @@
 
     .btn-primary {
         padding: 18px 28px;
-        background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
-        color: #0a0a0f;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #0a0a0a;
         border: none;
         border-radius: 16px;
         font-weight: 700;
@@ -856,6 +897,7 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
+        transition: all 0.3s ease;
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         text-decoration: none;
         width: 100%;
@@ -880,8 +922,15 @@
 
     .btn-primary:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(0, 245, 212, 0.4);
-        color: #0a0a0f;
+        box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4);
+        color: #0a0a0a;
+    }
+    
+    @media (max-width: 768px) {
+        .btn-primary {
+            padding: 16px 24px;
+            font-size: 15px;
+        }
     }
 
     .btn-secondary {
@@ -901,9 +950,9 @@
     }
 
     .btn-secondary:hover {
-        background: rgba(0, 245, 212, 0.1);
-        color: #00f5d4;
-        border-color: rgba(0, 245, 212, 0.3);
+        background: rgba(251, 191, 36, 0.1);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.3);
         transform: translateY(-2px);
     }
 
@@ -958,10 +1007,26 @@
     }
 
     .btn-action:hover {
-        background: rgba(0, 245, 212, 0.1);
-        color: #00f5d4;
-        border-color: rgba(0, 245, 212, 0.3);
+        background: rgba(251, 191, 36, 0.1);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.3);
         transform: translateY(-3px);
+    }
+    
+    @media (max-width: 768px) {
+        .social-actions {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .btn-action {
+            padding: 12px 8px;
+            font-size: 12px;
+        }
+        
+        .btn-action span {
+            font-size: 11px;
+        }
     }
 
     .btn-action i {
@@ -979,9 +1044,9 @@
     }
 
     .bookmark-btn.active {
-        background: rgba(0, 245, 212, 0.15);
-        color: #00f5d4;
-        border-color: rgba(0, 245, 212, 0.3);
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.3);
     }
     
     .like-btn.active {

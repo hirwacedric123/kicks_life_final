@@ -1093,6 +1093,154 @@
         background-color: var(--bg-primary, #0a0a0a) !important;
     }
     
+    /* ============================================
+       CONTACTS SECTION
+       ============================================ */
+    
+    .contacts-section {
+        padding: 6rem 0;
+        background: var(--bg-secondary, #1a1a1a) !important;
+        background-color: var(--bg-secondary, #1a1a1a) !important;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .contacts-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--glass-border, rgba(251, 191, 36, 0.25)), transparent);
+    }
+    
+    .contacts-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        align-items: start;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .contacts-info {
+        animation: fadeInLeft 1s ease forwards;
+    }
+    
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .contacts-title {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--text-primary, #ffffff) !important;
+        line-height: 1.2;
+    }
+    
+    .contacts-title .gradient-text {
+        background: linear-gradient(135deg, var(--accent-gold, #fbbf24) 0%, var(--accent-amber, #f59e0b) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .contacts-description {
+        color: var(--text-secondary, rgba(255, 255, 255, 0.7)) !important;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        margin-bottom: 2.5rem;
+    }
+    
+    .contact-methods {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .contact-method {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 1.5rem;
+        background: var(--glass-bg, rgba(255, 255, 255, 0.08));
+        border: 1px solid var(--glass-border, rgba(251, 191, 36, 0.25));
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .contact-method:hover {
+        transform: translateX(10px);
+        border-color: var(--accent-gold, #fbbf24);
+        background: rgba(251, 191, 36, 0.1);
+        box-shadow: 0 10px 30px rgba(251, 191, 36, 0.2);
+    }
+    
+    .contact-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--gradient-primary, linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%));
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #0a0a0a;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .contact-method:hover .contact-icon {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+    }
+    
+    .contact-details {
+        flex: 1;
+    }
+    
+    .contact-label {
+        color: var(--text-muted, rgba(255, 255, 255, 0.5)) !important;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .contact-value {
+        color: var(--text-primary, #ffffff) !important;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: block;
+    }
+    
+    .contact-value:hover {
+        color: var(--accent-gold, #fbbf24) !important;
+    }
+    
+    @media (max-width: 768px) {
+        .contact-method {
+            padding: 1.25rem;
+        }
+        
+        .contacts-container {
+            max-width: 100%;
+        }
+    }
+    
     /* Professional UI Enhancements */
     .category-card, .product-card, .feature-card, .testimonial-card {
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1591,6 +1739,76 @@
         </div>
     </div>
 </section>
+
+<!-- Contacts Section -->
+<section id="contact" class="contacts-section section-alt">
+    <div class="container">
+        <div class="contacts-container">
+            <!-- Contact Information -->
+            <div class="contacts-info">
+                <h2 class="contacts-title">
+                    Get in <span class="gradient-text">Touch</span>
+                </h2>
+                <p class="contacts-description">
+                    Have questions? We're here to help! Reach out to us through any of the channels below, 
+                    or send us a message using the form. We'll get back to you as soon as possible.
+                </p>
+                
+                <div class="contact-methods">
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Location</div>
+                            <div class="contact-value">Kigali, Rwanda</div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Phone</div>
+                            <a href="tel:+250792033104" class="contact-value">+250 792 033 104</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">WhatsApp</div>
+                            <a href="https://wa.me/250792033104" target="_blank" class="contact-value">Chat with us on WhatsApp</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Email</div>
+                            <a href="mailto:kickslife250@gmail.com" class="contact-value">kickslife250@gmail.com</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="bi bi-clock-fill"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Business Hours</div>
+                            <div class="contact-value">Mon - Sat: 9:00 AM - 8:00 PM<br>Sunday: 10:00 AM - 6:00 PM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}
@@ -1658,7 +1876,7 @@
             if (icon.classList.contains('bi-heart')) {
                 icon.classList.remove('bi-heart');
                 icon.classList.add('bi-heart-fill');
-                this.style.color = 'var(--accent-pink)';
+                this.style.color = 'var(--accent-gold, #fbbf24)';
             } else {
                 icon.classList.remove('bi-heart-fill');
                 icon.classList.add('bi-heart');
@@ -1680,5 +1898,6 @@
             shape.style.transform = `translate(${xPos}px, ${yPos}px)`;
         });
     });
+    
 </script>
 {% endblock %}

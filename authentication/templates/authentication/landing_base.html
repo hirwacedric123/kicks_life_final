@@ -810,6 +810,7 @@
             <ul class="nav-links" id="navLinks">
                     <li><a href="{% url 'landing_page' %}" class="active"><i class="bi bi-house"></i>Home</a></li>
                     <li><a href="{% url 'dashboard' %}"><i class="bi bi-bag"></i>Shop</a></li>
+                    <li><a href="{% url 'landing_page' %}#contact"><i class="bi bi-envelope"></i>Contact</a></li>
                 {% if user.is_authenticated %}
                         <li><a href="{% url 'purchase_history' %}"><i class="bi bi-box-seam"></i>Orders</a></li>
                         <li><a href="{% url 'bookmarks' %}"><i class="bi bi-heart"></i>Wishlist</a></li>
@@ -864,7 +865,7 @@
                 <div class="footer-section">
                 <h4>Support</h4>
                     <ul>
-                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="{% url 'landing_page' %}#contact">Contact Us</a></li>
                         <li><a href="#">Shipping Info</a></li>
                         <li><a href="#">Returns</a></li>
                         <li><a href="#">FAQ</a></li>

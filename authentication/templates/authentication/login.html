@@ -375,11 +375,12 @@
             transition: transform 0.15s ease;
         }
         
-        /* Back to Home Button */
+        /* Back to Home Button - Fixed position to avoid logo overlap */
         .back-to-home {
             position: fixed;
             top: 24px;
-            left: 24px;
+            right: 24px;
+            left: auto;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -393,14 +394,14 @@
             font-size: 14px;
             font-weight: 500;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 1000;
+            z-index: 1001;
         }
         
         .back-to-home:hover {
             background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
             border-color: rgba(251, 191, 36, 0.4);
             color: #ffbb10;
-            transform: translateX(-5px);
+            transform: translateX(5px);
             box-shadow: 0 10px 30px rgba(251, 191, 36, 0.15);
         }
         
@@ -410,13 +411,14 @@
         }
         
         .back-to-home:hover i {
-            transform: translateX(-3px);
+            transform: translateX(3px);
         }
         
         @media (max-width: 768px) {
             .back-to-home {
                 top: 16px;
-                left: 16px;
+                right: 16px;
+                left: auto;
                 padding: 10px 16px;
                 font-size: 13px;
             }
