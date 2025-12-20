@@ -708,11 +708,25 @@
         .card-price {
             font-size: 18px;
             font-weight: 700;
-            background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+            background: var(--gradient-primary, linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Fix price visibility on hover */
+        .pinterest-card:hover .card-price {
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            background-clip: unset !important;
+            color: #ffffff !important;
+            text-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.5);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
         }
         
         .card-vendor {

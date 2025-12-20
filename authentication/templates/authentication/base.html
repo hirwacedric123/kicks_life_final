@@ -12,30 +12,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     {% load static %}
+    <link rel="stylesheet" href="{% static 'css/colors.css' %}">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="icon" href="{% static 'images/apple-touch-icon.svg' %}">
     <style>
-        /* Light Theme CSS Variables */
+        /* Gold & Black Theme CSS Variables */
+        /* DARK MODE ONLY - Light mode will be added later */
         :root {
             --kora-white: #ffffff;
-            --kora-blue: #60a5fa;
-            --kora-blue-light: #93c5fd;
-            --kora-blue-dark: #3b82f6;
+            --kora-blue: var(--accent-gold, #fbbf24);
+            --kora-blue-light: var(--accent-amber, #f59e0b);
+            --kora-blue-dark: var(--accent-purple, #d97706);
             --kora-black: #1f2937;
             --kora-light-gray: #f7f7f7;
             --kora-gray: #e5e7eb;
             --kora-dark-gray: #9ca3af;
-            --kora-border: #e5e7eb;
-            --kora-text: #1f2937;
-            --kora-text-secondary: #6b7280;
-            --kora-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            --kora-card-bg: #ffffff;
-            --kora-hover-bg: #f3f4f6;
+            --kora-border: rgba(251, 191, 36, 0.25);
+            --kora-text: #ffffff;
+            --kora-text-secondary: rgba(255, 255, 255, 0.7);
+            --kora-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            --kora-card-bg: rgba(0, 0, 0, 0.4);
+            --kora-hover-bg: rgba(0, 0, 0, 0.6);
         }
 
         body {
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            background: var(--dark-gradient, linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%));
             color: #ffffff;
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
@@ -76,7 +78,7 @@
         }
 
         .nav-brand {
-            color: var(--kora-blue) !important;
+            color: var(--accent-gold, #fbbf24) !important;
             display: flex;
             align-items: center;
             text-decoration: none;
@@ -85,7 +87,7 @@
         .nav-brand i {
             margin-right: 8px;
             font-size: 2rem;
-            color: var(--kora-blue);
+            color: var(--accent-gold, #fbbf24);
         }
 
         .nav-tab {

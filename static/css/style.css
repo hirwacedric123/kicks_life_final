@@ -1,4 +1,6 @@
 /* KoraQuest Custom Styles */
+/* NOTE: These are legacy variables. Dark mode colors are overridden in base.html */
+/* DARK MODE IS THE DEFAULT - Light mode will be added later */
 
 :root {
     --kora-white: #ffffff;
