@@ -37,11 +37,12 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Add PythonAnywhere domain if available (detect from environment or server name)
-PYTHONANYWHERE_USERNAME = os.environ.get('PYTHONANYWHERE_USERNAME')
+PYTHONANYWHERE_USERNAME = os.environ.get('PYTHONANYWHERE_USERNAME', 'kickslife250')  # Default to kickslife250
 if PYTHONANYWHERE_USERNAME:
     # Add PythonAnywhere subdomain
     pythonanywhere_domain = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
-    ALLOWED_HOSTS.append(pythonanywhere_domain)
+    if pythonanywhere_domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(pythonanywhere_domain)
 
 # Also check if we're running on PythonAnywhere by checking the server name
 # This is useful if PYTHONANYWHERE_USERNAME is not set
@@ -67,12 +68,20 @@ if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 
 # Add PythonAnywhere domains to CSRF trusted origins
-if PYTHONANYWHERE_USERNAME:
-    pythonanywhere_domain = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
+# Always add kickslife250.pythonanywhere.com
+pythonanywhere_domain = 'kickslife250.pythonanywhere.com'
+if pythonanywhere_domain not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.extend([
         f'https://{pythonanywhere_domain}',
         f'http://{pythonanywhere_domain}'
     ])
+if PYTHONANYWHERE_USERNAME:
+    pythonanywhere_domain = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
+    if pythonanywhere_domain not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.extend([
+            f'https://{pythonanywhere_domain}',
+            f'http://{pythonanywhere_domain}'
+        ])
 
 # Detect PythonAnywhere custom domain from HTTP_HOST (when custom domain is configured)
 # This works when PythonAnywhere forwards the custom domain
@@ -112,6 +121,17 @@ if CUSTOM_DOMAIN:
             f'https://{domain}',
             f'http://{domain}'
         ])
+
+# Add custom domain directly (kickslife250.com) - hardcoded for PythonAnywhere
+# This ensures the domain is always allowed even if CUSTOM_DOMAIN env var is not set
+CUSTOM_DOMAINS = ['kickslife250.com', 'www.kickslife250.com']
+for domain in CUSTOM_DOMAINS:
+    if domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(domain)
+    CSRF_TRUSTED_ORIGINS.extend([
+        f'https://{domain}',
+        f'http://{domain}'
+    ])
 
 # CSRF Configuration
 CSRF_COOKIE_SECURE = not DEBUG  # Secure in production
@@ -320,12 +340,19 @@ if RENDER_EXTERNAL_HOSTNAME:
     CORS_ALLOWED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 
 # Add PythonAnywhere domain to CORS if available
+# Always add kickslife250.pythonanywhere.com
+pythonanywhere_domain = 'kickslife250.pythonanywhere.com'
+CORS_ALLOWED_ORIGINS.extend([
+    f'https://{pythonanywhere_domain}',
+    f'http://{pythonanywhere_domain}'
+])
 if PYTHONANYWHERE_USERNAME:
     pythonanywhere_domain = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
-    CORS_ALLOWED_ORIGINS.extend([
-        f'https://{pythonanywhere_domain}',
-        f'http://{pythonanywhere_domain}'
-    ])
+    if f'https://{pythonanywhere_domain}' not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.extend([
+            f'https://{pythonanywhere_domain}',
+            f'http://{pythonanywhere_domain}'
+        ])
     # Also add custom domain if set
     if CUSTOM_DOMAIN:
         for domain in [CUSTOM_DOMAIN, f'www.{CUSTOM_DOMAIN}']:
@@ -349,6 +376,13 @@ if CUSTOM_DOMAIN:
             f'https://{domain}',
             f'http://{domain}'
         ])
+
+# Add custom domain directly to CORS (kickslife250.com) - hardcoded for PythonAnywhere
+for domain in CUSTOM_DOMAINS:
+    CORS_ALLOWED_ORIGINS.extend([
+        f'https://{domain}',
+        f'http://{domain}'
+    ])
 
 CORS_ALLOW_CREDENTIALS = True
 
