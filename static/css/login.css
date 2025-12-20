@@ -3,22 +3,26 @@
    Modern, Animated, Innovative Design
    ============================================ */
 
-/* CSS Custom Properties */
+/* CSS Custom Properties - Premium Shoe Marketplace Color Scheme - Gold & Black */
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --dark-gradient: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    --primary-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    --secondary-gradient: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    --dark-gradient: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
     --glass-bg: rgba(255, 255, 255, 0.08);
-    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-border: rgba(251, 191, 36, 0.25);
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.7);
     --text-muted: rgba(255, 255, 255, 0.5);
-    --accent-cyan: #00f5d4;
-    --accent-pink: #f72585;
-    --accent-purple: #7b2cbf;
-    --accent-blue: #4361ee;
-    --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.4);
+    --accent-cyan: #fbbf24;
+    --accent-pink: #f59e0b;
+    --accent-purple: #d97706;
+    --accent-blue: #fbbf24;
+    --accent-gold: #fbbf24;
+    --accent-amber: #f59e0b;
+    --accent-black: #000000;
+    --accent-dark: #1a1a1a;
+    --shadow-glow: 0 0 40px rgba(251, 191, 36, 0.5);
     --font-main: 'Clash Display', 'Poppins', sans-serif;
 }
 
@@ -50,12 +54,21 @@ body {
     min-height: 100vh;
     width: 100vw;
     display: flex;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: var(--dark-gradient);
     position: relative;
 }
 
-/* Animated gradient orbs */
+/* Allow scrolling on mobile */
+@media (max-width: 979px) {
+    body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+/* Animated gradient orbs with premium gold/black theme */
 body::before {
     content: '';
     position: fixed;
@@ -64,11 +77,128 @@ body::before {
     width: 200%;
     height: 200%;
     background: 
-        radial-gradient(circle at 20% 80%, rgba(120, 0, 255, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 0, 128, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(0, 212, 255, 0.2) 0%, transparent 40%);
+        radial-gradient(circle at 20% 80%, rgba(251, 191, 36, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(217, 119, 6, 0.2) 0%, transparent 40%),
+        radial-gradient(circle at 10% 30%, rgba(251, 191, 36, 0.18) 0%, transparent 40%),
+        radial-gradient(circle at 90% 70%, rgba(245, 158, 11, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.3) 0%, transparent 60%);
     animation: floatOrbs 20s ease-in-out infinite;
     z-index: 0;
+}
+
+/* Premium shoe pattern overlay with enhanced visibility */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 2px,
+            rgba(251, 191, 36, 0.08) 2px,
+            rgba(251, 191, 36, 0.08) 4px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.1) 2px,
+            rgba(0, 0, 0, 0.1) 4px
+        );
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Shoe-themed background icons */
+.shoe-background-elements {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.shoe-icon {
+    position: absolute;
+    font-size: 3rem;
+    color: rgba(251, 191, 36, 0.2);
+    animation: floatIcon 20s ease-in-out infinite;
+    filter: blur(1px);
+}
+
+.shoe-icon-1 {
+    top: 10%;
+    left: 5%;
+    animation-delay: 0s;
+    font-size: 4rem;
+}
+
+.shoe-icon-2 {
+    top: 20%;
+    right: 10%;
+    animation-delay: -3s;
+    color: rgba(245, 158, 11, 0.15);
+    font-size: 3.5rem;
+}
+
+.shoe-icon-3 {
+    bottom: 15%;
+    left: 8%;
+    animation-delay: -6s;
+    color: rgba(217, 119, 6, 0.2);
+    font-size: 3rem;
+}
+
+.shoe-icon-4 {
+    top: 50%;
+    right: 5%;
+    animation-delay: -9s;
+    color: rgba(251, 191, 36, 0.18);
+    font-size: 3.5rem;
+}
+
+.shoe-icon-5 {
+    bottom: 25%;
+    right: 15%;
+    animation-delay: -12s;
+    color: rgba(245, 158, 11, 0.2);
+    font-size: 3rem;
+}
+
+.shoe-icon-6 {
+    top: 30%;
+    left: 15%;
+    animation-delay: -15s;
+    color: rgba(245, 158, 11, 0.12);
+    font-size: 2.5rem;
+}
+
+@keyframes floatIcon {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+        opacity: 0.3;
+    }
+    25% {
+        transform: translate(30px, -30px) rotate(90deg) scale(1.1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-20px, 20px) rotate(180deg) scale(0.9);
+        opacity: 0.4;
+    }
+    75% {
+        transform: translate(20px, 30px) rotate(270deg) scale(1.05);
+        opacity: 0.45;
+    }
 }
 
 @keyframes floatOrbs {
@@ -93,29 +223,10 @@ body::before {
     perspective: 1000px;
 }
 
-/* Animated character image */
+/* Left side image completely removed */
 .body-container::after {
-    content: '';
-    position: fixed;
-    bottom: 0;
-    left: 5%;
-    width: 480px;
-    height: 600px;
-    background: url('../images/login.png') center bottom/contain no-repeat;
-    z-index: 10;
-    animation: 
-        characterEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards,
-        characterFloat 8s ease-in-out 1.2s infinite,
-        characterGlow 6s ease-in-out 1.2s infinite;
-    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
-    transform-origin: bottom center;
-    /* Mouse parallax effect */
-    transform: 
-        translateX(var(--parallax-x)) 
-        translateY(var(--parallax-y))
-        rotateY(var(--rotate-y))
-        rotateX(var(--rotate-x));
-    transition: transform 0.15s ease-out;
+    display: none !important;
+    content: none;
 }
 
 /* Floating motion - up/down with subtle sway */
@@ -297,25 +408,52 @@ body::before {
     min-height: 100vh;
     padding: 20px;
     z-index: 5;
+    width: 100%;
 }
 
 .sub-container {
     width: 100%;
     max-width: 480px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 2px solid rgba(251, 191, 36, 0.3);
     border-radius: 24px;
     padding: 2.5rem;
     box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.4),
+        0 25px 50px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(251, 191, 36, 0.2),
+        0 0 30px rgba(251, 191, 36, 0.1),
         inset 0 1px 1px rgba(255, 255, 255, 0.1);
     animation: cardEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation-delay: 0.2s;
     opacity: 0;
     overflow-y: auto;
-    max-height: 90vh;
+    overflow-x: hidden;
+    max-height: 95vh;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+}
+
+.sub-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sub-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.sub-container::-webkit-scrollbar-thumb {
+    background: rgba(251, 191, 36, 0.3);
+    border-radius: 10px;
+}
+
+.sub-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(251, 191, 36, 0.5);
 }
 
 @keyframes cardEntrance {
@@ -331,6 +469,8 @@ body::before {
 
 .login-container {
     width: 100%;
+    position: relative;
+    min-height: fit-content;
 }
 
 /* ============================================
@@ -360,12 +500,13 @@ body::before {
 
 .subtitle {
     text-align: center;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     font-size: 0.95rem;
     margin-bottom: 2rem;
     animation: fadeInUp 0.8s ease forwards;
     animation-delay: 0.4s;
     opacity: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes fadeInUp {
@@ -385,6 +526,8 @@ body::before {
 
 .form-container {
     width: 100%;
+    position: relative;
+    min-height: fit-content;
 }
 
 .form-container form {
@@ -422,12 +565,13 @@ body::before {
 
 /* Labels */
 .form-label {
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 0.9rem;
     margin-bottom: 8px;
     display: block;
     transition: all 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Input wrapper */
@@ -436,18 +580,209 @@ body::before {
     margin-bottom: 0;
 }
 
-/* Input fields */
+/* ============================================
+   BOOTSTRAP OVERRIDES - Force white text
+   Must override Bootstrap's default black text
+   ============================================ */
+
+/* Override Bootstrap form-control styles - MUST come after Bootstrap */
+.form-control,
+input.form-control,
+.form-control[type="text"],
+.form-control[type="email"],
+.form-control[type="password"],
+.form-control[type="tel"],
+.form-control[type="number"],
+.form-control[type="username"],
+.input-group .form-control,
+.form-group .form-control,
+.mb-4 .form-control,
+.form-container .form-control {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #fbbf24 !important;
+}
+
+/* Force white text when input has value (typing state) */
+.form-control:not(:placeholder-shown),
+input.form-control:not(:placeholder-shown),
+.form-control[type="text"]:not(:placeholder-shown),
+.form-control[type="email"]:not(:placeholder-shown),
+.form-control[type="password"]:not(:placeholder-shown),
+.form-control[type="tel"]:not(:placeholder-shown),
+.form-control[type="number"]:not(:placeholder-shown),
+.input-group .form-control:not(:placeholder-shown),
+.form-group .form-control:not(:placeholder-shown),
+.mb-4 .form-control:not(:placeholder-shown),
+.form-container .form-control:not(:placeholder-shown) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Text selection color */
+.form-control::selection,
+input.form-control::selection,
+.form-control::-moz-selection,
+input.form-control::-moz-selection {
+    background-color: rgba(251, 191, 36, 0.3) !important;
+    color: #ffffff !important;
+}
+
+/* Override Bootstrap focus - critical for typing */
+.form-control:focus,
+input.form-control:focus,
+.form-control[type="text"]:focus,
+.form-control[type="email"]:focus,
+.form-control[type="password"]:focus,
+.form-control[type="tel"]:focus,
+.form-control[type="number"]:focus,
+.input-group .form-control:focus,
+.form-group .form-control:focus,
+.mb-4 .form-control:focus,
+.form-container .form-control:focus {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #fbbf24 !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Override Bootstrap active state - critical for typing */
+.form-control:active,
+input.form-control:active,
+.form-control:focus:active,
+input.form-control:focus:active,
+.form-control[type="text"]:active,
+.form-control[type="email"]:active,
+.form-control[type="password"]:active,
+.form-control[type="tel"]:active,
+.form-control[type="number"]:active,
+.input-group .form-control:active,
+.form-group .form-control:active,
+.mb-4 .form-control:active,
+.form-container .form-control:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #fbbf24 !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Input fields - Force white text color */
 .input-group input,
-.form-control {
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="username"],
+.form-container input,
+.login-container input,
+.sub-container input {
     width: 100%;
     padding: 14px 18px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid rgba(251, 191, 36, 0.3) !important;
     border-radius: 14px;
     font-size: 0.95rem;
-    color: var(--text-primary);
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #fbbf24 !important;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: 'Outfit', sans-serif;
+}
+
+/* Critical: Force white text when input has any value (including while typing) */
+.input-group input[value]:not([value=""]),
+.form-control[value]:not([value=""]),
+input[type="text"][value]:not([value=""]),
+input[type="email"][value]:not([value=""]),
+input[type="password"][value]:not([value=""]),
+input[type="tel"][value]:not([value=""]),
+input[type="number"][value]:not([value=""]) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Force white text for all input states - including while actively typing */
+input:not(:placeholder-shown),
+.form-control:not(:placeholder-shown),
+.input-group input:not(:placeholder-shown) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Force white text on all input states */
+.input-group input,
+.form-control,
+.form-container input,
+.login-container input,
+.sub-container input {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Force white text on all input states including active - Override Bootstrap */
+.form-control:active,
+input.form-control:active,
+.form-control:focus:active,
+input.form-control:focus:active,
+.input-group input:active,
+.form-control:active,
+.form-container input:active,
+.login-container input:active,
+.sub-container input:active,
+.form-container .form-control:active,
+.login-container .form-control:active,
+.sub-container .form-control:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.input-group input:not(:placeholder-shown),
+.form-control:not(:placeholder-shown),
+.form-container input:not(:placeholder-shown),
+.login-container input:not(:placeholder-shown) {
+    color: #ffffff !important;
+}
+
+/* Ensure all input types have white text */
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="password"],
+.input-group input[type="tel"],
+.input-group input[type="number"],
+.input-group input[type="username"],
+.form-control[type="text"],
+.form-control[type="email"],
+.form-control[type="password"],
+.form-control[type="tel"],
+.form-control[type="number"] {
+    color: #ffffff !important;
+}
+
+.input-group input:-webkit-autofill,
+.form-control:-webkit-autofill,
+input[type="text"]:-webkit-autofill,
+input[type="email"]:-webkit-autofill,
+input[type="password"]:-webkit-autofill,
+input[type="tel"]:-webkit-autofill {
+    -webkit-text-fill-color: #ffffff !important;
+    color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.3) inset !important;
+    box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.3) inset !important;
+}
+
+.input-group input:-webkit-autofill:focus,
+.form-control:-webkit-autofill:focus,
+input[type="text"]:-webkit-autofill:focus,
+input[type="email"]:-webkit-autofill:focus,
+input[type="password"]:-webkit-autofill:focus,
+input[type="tel"]:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff !important;
+    color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.5) inset !important;
+    box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.5) inset !important;
 }
 
 .input-group input::placeholder,
@@ -455,15 +790,103 @@ body::before {
     color: var(--text-muted);
 }
 
-.input-group input:focus,
-.form-control:focus {
-    outline: none;
-    border-color: var(--accent-cyan);
-    background: rgba(255, 255, 255, 0.08);
+/* Override Bootstrap focus styles */
+.form-control:focus,
+input.form-control:focus,
+.form-control[type="text"]:focus,
+.form-control[type="email"]:focus,
+.form-control[type="password"]:focus,
+.form-control[type="tel"]:focus,
+.form-control[type="number"]:focus {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #fbbf24 !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border-color: var(--accent-gold) !important;
     box-shadow: 
-        0 0 0 4px rgba(0, 245, 212, 0.15),
-        0 0 30px rgba(0, 245, 212, 0.1);
+        0 0 0 4px rgba(251, 191, 36, 0.3),
+        0 0 30px rgba(251, 191, 36, 0.25),
+        inset 0 0 20px rgba(251, 191, 36, 0.1) !important;
+}
+
+/* Critical: Ensure white text when focused AND has value (actively typing) */
+.form-control:focus:not(:placeholder-shown),
+input.form-control:focus:not(:placeholder-shown),
+.form-control[type="text"]:focus:not(:placeholder-shown),
+.form-control[type="email"]:focus:not(:placeholder-shown),
+.form-control[type="password"]:focus:not(:placeholder-shown),
+.form-control[type="tel"]:focus:not(:placeholder-shown),
+.form-control[type="number"]:focus:not(:placeholder-shown),
+.input-group input:focus:not(:placeholder-shown),
+.form-group .form-control:focus:not(:placeholder-shown) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.input-group input:focus,
+.form-control:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="username"]:focus {
+    outline: none !important;
+    border-color: var(--accent-gold) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #fbbf24 !important;
+    box-shadow: 
+        0 0 0 4px rgba(251, 191, 36, 0.3),
+        0 0 30px rgba(251, 191, 36, 0.25),
+        inset 0 0 20px rgba(251, 191, 36, 0.1) !important;
     transform: translateY(-2px);
+}
+
+/* Override Bootstrap active state */
+.form-control:active,
+input.form-control:active,
+.form-control[type="text"]:active,
+.form-control[type="email"]:active,
+.form-control[type="password"]:active,
+.form-control[type="tel"]:active,
+.form-control[type="number"]:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ensure white text during active typing state */
+.input-group input:active,
+.form-control:active,
+input[type="text"]:active,
+input[type="email"]:active,
+input[type="password"]:active,
+input[type="tel"]:active,
+input[type="number"]:active,
+input[type="username"]:active,
+.input-group input:focus:active,
+.form-control:focus:active,
+input[type="text"]:focus:active,
+input[type="email"]:focus:active,
+input[type="password"]:focus:active,
+input[type="tel"]:focus:active,
+input[type="number"]:focus:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Ensure white text when input has value and is focused */
+.input-group input:focus:not(:placeholder-shown),
+.form-control:focus:not(:placeholder-shown),
+input[type="text"]:focus:not(:placeholder-shown),
+input[type="email"]:focus:not(:placeholder-shown),
+input[type="password"]:focus:not(:placeholder-shown),
+input[type="tel"]:focus:not(:placeholder-shown),
+input[type="number"]:focus:not(:placeholder-shown) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }
 
 /* Animated border gradient on focus */
@@ -473,12 +896,12 @@ body::before {
 
 @keyframes borderGlow {
     0%, 100% { 
-        border-color: var(--accent-cyan);
-        box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.15);
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
     }
     50% { 
-        border-color: var(--accent-pink);
-        box-shadow: 0 0 0 4px rgba(247, 37, 133, 0.15);
+        border-color: var(--accent-amber);
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
     }
 }
 
@@ -497,7 +920,7 @@ body::before {
 }
 
 .input-group .btn-outline-secondary:hover {
-    color: var(--accent-cyan);
+    color: var(--accent-gold);
     background: transparent;
     transform: translateY(-50%) scale(1.1);
 }
@@ -551,9 +974,10 @@ body::before {
 }
 
 .form-check-label {
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     font-size: 0.85rem;
     cursor: pointer;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .form-check-label a {
@@ -563,8 +987,8 @@ body::before {
 }
 
 .form-check-label a:hover {
-    color: var(--accent-pink);
-    text-shadow: 0 0 10px rgba(247, 37, 133, 0.5);
+    color: var(--accent-amber);
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
 }
 
 /* ============================================
@@ -582,7 +1006,7 @@ body::before {
 .sigin_button {
     width: 100%;
     padding: 16px 24px;
-    background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+    background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-amber) 100%);
     border: none;
     border-radius: 14px;
     color: #0a0a0a;
@@ -616,8 +1040,8 @@ body::before {
 .sigin_button:hover {
     transform: translateY(-3px);
     box-shadow: 
-        0 10px 30px rgba(0, 245, 212, 0.4),
-        0 0 0 1px rgba(0, 245, 212, 0.3);
+        0 10px 30px rgba(251, 191, 36, 0.4),
+        0 0 0 1px rgba(251, 191, 36, 0.3);
 }
 
 .sigin_button:hover::before {
@@ -669,13 +1093,14 @@ body::before {
 }
 
 .register_link p {
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     font-size: 0.9rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .register_link a,
 .text-primary {
-    color: var(--accent-cyan) !important;
+    color: var(--accent-gold) !important;
     text-decoration: none;
     font-weight: 600;
     position: relative;
@@ -696,8 +1121,8 @@ body::before {
 
 .register_link a:hover,
 .text-primary:hover {
-    color: var(--accent-pink) !important;
-    text-shadow: 0 0 15px rgba(247, 37, 133, 0.5);
+    color: var(--accent-amber) !important;
+    text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
 }
 
 .register_link a:hover::after,
@@ -759,27 +1184,17 @@ body::before {
 
 /* Large screens */
 @media (max-width: 1450px) {
-    .body-container::after {
-        width: 400px;
-        height: 450px;
-        left: 3%;
-    }
+    /* Character image removed */
 }
 
 /* Medium screens */
 @media (max-width: 1100px) {
-    .body-container::after {
-        width: 350px;
-        height: 400px;
-        left: 2%;
-    }
-    
     .sub-container {
         max-width: 420px;
     }
 }
 
-/* Tablets and below - hide character */
+/* Tablets and below */
 @media (max-width: 979px) {
     .body-container::after {
         display: none;
@@ -791,17 +1206,30 @@ body::before {
     
     body {
         justify-content: center;
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: 100vh;
     }
     
     .container {
         width: 100%;
         padding: 15px;
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        padding-top: 80px;
+        padding-bottom: 40px;
     }
     
     .sub-container {
         max-width: 100%;
-        max-height: 100vh;
+        max-height: calc(100vh - 120px);
         border-radius: 20px;
+        padding: 2rem;
+        background: rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-top: 0;
     }
     
     .logo {
@@ -812,6 +1240,18 @@ body::before {
         display: flex;
         justify-content: center;
     }
+
+    /* Hide some background icons on mobile for better visibility */
+    .shoe-icon-1,
+    .shoe-icon-3,
+    .shoe-icon-5 {
+        display: none;
+    }
+
+    .shoe-icon {
+        font-size: 2rem;
+        opacity: 0.2;
+    }
 }
 
 /* Mobile */
@@ -819,6 +1259,10 @@ body::before {
     .sub-container {
         padding: 1.5rem;
         border-radius: 16px;
+        background: rgba(0, 0, 0, 0.5);
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        overflow-x: hidden;
     }
     
     .login-title {
@@ -829,11 +1273,23 @@ body::before {
     .form-control {
         padding: 12px 14px;
         font-size: 0.9rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(251, 191, 36, 0.3);
+        color: #ffffff !important;
     }
     
     .sigin_button {
         padding: 14px 20px;
         font-size: 0.9rem;
+    }
+
+    /* Hide more icons on small screens */
+    .shoe-background-elements {
+        opacity: 0.3;
+    }
+
+    .shoe-icon {
+        font-size: 1.5rem;
     }
 }
 
@@ -855,7 +1311,69 @@ body::before {
     .form-control {
         padding: 10px 12px;
         font-size: 0.85rem;
+        color: #ffffff !important;
     }
+}
+
+/* ============================================
+   UNIVERSAL INPUT TEXT COLOR FIX
+   Ensures text is always visible when typing
+   ============================================ */
+
+/* Universal rule to force white text on ALL input elements in any state */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="username"],
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="text"]:active,
+input[type="email"]:active,
+input[type="password"]:active,
+input[type="tel"]:active,
+input[type="number"]:active,
+input[type="text"]:focus:active,
+input[type="email"]:focus:active,
+input[type="password"]:focus:active,
+input[type="tel"]:focus:active,
+input[type="number"]:focus:active,
+input[type="text"]:not(:placeholder-shown),
+input[type="email"]:not(:placeholder-shown),
+input[type="password"]:not(:placeholder-shown),
+input[type="tel"]:not(:placeholder-shown),
+input[type="number"]:not(:placeholder-shown),
+.form-control,
+.form-control:focus,
+.form-control:active,
+.form-control:focus:active,
+.form-control:not(:placeholder-shown),
+.form-control:focus:not(:placeholder-shown),
+.input-group input,
+.input-group input:focus,
+.input-group input:active,
+.input-group input:focus:active,
+.input-group input:not(:placeholder-shown),
+.input-group input:focus:not(:placeholder-shown),
+.sub-container input,
+.sub-container input:focus,
+.sub-container input:active,
+.sub-container input:focus:active,
+.login-container input,
+.login-container input:focus,
+.login-container input:active,
+.login-container input:focus:active,
+.form-container input,
+.form-container input:focus,
+.form-container input:active,
+.form-container input:focus:active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #fbbf24 !important;
 }
 
 /* ============================================
@@ -871,11 +1389,11 @@ body::before {
     right: -2px;
     bottom: -2px;
     background: linear-gradient(45deg, 
-        var(--accent-cyan), 
-        var(--accent-pink), 
-        var(--accent-purple), 
-        var(--accent-blue),
-        var(--accent-cyan));
+        var(--accent-gold), 
+        var(--accent-amber), 
+        var(--accent-black), 
+        var(--accent-gold),
+        var(--accent-amber));
     background-size: 300% 300%;
     border-radius: 26px;
     z-index: -1;
@@ -898,7 +1416,8 @@ body::before {
 .sub-container:hover {
     box-shadow: 
         0 30px 60px rgba(0, 0, 0, 0.5),
-        0 0 50px rgba(0, 245, 212, 0.1),
+        0 0 50px rgba(251, 191, 36, 0.2),
+        0 0 0 2px rgba(0, 0, 0, 0.3),
         inset 0 1px 1px rgba(255, 255, 255, 0.15);
 }
 
@@ -944,4 +1463,115 @@ body::before {
         flex: 0 0 100%;
         max-width: 100%;
     }
+}
+
+/* ============================================
+   FINAL CARET COLOR OVERRIDE - Maximum Priority
+   This rule must be last to override ALL other styles
+   ============================================ */
+
+/* Ultra-specific selectors to force gold caret - overrides Bootstrap and all other CSS */
+body .sub-container .form-container form .form-group .input-group input.form-control,
+body .sub-container .form-container form .mb-3 .input-group input.form-control,
+body .sub-container .form-container form .mb-4 .input-group input.form-control,
+body .sub-container .login-container .form-container form .form-group .input-group input.form-control,
+body .sub-container .login-container .form-container form .mb-3 .input-group input.form-control,
+body .sub-container .login-container .form-container form .mb-4 .input-group input.form-control,
+body .sub-container .form-container form .form-group .input-group input.form-control:focus,
+body .sub-container .form-container form .mb-3 .input-group input.form-control:focus,
+body .sub-container .form-container form .mb-4 .input-group input.form-control:focus,
+body .sub-container .login-container .form-container form .form-group .input-group input.form-control:focus,
+body .sub-container .login-container .form-container form .mb-3 .input-group input.form-control:focus,
+body .sub-container .login-container .form-container form .mb-4 .input-group input.form-control:focus,
+body .sub-container .form-container form .form-group .input-group input.form-control:active,
+body .sub-container .form-container form .mb-3 .input-group input.form-control:active,
+body .sub-container .form-container form .mb-4 .input-group input.form-control:active,
+body .sub-container .login-container .form-container form .form-group .input-group input.form-control:active,
+body .sub-container .login-container .form-container form .mb-3 .input-group input.form-control:active,
+body .sub-container .login-container .form-container form .mb-4 .input-group input.form-control:active,
+body .sub-container .form-container form .form-group .input-group input.form-control:focus:active,
+body .sub-container .form-container form .mb-3 .input-group input.form-control:focus:active,
+body .sub-container .form-container form .mb-4 .input-group input.form-control:focus:active,
+body .sub-container .login-container .form-container form .form-group .input-group input.form-control:focus:active,
+body .sub-container .login-container .form-container form .mb-3 .input-group input.form-control:focus:active,
+body .sub-container .login-container .form-container form .mb-4 .input-group input.form-control:focus:active,
+body .sub-container .form-container form input[type="text"],
+body .sub-container .form-container form input[type="email"],
+body .sub-container .form-container form input[type="password"],
+body .sub-container .form-container form input[type="tel"],
+body .sub-container .form-container form input[type="number"],
+body .sub-container .form-container form input[type="text"]:focus,
+body .sub-container .form-container form input[type="email"]:focus,
+body .sub-container .form-container form input[type="password"]:focus,
+body .sub-container .form-container form input[type="tel"]:focus,
+body .sub-container .form-container form input[type="number"]:focus,
+body .sub-container .form-container form input[type="text"]:active,
+body .sub-container .form-container form input[type="email"]:active,
+body .sub-container .form-container form input[type="password"]:active,
+body .sub-container .form-container form input[type="tel"]:active,
+body .sub-container .form-container form input[type="number"]:active,
+body .sub-container .form-container form input[type="text"]:focus:active,
+body .sub-container .form-container form input[type="email"]:focus:active,
+body .sub-container .form-container form input[type="password"]:focus:active,
+body .sub-container .form-container form input[type="tel"]:focus:active,
+body .sub-container .form-container form input[type="number"]:focus:active {
+    caret-color: #fbbf24 !important;
+}
+
+/* ============================================
+   ABSOLUTE FINAL CARET COLOR OVERRIDE
+   Maximum specificity to override Bootstrap focus states
+   ============================================ */
+
+/* Ultra-high specificity for focused inputs - overrides everything */
+html body .sub-container .login-container .form-container form .form-group .input-group input.form-control:focus,
+html body .sub-container .login-container .form-container form .mb-3 .input-group input.form-control:focus,
+html body .sub-container .login-container .form-container form .mb-4 .input-group input.form-control:focus,
+html body .sub-container .form-container form .form-group .input-group input.form-control:focus,
+html body .sub-container .form-container form .mb-3 .input-group input.form-control:focus,
+html body .sub-container .form-container form .mb-4 .input-group input.form-control:focus,
+html body .sub-container .login-container .form-container form .form-group .input-group input[type="text"]:focus,
+html body .sub-container .login-container .form-container form .form-group .input-group input[type="email"]:focus,
+html body .sub-container .login-container .form-container form .form-group .input-group input[type="password"]:focus,
+html body .sub-container .login-container .form-container form .form-group .input-group input[type="tel"]:focus,
+html body .sub-container .login-container .form-container form .form-group .input-group input[type="number"]:focus,
+html body .sub-container .form-container form .form-group .input-group input[type="text"]:focus,
+html body .sub-container .form-container form .form-group .input-group input[type="email"]:focus,
+html body .sub-container .form-container form .form-group .input-group input[type="password"]:focus,
+html body .sub-container .form-container form .form-group .input-group input[type="tel"]:focus,
+html body .sub-container .form-container form .form-group .input-group input[type="number"]:focus,
+html body .sub-container .login-container .form-container form .mb-3 .input-group input[type="text"]:focus,
+html body .sub-container .login-container .form-container form .mb-3 .input-group input[type="email"]:focus,
+html body .sub-container .login-container .form-container form .mb-3 .input-group input[type="password"]:focus,
+html body .sub-container .login-container .form-container form .mb-3 .input-group input[type="tel"]:focus,
+html body .sub-container .login-container .form-container form .mb-3 .input-group input[type="number"]:focus,
+html body .sub-container .form-container form .mb-3 .input-group input[type="text"]:focus,
+html body .sub-container .form-container form .mb-3 .input-group input[type="email"]:focus,
+html body .sub-container .form-container form .mb-3 .input-group input[type="password"]:focus,
+html body .sub-container .form-container form .mb-3 .input-group input[type="tel"]:focus,
+html body .sub-container .form-container form .mb-3 .input-group input[type="number"]:focus,
+html body .sub-container .login-container .form-container form .mb-4 .input-group input[type="text"]:focus,
+html body .sub-container .login-container .form-container form .mb-4 .input-group input[type="email"]:focus,
+html body .sub-container .login-container .form-container form .mb-4 .input-group input[type="password"]:focus,
+html body .sub-container .login-container .form-container form .mb-4 .input-group input[type="tel"]:focus,
+html body .sub-container .login-container .form-container form .mb-4 .input-group input[type="number"]:focus,
+html body .sub-container .form-container form .mb-4 .input-group input[type="text"]:focus,
+html body .sub-container .form-container form .mb-4 .input-group input[type="email"]:focus,
+html body .sub-container .form-container form .mb-4 .input-group input[type="password"]:focus,
+html body .sub-container .form-container form .mb-4 .input-group input[type="tel"]:focus,
+html body .sub-container .form-container form .mb-4 .input-group input[type="number"]:focus {
+    caret-color: #fbbf24 !important;
+}
+
+/* Additional catch-all for any input that might be focused */
+input:focus,
+input.form-control:focus,
+.form-control:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="username"]:focus {
+    caret-color: #fbbf24 !important;
 }
