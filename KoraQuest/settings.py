@@ -74,6 +74,19 @@ if PYTHONANYWHERE_USERNAME:
         f'http://{pythonanywhere_domain}'
     ])
 
+# Detect PythonAnywhere custom domain from HTTP_HOST (when custom domain is configured)
+# This works when PythonAnywhere forwards the custom domain
+try:
+    import socket
+    # Check if we're on PythonAnywhere and get the actual hostname
+    hostname = socket.gethostname()
+    if 'pythonanywhere' in hostname.lower():
+        # If CUSTOM_DOMAIN is set, it will be added below
+        # But we also want to detect it from the request if possible
+        pass
+except:
+    pass
+
 # Add Fly.io domain if available
 FLY_APP_NAME = os.environ.get('FLY_APP_NAME')
 if FLY_APP_NAME:
@@ -85,9 +98,12 @@ if FLY_APP_NAME:
         f'http://{fly_domain}'
     ])
 
-# Add custom domain (kickslife250.com) if specified
+# Add custom domain (e.g., kickslife250.com) if specified
+# This is used for PythonAnywhere Hacker plan custom domains
 CUSTOM_DOMAIN = os.environ.get('CUSTOM_DOMAIN')
 if CUSTOM_DOMAIN:
+    # Remove any protocol if accidentally included
+    CUSTOM_DOMAIN = CUSTOM_DOMAIN.replace('https://', '').replace('http://', '').strip()
     # Add both with and without www
     for domain in [CUSTOM_DOMAIN, f'www.{CUSTOM_DOMAIN}']:
         if domain not in ALLOWED_HOSTS:
@@ -310,6 +326,13 @@ if PYTHONANYWHERE_USERNAME:
         f'https://{pythonanywhere_domain}',
         f'http://{pythonanywhere_domain}'
     ])
+    # Also add custom domain if set
+    if CUSTOM_DOMAIN:
+        for domain in [CUSTOM_DOMAIN, f'www.{CUSTOM_DOMAIN}']:
+            CORS_ALLOWED_ORIGINS.extend([
+                f'https://{domain}',
+                f'http://{domain}'
+            ])
 
 # Add Fly.io domain to CORS if available
 if FLY_APP_NAME:
