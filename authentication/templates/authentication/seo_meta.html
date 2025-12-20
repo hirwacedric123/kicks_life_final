@@ -11,23 +11,9 @@ Context variables (optional):
 - seo_url: Canonical URL (defaults to current URL)
 {% endcomment %}
 
-{% comment %} Set default values {% endcomment %}
-{% if not seo_title %}{% if title %}{% else %}KicksLife250 - Premium Sneakers in Kigali, Rwanda{% endif %}{% endif %}
-{% if not seo_description %}Shop authentic sneakers and shoes in Kigali, Rwanda. Best prices, fast delivery, 100% authentic. Buy shoes online in Kigali today!{% endif %}
-{% if not seo_keywords %}shoes in Kigali, sneakers Rwanda, buy shoes online Kigali, authentic sneakers Rwanda, shoe store Kigali, best shoes Kigali, affordable sneakers Rwanda{% endif %}
-{% if not seo_type %}website{% endif %}
-
-{% comment %} Build absolute URLs {% endcomment %}
-{% if not seo_url %}{{ request.build_absolute_uri }}{% endif %}
-{% if not seo_image %}
-    {% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{% static 'images/logo.png' %}
-{% else %}
-    {% if 'http' not in seo_image %}
-        {% if request.is_secure %}https://{% else %}http://{% endif %}{{ request.get_host }}{{ seo_image }}
-    {% else %}
-        {{ seo_image }}
-    {% endif %}
-{% endif %}
+{% comment %} 
+Set default values - these are only used in meta tags below, not displayed on page
+{% endcomment %}
 
 <!-- Primary Meta Tags -->
 <meta name="title" content="{% if seo_title %}{{ seo_title }}{% elif title %}{{ title }}{% else %}KicksLife250 - Premium Sneakers in Kigali, Rwanda{% endif %}">
