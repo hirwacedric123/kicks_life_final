@@ -161,17 +161,19 @@
 </div>
 
 <style>
-    /* Dark Theme Variables */
+    /* Dark Theme Variables - Gold & Black Theme */
     :root {
-        --bg-primary: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+        --bg-primary: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
         --card-bg: rgba(255, 255, 255, 0.03);
-        --card-border: rgba(255, 255, 255, 0.08);
+        --card-border: rgba(251, 191, 36, 0.25);
         --text-primary: #ffffff;
         --text-secondary: rgba(255, 255, 255, 0.7);
         --text-muted: rgba(255, 255, 255, 0.5);
-        --accent-cyan: #00f5d4;
-        --accent-pink: #f72585;
-        --gradient-primary: linear-gradient(135deg, #00f5d4 0%, #00bbf9 50%, #9b5de5 100%);
+        --accent-gold: #fbbf24;
+        --accent-amber: #f59e0b;
+        --accent-orange: #d97706;
+        --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        --gradient-secondary: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
         --input-bg: rgba(255, 255, 255, 0.05);
         --input-border: rgba(255, 255, 255, 0.1);
     }
@@ -202,7 +204,7 @@
     }
 
     .form-header {
-        background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(247, 37, 133, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
         border-bottom: 1px solid var(--card-border);
         color: var(--text-primary);
         padding: 30px;
@@ -228,9 +230,9 @@
 
     .btn-cancel {
         padding: 10px 20px;
-        background: rgba(247, 37, 133, 0.1);
-        border: 1px solid rgba(247, 37, 133, 0.3);
-        color: var(--accent-pink);
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
         border-radius: 50px;
         display: flex;
         align-items: center;
@@ -241,10 +243,10 @@
     }
 
     .btn-cancel:hover {
-        background: var(--accent-pink);
+        background: #ef4444;
         color: white;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(247, 37, 133, 0.3);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
     }
 
     /* Form Styles */
@@ -259,7 +261,7 @@
     .form-section-group h2 {
         font-size: 1.1rem;
         font-weight: 600;
-        color: var(--accent-cyan);
+        color: var(--accent-gold);
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -316,15 +318,15 @@
     textarea:focus,
     select:focus {
         outline: none;
-        border-color: var(--accent-cyan);
-        background: rgba(0, 245, 212, 0.05);
-        box-shadow: 0 0 20px rgba(0, 245, 212, 0.15);
+        border-color: var(--accent-gold);
+        background: rgba(251, 191, 36, 0.05);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
     }
 
     select {
         cursor: pointer;
         appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300f5d4' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23fbbf24' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 16px center;
         padding-right: 45px;
@@ -345,7 +347,7 @@
     .currency-symbol {
         position: absolute;
         left: 16px;
-        color: var(--accent-cyan);
+        color: var(--accent-gold);
         font-weight: 600;
     }
 
@@ -373,9 +375,9 @@
     }
 
     .image-upload-container:hover {
-        border-color: var(--accent-cyan);
-        background: rgba(0, 245, 212, 0.05);
-        box-shadow: 0 0 30px rgba(0, 245, 212, 0.1);
+        border-color: var(--accent-gold);
+        background: rgba(251, 191, 36, 0.05);
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);
     }
 
     .image-upload-container input[type="file"] {
@@ -440,7 +442,7 @@
     .btn-primary {
         padding: 14px 28px;
         background: var(--gradient-primary);
-        color: #0a0a0f;
+        color: #0a0a0a;
         border: none;
         border-radius: 50px;
         font-weight: 600;
@@ -454,7 +456,7 @@
 
     .btn-primary:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 30px rgba(0, 245, 212, 0.4);
+        box-shadow: 0 12px 30px rgba(251, 191, 36, 0.4);
     }
 
     .btn-secondary {
@@ -485,7 +487,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: linear-gradient(135deg, rgba(0, 245, 212, 0.05) 0%, rgba(247, 37, 133, 0.03) 100%);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(245, 158, 11, 0.03) 100%);
     }
 
     .preview-header h2 {
@@ -496,19 +498,19 @@
     }
 
     .preview-badge {
-        background: rgba(0, 245, 212, 0.15);
-        color: var(--accent-cyan);
+        background: rgba(251, 191, 36, 0.15);
+        color: var(--accent-gold);
         padding: 6px 16px;
         border-radius: 50px;
         font-size: 13px;
         font-weight: 600;
-        border: 1px solid rgba(0, 245, 212, 0.3);
+        border: 1px solid rgba(251, 191, 36, 0.3);
         animation: pulse 2s ease-in-out infinite;
     }
 
     @keyframes pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(0, 245, 212, 0.3); }
-        50% { box-shadow: 0 0 0 8px rgba(0, 245, 212, 0); }
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.3); }
+        50% { box-shadow: 0 0 0 8px rgba(251, 191, 36, 0); }
     }
 
     .product-preview {
@@ -560,13 +562,13 @@
     }
 
     .preview-category {
-        background: rgba(0, 245, 212, 0.1);
-        color: var(--accent-cyan);
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--accent-gold);
         padding: 6px 14px;
         border-radius: 50px;
         font-size: 13px;
         font-weight: 500;
-        border: 1px solid rgba(0, 245, 212, 0.2);
+        border: 1px solid rgba(251, 191, 36, 0.2);
     }
 
     .preview-stock {
