@@ -53,6 +53,32 @@ def landing_page(request):
         title__isnull=False
     ).order_by('-created_at')[:6]
     
+    # Get new arrivals - recently added products (Just Dropped)
+    new_arrivals = Post.objects.filter(
+        inventory__gt=0,
+        price__isnull=False,
+        price__gt=0
+    ).exclude(
+        image='',
+        title='',
+        title__isnull=True
+    ).filter(
+        title__isnull=False
+    ).order_by('-created_at')[:8]
+    
+    # Get best sellers - most popular products (Most Popular)
+    best_sellers = Post.objects.filter(
+        inventory__gt=0,
+        price__isnull=False,
+        price__gt=0
+    ).exclude(
+        image='',
+        title='',
+        title__isnull=True
+    ).filter(
+        title__isnull=False
+    ).order_by('-total_purchases', '-created_at')[:8]
+    
     # Get all categories with product counts
     categories_with_counts = []
     for category_code, category_name in Post.CATEGORY_CHOICES:
@@ -81,6 +107,8 @@ def landing_page(request):
     
     context = {
         'featured_products': featured_products,
+        'new_arrivals': new_arrivals,
+        'best_sellers': best_sellers,
         'categories': categories_with_counts,
         'recent_reviews': recent_reviews,
         'stats': stats,
