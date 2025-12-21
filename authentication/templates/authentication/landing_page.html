@@ -594,6 +594,21 @@
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+    
+    /* Ensure product card links don't have default link styling */
+    a.product-card {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    a.product-card:hover {
+        text-decoration: none;
+        color: inherit;
     }
     
     .product-card::before {
@@ -1553,15 +1568,15 @@
         
         <div class="products-grid">
             {% for product in new_arrivals|slice:":4" %}
-            <div class="product-card fade-in delay-{{ forloop.counter }}">
+            <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}" style="text-decoration: none; color: inherit;">
                 <div class="product-image-container">
                     <span class="product-badge">NEW</span>
                     <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image">
-                    <div class="product-actions">
+                    <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
                         <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
                             <i class="bi bi-eye"></i> View
                         </a>
-                        <button class="product-action-btn secondary wishlist-btn">
+                        <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
                             <i class="bi bi-heart"></i>
                         </button>
                     </div>
@@ -1578,7 +1593,7 @@
                     </div>
                     {% endif %}
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         
@@ -1649,14 +1664,14 @@
         
         <div class="products-grid">
             {% for product in best_sellers|slice:":4" %}
-            <div class="product-card fade-in delay-{{ forloop.counter }}">
+            <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}" style="text-decoration: none; color: inherit;">
                 <div class="product-image-container">
                     <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image">
-                    <div class="product-actions">
+                    <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
                         <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
                             <i class="bi bi-eye"></i> View
                         </a>
-                        <button class="product-action-btn secondary wishlist-btn">
+                        <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
                             <i class="bi bi-heart"></i>
                         </button>
                     </div>
@@ -1673,7 +1688,7 @@
                     </div>
                     {% endif %}
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         
