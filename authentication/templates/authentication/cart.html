@@ -557,6 +557,160 @@
         opacity: 0.6;
         pointer-events: none;
     }
+    
+    /* Custom Modal Styles - Gold Theme */
+    .custom-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .custom-modal {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 0;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                    0 0 40px rgba(251, 191, 36, 0.2);
+        animation: slideUp 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        overflow: hidden;
+    }
+    
+    .custom-modal-header {
+        padding: 24px 30px;
+        border-bottom: 1px solid var(--card-border);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .custom-modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+    
+    .custom-modal-icon.warning {
+        background: rgba(217, 119, 6, 0.2);
+        color: var(--accent-amber);
+    }
+    
+    .custom-modal-icon.info {
+        background: rgba(251, 191, 36, 0.2);
+        color: var(--accent-gold);
+    }
+    
+    .custom-modal-icon.success {
+        background: rgba(251, 191, 36, 0.2);
+        color: var(--accent-gold);
+    }
+    
+    .custom-modal-title {
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+        flex: 1;
+    }
+    
+    .custom-modal-body {
+        padding: 30px;
+    }
+    
+    .custom-modal-message {
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0;
+    }
+    
+    .custom-modal-footer {
+        padding: 20px 30px;
+        border-top: 1px solid var(--card-border);
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .custom-modal-btn {
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .custom-modal-btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+    }
+    
+    .custom-modal-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--accent-gold);
+        color: var(--accent-gold);
+    }
+    
+    .custom-modal-btn-primary {
+        background: var(--gradient-primary);
+        color: #0a0a0f;
+    }
+    
+    .custom-modal-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+    }
+    
+    .custom-modal-btn-danger {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        color: #ffffff;
+    }
+    
+    .custom-modal-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(217, 119, 6, 0.4);
+    }
 </style>
 
 <div class="marketplace-container">
@@ -584,9 +738,9 @@
         <div class="cart-items-card">
             <div class="cart-items-header">
                 <h5>Your Items</h5>
-                <form method="POST" action="{% url 'clear_cart' %}" onsubmit="return confirm('Are you sure you want to clear your cart?');" style="display: inline;">
+                <form method="POST" action="{% url 'clear_cart' %}" class="clear-cart-form" style="display: inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn-clear-cart">
+                    <button type="button" class="btn-clear-cart">
                         <i class="bi bi-trash"></i>
                         Clear Cart
                     </button>
@@ -669,7 +823,7 @@
                     <i class="bi bi-arrow-left"></i>
                     Continue Shopping
                 </a>
-                <button type="button" class="btn-checkout" onclick="alert('Checkout page will be implemented next!')">
+                <button type="button" class="btn-checkout" id="checkout-btn">
                     <i class="bi bi-bag-check"></i>
                     Proceed to Checkout
                 </button>
@@ -694,7 +848,125 @@
     {% endif %}
 </div>
 
+<!-- Custom Modal -->
+<div id="customModal" class="custom-modal-overlay" style="display: none;">
+    <div class="custom-modal">
+        <div class="custom-modal-header">
+            <div class="custom-modal-icon" id="modalIcon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <h3 class="custom-modal-title" id="modalTitle">Confirm Action</h3>
+        </div>
+        <div class="custom-modal-body">
+            <p class="custom-modal-message" id="modalMessage">Are you sure you want to proceed?</p>
+        </div>
+        <div class="custom-modal-footer" id="modalFooter">
+            <button type="button" class="custom-modal-btn custom-modal-btn-secondary" id="modalCancelBtn">
+                <i class="bi bi-x-circle"></i>
+                Cancel
+            </button>
+            <button type="button" class="custom-modal-btn custom-modal-btn-primary" id="modalConfirmBtn">
+                <i class="bi bi-check-circle"></i>
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // Custom Modal System - Gold Theme
+    function showCustomModal(options) {
+        const modal = document.getElementById('customModal');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalFooter = document.getElementById('modalFooter');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const cancelBtn = document.getElementById('modalCancelBtn');
+        
+        // Set icon and styling based on type
+        const type = options.type || 'warning';
+        modalIcon.className = `custom-modal-icon ${type}`;
+        
+        if (type === 'warning') {
+            modalIcon.innerHTML = '<i class="bi bi-exclamation-triangle"></i>';
+            confirmBtn.className = 'custom-modal-btn custom-modal-btn-danger';
+            confirmBtn.innerHTML = '<i class="bi bi-check-circle"></i> Confirm';
+        } else if (type === 'info') {
+            modalIcon.innerHTML = '<i class="bi bi-info-circle"></i>';
+            confirmBtn.className = 'custom-modal-btn custom-modal-btn-primary';
+            confirmBtn.innerHTML = '<i class="bi bi-check-circle"></i> OK';
+        } else if (type === 'success') {
+            modalIcon.innerHTML = '<i class="bi bi-check-circle"></i>';
+            confirmBtn.className = 'custom-modal-btn custom-modal-btn-primary';
+            confirmBtn.innerHTML = '<i class="bi bi-check-circle"></i> OK';
+        }
+        
+        // Set content
+        modalTitle.textContent = options.title || 'Confirm Action';
+        modalMessage.textContent = options.message || 'Are you sure you want to proceed?';
+        
+        // Show/hide cancel button
+        if (options.showCancel !== false) {
+            cancelBtn.style.display = 'flex';
+        } else {
+            cancelBtn.style.display = 'none';
+        }
+        
+        // Show modal
+        modal.style.display = 'flex';
+        
+        // Return promise for confirm dialogs
+        return new Promise((resolve) => {
+            const handleConfirm = () => {
+                modal.style.display = 'none';
+                resolve(true);
+                cleanup();
+            };
+            
+            const handleCancel = () => {
+                modal.style.display = 'none';
+                resolve(false);
+                cleanup();
+            };
+            
+            const cleanup = () => {
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+                modal.removeEventListener('click', handleOverlayClick);
+            };
+            
+            const handleOverlayClick = (e) => {
+                if (e.target === modal) {
+                    handleCancel();
+                }
+            };
+            
+            confirmBtn.onclick = handleConfirm;
+            cancelBtn.onclick = handleCancel;
+            modal.addEventListener('click', handleOverlayClick);
+        });
+    }
+    
+    // Custom confirm function
+    function customConfirm(message, title = 'Confirm Action') {
+        return showCustomModal({
+            type: 'warning',
+            title: title,
+            message: message,
+            showCancel: true
+        });
+    }
+    
+    // Custom alert function
+    function customAlert(message, title = 'Information', type = 'info') {
+        return showCustomModal({
+            type: type,
+            title: title,
+            message: message,
+            showCancel: false
+        });
+    }
     // Update quantity functions
     function updateQuantity(itemId, quantity) {
         const form = document.querySelector(`.quantity-form[action*="${itemId}"]`);
@@ -730,12 +1002,12 @@
                 // Update cart count in header if exists
                 updateCartCount(data.cart_count);
             } else {
-                alert(data.message || 'Error updating quantity');
+                customAlert(data.message || 'Error updating quantity', 'Error', 'warning');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error updating quantity. Please try again.');
+            customAlert('Error updating quantity. Please try again.', 'Error', 'warning');
         });
     }
 
@@ -750,7 +1022,7 @@
                 input.value = current + 1;
                 updateQuantity(itemId, input.value);
             } else {
-                alert(`Only ${max} items available in stock.`);
+                customAlert(`Only ${max} items available in stock.`, 'Stock Limit', 'warning');
             }
         });
     });
@@ -772,51 +1044,72 @@
     document.querySelectorAll('.remove-item-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            if (!confirm('Remove this item from cart?')) return;
+            const formElement = this;
+            customConfirm('Remove this item from cart?', 'Remove Item').then(confirmed => {
+                if (!confirmed) return;
             
-            fetch(this.action, {
-                method: 'POST',
-                body: new FormData(this),
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove item from DOM
-                    const itemRow = document.querySelector(`.cart-item[data-item-id="${data.item_id || this.action.match(/\d+/)[0]}"]`);
-                    if (itemRow) {
-                        itemRow.remove();
+                fetch(formElement.action, {
+                    method: 'POST',
+                    body: new FormData(formElement),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove item from DOM
+                        const itemRow = document.querySelector(`.cart-item[data-item-id="${data.item_id || formElement.action.match(/\d+/)[0]}"]`);
+                        if (itemRow) {
+                            itemRow.remove();
+                        }
+                        
+                        // Update summary
+                        document.getElementById('subtotal').textContent = formatCurrency(data.subtotal);
+                        // Delivery fee is always free
+                        const deliveryFeeEl = document.getElementById('delivery-fee');
+                        if (deliveryFeeEl && parseFloat(data.delivery_fee) === 0) {
+                            deliveryFeeEl.innerHTML = '<i class="bi bi-check-circle"></i> Free in Kigali';
+                        } else if (deliveryFeeEl) {
+                            deliveryFeeEl.textContent = formatCurrency(data.delivery_fee);
+                        }
+                        document.getElementById('total').textContent = formatCurrency(data.total);
+                        
+                        // Update cart count
+                        updateCartCount(data.cart_count);
+                        
+                        // Reload if cart is empty
+                        if (data.cart_count === 0) {
+                            location.reload();
+                        }
+                    } else {
+                        customAlert(data.message || 'Error removing item', 'Error', 'warning');
                     }
-                    
-                    // Update summary
-                    document.getElementById('subtotal').textContent = formatCurrency(data.subtotal);
-                    // Delivery fee is always free
-                    const deliveryFeeEl = document.getElementById('delivery-fee');
-                    if (deliveryFeeEl && parseFloat(data.delivery_fee) === 0) {
-                        deliveryFeeEl.innerHTML = '<i class="bi bi-check-circle"></i> Free in Kigali';
-                    } else if (deliveryFeeEl) {
-                        deliveryFeeEl.textContent = formatCurrency(data.delivery_fee);
-                    }
-                    document.getElementById('total').textContent = formatCurrency(data.total);
-                    
-                    // Update cart count
-                    updateCartCount(data.cart_count);
-                    
-                    // Reload if cart is empty
-                    if (data.cart_count === 0) {
-                        location.reload();
-                    }
-                } else {
-                    alert(data.message || 'Error removing item');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                this.submit(); // Fallback to normal form submission
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    formElement.submit(); // Fallback to normal form submission
+                });
             });
         });
+    });
+    
+    // Clear cart with custom modal
+    document.querySelectorAll('.clear-cart-form').forEach(form => {
+        const clearBtn = form.querySelector('.btn-clear-cart');
+        clearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            customConfirm('Are you sure you want to clear your cart? This action cannot be undone.', 'Clear Cart').then(confirmed => {
+                if (confirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+    
+    // Checkout button
+    document.getElementById('checkout-btn')?.addEventListener('click', function() {
+        customAlert('Checkout page will be implemented next!', 'Coming Soon', 'info');
     });
 
     // Format currency (simple version - adjust based on your currency filter)
