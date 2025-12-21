@@ -26,7 +26,7 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
-from .forms import SignUpForm, ProductReviewForm
+from .forms import SignUpForm, ProductReviewForm, CheckoutForm
 from .models import User, Post, Purchase, Bookmark, ProductImage, ProductReview, Cart, CartItem
 # Removed QR and OTP utilities for simplified workflow
 from django.views.decorators.csrf import csrf_exempt
@@ -964,7 +964,7 @@ def purchase_product(request, post_id):
             return redirect('post_detail', post_id=post_id)
         
         # Get delivery method and details
-        delivery_method = request.POST.get('delivery_method', 'pickup')
+        delivery_method = request.POST.get('delivery_method', 'delivery')
         delivery_address = request.POST.get('delivery_address', '')
         delivery_latitude = request.POST.get('delivery_latitude')
         delivery_longitude = request.POST.get('delivery_longitude')
@@ -1355,6 +1355,184 @@ def get_cart_count(request):
         count = cart.get_total_items()
         return JsonResponse({'cart_count': count})
     return JsonResponse({'cart_count': 0})
+
+@login_required
+def checkout(request):
+    """Checkout page - display order summary and checkout form"""
+    cart = get_or_create_cart(request.user)
+    cart_items = cart.items.all()
+    
+    # Check if cart is empty
+    if not cart_items.exists():
+        messages.warning(request, 'Your cart is empty. Add some items before checkout.')
+        return redirect('view_cart')
+    
+    # Validate inventory for all items
+    invalid_items = []
+    for item in cart_items:
+        if not item.is_available():
+            invalid_items.append(item.product.title)
+    
+    if invalid_items:
+        messages.error(request, f'The following items are out of stock or quantity unavailable: {", ".join(invalid_items)}')
+        return redirect('view_cart')
+    
+    # Calculate totals
+    subtotal = cart.get_subtotal()
+    delivery_fee = Decimal('0.00')  # Free shipping in Kigali
+    total = cart.get_total(delivery_fee)
+    
+    # Initialize form with user's phone number if available
+    initial_data = {}
+    if request.user.phone_number:
+        initial_data['phone_number'] = request.user.phone_number
+    
+    form = CheckoutForm(initial=initial_data)
+    
+    context = {
+        'cart': cart,
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'delivery_fee': delivery_fee,
+        'total': total,
+        'form': form,
+    }
+    
+    return render(request, 'authentication/checkout.html', context)
+
+@login_required
+def process_checkout(request):
+    """Process checkout and create purchase orders"""
+    if request.method != 'POST':
+        return redirect('checkout')
+    
+    cart = get_or_create_cart(request.user)
+    cart_items = cart.items.all()
+    
+    # Check if cart is empty
+    if not cart_items.exists():
+        messages.warning(request, 'Your cart is empty.')
+        return redirect('view_cart')
+    
+    # Validate inventory
+    invalid_items = []
+    for item in cart_items:
+        if not item.is_available():
+            invalid_items.append(item.product.title)
+    
+    if invalid_items:
+        messages.error(request, f'The following items are out of stock: {", ".join(invalid_items)}')
+        return redirect('view_cart')
+    
+    form = CheckoutForm(request.POST)
+    
+    if not form.is_valid():
+        # Recalculate totals for context
+        subtotal = cart.get_subtotal()
+        delivery_fee = Decimal('0.00')
+        total = cart.get_total(delivery_fee)
+        
+        context = {
+            'cart': cart,
+            'cart_items': cart_items,
+            'subtotal': subtotal,
+            'delivery_fee': delivery_fee,
+            'total': total,
+            'form': form,
+        }
+        return render(request, 'authentication/checkout.html', context)
+    
+    # Get form data
+    delivery_method = 'delivery'  # Always home delivery
+    payment_method = form.cleaned_data['payment_method']
+    delivery_address = form.cleaned_data.get('delivery_address', '')
+    phone_number = form.cleaned_data['phone_number']
+    notes = form.cleaned_data.get('notes', '')
+    
+    # Update user's phone number if provided
+    if phone_number and not request.user.phone_number:
+        request.user.phone_number = phone_number
+        request.user.save()
+    
+    # Create purchase records for each cart item
+    created_purchases = []
+    delivery_fee = Decimal('0.00')  # Free shipping in Kigali
+    
+    for cart_item in cart_items:
+        # Check inventory one more time before creating purchase
+        if cart_item.quantity > cart_item.product.inventory:
+            messages.error(request, f'Insufficient stock for {cart_item.product.title}. Only {cart_item.product.inventory} available.')
+            return redirect('view_cart')
+        
+        # Create purchase
+        purchase = Purchase.objects.create(
+            buyer=request.user,
+            product=cart_item.product,
+            quantity=cart_item.quantity,
+            purchase_price=cart_item.get_total_price(),
+            delivery_method=delivery_method,
+            payment_method=payment_method,
+            delivery_fee=delivery_fee,
+            delivery_address=delivery_address,
+            notes=notes,
+            status='pending'
+        )
+        
+        # Update product inventory
+        cart_item.product.inventory -= cart_item.quantity
+        cart_item.product.save()
+        
+        created_purchases.append(purchase)
+    
+    # Clear the cart after successful checkout
+    cart.items.all().delete()
+    cart.save()
+    
+    # Redirect to order confirmation page
+    # Pass order IDs in session for confirmation page
+    order_ids = [p.order_id for p in created_purchases]
+    request.session['recent_order_ids'] = order_ids
+    
+    messages.success(request, 'Order placed successfully!')
+    return redirect('order_confirmation')
+
+@login_required
+def order_confirmation(request):
+    """Order confirmation page after successful checkout"""
+    # Get order IDs from session
+    order_ids = request.session.get('recent_order_ids', [])
+    
+    if not order_ids:
+        # If no recent orders, redirect to purchase history
+        messages.info(request, 'No recent orders found.')
+        return redirect('purchase_history')
+    
+    # Get the purchases
+    purchases = Purchase.objects.filter(
+        order_id__in=order_ids,
+        buyer=request.user
+    ).order_by('-created_at')
+    
+    if not purchases.exists():
+        messages.info(request, 'Order not found.')
+        return redirect('purchase_history')
+    
+    # Calculate totals
+    total_amount = sum(p.calculate_total() for p in purchases)
+    total_items = sum(p.quantity for p in purchases)
+    
+    # Clear the session
+    if 'recent_order_ids' in request.session:
+        del request.session['recent_order_ids']
+    
+    context = {
+        'purchases': purchases,
+        'total_amount': total_amount,
+        'total_items': total_items,
+        'order_ids': order_ids,
+    }
+    
+    return render(request, 'authentication/order_confirmation.html', context)
 
 @login_required
 def admin_dashboard(request):

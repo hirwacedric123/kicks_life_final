@@ -501,12 +501,15 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
+        text-decoration: none;
+        cursor: pointer;
     }
 
     .btn-checkout:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(251, 191, 36, 0.5);
         color: #0a0a0f;
+        text-decoration: none;
     }
 
     .btn-checkout:disabled {
@@ -823,10 +826,10 @@
                     <i class="bi bi-arrow-left"></i>
                     Continue Shopping
                 </a>
-                <button type="button" class="btn-checkout" id="checkout-btn">
+                <a href="{% url 'checkout' %}" class="btn-checkout" id="checkout-btn">
                     <i class="bi bi-bag-check"></i>
                     Proceed to Checkout
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -1107,10 +1110,7 @@
         });
     });
     
-    // Checkout button
-    document.getElementById('checkout-btn')?.addEventListener('click', function() {
-        customAlert('Checkout page will be implemented next!', 'Coming Soon', 'info');
-    });
+    // Checkout button - now links to checkout page, no JS needed
 
     // Format currency (simple version - adjust based on your currency filter)
     function formatCurrency(value) {

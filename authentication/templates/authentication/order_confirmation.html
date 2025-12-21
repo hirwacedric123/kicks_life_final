@@ -1,0 +1,458 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}Order Confirmation - KicksLife250{% endblock %}
+
+{% block content %}
+<style>
+    /* Dark Theme Variables - Gold & Black Theme */
+    :root {
+        --bg-primary: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(251, 191, 36, 0.25);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-muted: rgba(255, 255, 255, 0.5);
+        --accent-gold: #fbbf24;
+        --accent-amber: #f59e0b;
+        --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .confirmation-container {
+        width: 100%;
+        padding: 30px;
+        min-height: 100vh;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 30px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #0a0a0a;
+        animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .confirmation-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .confirmation-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 12px;
+    }
+
+    .confirmation-subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .order-info-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(20px);
+        margin-bottom: 30px;
+    }
+
+    .info-section {
+        margin-bottom: 25px;
+    }
+
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-label {
+        color: var(--text-muted);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .info-value {
+        color: var(--text-primary);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .info-value.order-id {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .order-items {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(20px);
+        margin-bottom: 30px;
+    }
+
+    .order-item {
+        display: flex;
+        gap: 16px;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+    }
+
+    .order-item-details {
+        flex: 1;
+    }
+
+    .order-item-title {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .order-item-meta {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .order-item-price {
+        color: var(--accent-gold);
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .order-summary {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(20px);
+        margin-bottom: 30px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        color: var(--text-secondary);
+        font-size: 15px;
+    }
+
+    .summary-row.total {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid var(--card-border);
+    }
+
+    .summary-row.total .value {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        flex: 1;
+        min-width: 200px;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--gradient-primary);
+        color: #0a0a0a;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+        color: #0a0a0a;
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--accent-gold);
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--accent-gold);
+    }
+
+    .next-steps {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(20px);
+        margin-top: 30px;
+    }
+
+    .next-steps-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .next-steps-title i {
+        color: var(--accent-gold);
+    }
+
+    .steps-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .steps-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .steps-list li i {
+        color: var(--accent-gold);
+        margin-top: 2px;
+    }
+
+    .delivery-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid var(--accent-gold);
+        border-radius: 6px;
+        color: var(--accent-gold);
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .payment-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid var(--accent-gold);
+        border-radius: 6px;
+        color: var(--accent-gold);
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+</style>
+
+<div class="confirmation-container">
+    <div class="success-icon">
+        <i class="bi bi-check-circle-fill"></i>
+    </div>
+
+    <div class="confirmation-header">
+        <h1 class="confirmation-title">Order Confirmed!</h1>
+        <p class="confirmation-subtitle">Thank you for your purchase. Your order has been received and is being processed.</p>
+    </div>
+
+    <!-- Order Information -->
+    <div class="order-info-card">
+        <div class="info-section">
+            <div class="info-label">Order Number{% if order_ids|length > 1 %}s{% endif %}</div>
+            <div class="info-value order-id">
+                {% for order_id in order_ids %}
+                    {{ order_id }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-label">Order Date</div>
+            <div class="info-value">{{ purchases.0.created_at|date:"F d, Y \a\t g:i A" }}</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-label">Total Items</div>
+            <div class="info-value">{{ total_items }} item{{ total_items|pluralize }}</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-label">Total Amount</div>
+            <div class="info-value" style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.5rem; font-weight: 700;">
+                RWF {{ total_amount|floatformat:0 }}
+            </div>
+        </div>
+
+        {% if purchases.0.delivery_method %}
+        <div class="info-section">
+            <div class="info-label">Delivery Method</div>
+            <div class="info-value">
+                {{ purchases.0.get_delivery_method_display }}
+                {% if purchases.0.delivery_method == 'delivery' %}
+                    <span class="delivery-badge">Free in Kigali</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if purchases.0.payment_method %}
+        <div class="info-section">
+            <div class="info-label">Payment Method</div>
+            <div class="info-value">
+                {{ purchases.0.get_payment_method_display }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if purchases.0.delivery_address %}
+        <div class="info-section">
+            <div class="info-label">Delivery Address</div>
+            <div class="info-value">{{ purchases.0.delivery_address }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Order Items -->
+    <div class="order-items">
+        <h2 style="color: var(--text-primary); font-size: 1.3rem; font-weight: 700; margin-bottom: 20px;">
+            <i class="bi bi-box-seam" style="color: var(--accent-gold);"></i> Order Items
+        </h2>
+        {% for purchase in purchases %}
+        <div class="order-item">
+            <img src="{{ purchase.product.image.url }}" alt="{{ purchase.product.title }}" class="order-item-image">
+            <div class="order-item-details">
+                <div class="order-item-title">{{ purchase.product.title }}</div>
+                <div class="order-item-meta">Category: {{ purchase.product.get_category_display }}</div>
+                <div class="order-item-meta">Quantity: {{ purchase.quantity }}</div>
+                <div class="order-item-price">RWF {{ purchase.purchase_price|floatformat:0 }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+        <h2 style="color: var(--text-primary); font-size: 1.3rem; font-weight: 700; margin-bottom: 20px;">
+            <i class="bi bi-receipt" style="color: var(--accent-gold);"></i> Order Summary
+        </h2>
+        <div class="summary-row">
+            <span>Subtotal</span>
+            <span>RWF {{ total_amount|floatformat:0 }}</span>
+        </div>
+        <div class="summary-row">
+            <span>Shipping</span>
+            <span style="color: var(--accent-gold);">Free in Kigali</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total</span>
+            <span class="value">RWF {{ total_amount|floatformat:0 }}</span>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{% url 'purchase_history' %}" class="btn-action btn-primary">
+            <i class="bi bi-list-check"></i> View Order History
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn-action btn-secondary">
+            <i class="bi bi-house"></i> Continue Shopping
+        </a>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="next-steps">
+        <h3 class="next-steps-title">
+            <i class="bi bi-info-circle"></i> What's Next?
+        </h3>
+        <ul class="steps-list">
+            <li>
+                <i class="bi bi-check-circle"></i>
+                <span>You will receive an email confirmation shortly with your order details.</span>
+            </li>
+            {% if purchases.0.payment_method == 'momo' or purchases.0.payment_method == 'credit' %}
+            <li>
+                <i class="bi bi-credit-card"></i>
+                <span>Complete your payment using the method you selected. We'll notify you once payment is received.</span>
+            </li>
+            {% endif %}
+            <li>
+                <i class="bi bi-truck"></i>
+                <span>Your order will be delivered to the address provided. You'll receive tracking information soon.</span>
+            </li>
+            <li>
+                <i class="bi bi-clock"></i>
+                <span>You can track your order status in your <a href="{% url 'purchase_history' %}" style="color: var(--accent-gold); text-decoration: none;">Purchase History</a>.</span>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+

@@ -114,7 +114,6 @@ class Purchase(models.Model):
     )
     
     DELIVERY_CHOICES = (
-        ('pickup', 'Store Pickup'),
         ('delivery', 'Home Delivery'),
     )
     
@@ -130,7 +129,7 @@ class Purchase(models.Model):
     quantity = models.IntegerField(default=1)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    delivery_method = models.CharField(max_length=20, choices=DELIVERY_CHOICES, default='pickup')
+    delivery_method = models.CharField(max_length=20, choices=DELIVERY_CHOICES, default='delivery')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='momo')
     delivery_fee = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     delivery_address = models.TextField(blank=True, null=True, help_text="Delivery address for home delivery")

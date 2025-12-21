@@ -42,6 +42,11 @@ urlpatterns = [
     path('cart/clear/', views.clear_cart, name='clear_cart'),
     path('cart/count/', views.get_cart_count, name='get_cart_count'),
     
+    # Checkout
+    path('checkout/', views.checkout, name='checkout'),
+    path('checkout/process/', views.process_checkout, name='process_checkout'),
+    path('order-confirmation/', views.order_confirmation, name='order_confirmation'),
+    
     # Removed complex QR code and OTP URLs for simplified workflow
     
     # REST API endpoints

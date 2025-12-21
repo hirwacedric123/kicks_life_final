@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, ProductReview
+from .models import User, ProductReview, Purchase
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -43,3 +43,51 @@ class ProductReviewForm(forms.ModelForm):
     class Meta:
         model = ProductReview
         fields = ['rating', 'comment']
+
+class CheckoutForm(forms.Form):
+    """Form for checkout process"""
+    payment_method = forms.ChoiceField(
+        choices=Purchase.PAYMENT_METHOD_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'payment-method-radio'}),
+        initial='momo'
+    )
+    
+    delivery_address = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Enter your delivery address (Street, Sector, District)'
+        }),
+        required=True,
+        help_text="Required for home delivery"
+    )
+    
+    phone_number = forms.CharField(
+        max_length=15,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., +250 788 123 456'
+        }),
+        required=True
+    )
+    
+    notes = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 2,
+            'placeholder': 'Special instructions or notes (optional)'
+        }),
+        required=False
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        delivery_address = cleaned_data.get('delivery_address')
+        
+        # Delivery address is always required for home delivery
+        if not delivery_address or not delivery_address.strip():
+            raise forms.ValidationError({
+                'delivery_address': 'Delivery address is required.'
+            })
+        
+        return cleaned_data
