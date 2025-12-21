@@ -198,6 +198,7 @@ class Cart(models.Model):
     
     def get_total(self, delivery_fee=0):
         """Calculate total including delivery fee"""
+        from decimal import Decimal
         return self.get_subtotal() + Decimal(str(delivery_fee))
     
     class Meta:
