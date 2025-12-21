@@ -6,17 +6,18 @@
 
 {% block content %}
 <style>
-    /* Dark Theme Variables */
+    /* Dark Theme Variables - Gold & Black Theme */
     :root {
         --card-bg: rgba(255, 255, 255, 0.03);
-        --card-border: rgba(255, 255, 255, 0.08);
+        --card-border: rgba(251, 191, 36, 0.25);
         --text-primary: #ffffff;
         --text-secondary: rgba(255, 255, 255, 0.7);
         --text-muted: rgba(255, 255, 255, 0.5);
-        --accent-cyan: #00f5d4;
-        --accent-pink: #f72585;
-        --accent-purple: #9b5de5;
-        --gradient-primary: linear-gradient(135deg, #00f5d4 0%, #00bbf9 50%, #9b5de5 100%);
+        --accent-gold: #fbbf24;
+        --accent-amber: #f59e0b;
+        --accent-orange: #d97706;
+        --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        --gradient-secondary: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
     }
 
     ::-webkit-scrollbar {
@@ -28,7 +29,7 @@
     }
 
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, var(--accent-cyan), var(--accent-purple));
+        background: var(--gradient-primary);
         border-radius: 3px;
     }
 
@@ -116,7 +117,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, rgba(0, 245, 212, 0.05) 0%, rgba(247, 37, 133, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(245, 158, 11, 0.05) 100%);
         opacity: 0;
         transition: opacity 0.3s ease;
         pointer-events: none;
@@ -125,10 +126,10 @@
 
     .pinterest-card:hover {
         transform: translateY(-8px) scale(1.02);
-        border-color: rgba(0, 245, 212, 0.3);
+        border-color: rgba(251, 191, 36, 0.3);
         box-shadow: 
             0 20px 40px rgba(0, 0, 0, 0.4),
-            0 0 30px rgba(0, 245, 212, 0.15);
+            0 0 30px rgba(251, 191, 36, 0.15);
     }
 
     .pinterest-card:hover::before {
@@ -174,15 +175,15 @@
     }
 
     .badge-product {
-        background: rgba(0, 245, 212, 0.2);
-        color: var(--accent-cyan);
-        border: 1px solid rgba(0, 245, 212, 0.3);
+        background: rgba(251, 191, 36, 0.2);
+        color: var(--accent-gold);
+        border: 1px solid rgba(251, 191, 36, 0.3);
     }
 
     .badge-job {
-        background: rgba(247, 37, 133, 0.2);
-        color: var(--accent-pink);
-        border: 1px solid rgba(247, 37, 133, 0.3);
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--accent-amber);
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     /* Card Overlay */
@@ -230,15 +231,15 @@
     }
 
     .action-btn:hover {
-        background: var(--accent-cyan);
-        border-color: var(--accent-cyan);
-        color: #0a0a0f;
+        background: var(--accent-gold);
+        border-color: var(--accent-gold);
+        color: #0a0a0a;
         transform: scale(1.1);
     }
 
     .action-btn.active {
-        background: var(--accent-pink);
-        border-color: var(--accent-pink);
+        background: var(--accent-amber);
+        border-color: var(--accent-amber);
         color: white;
     }
 
@@ -310,13 +311,13 @@
         height: 32px;
         border-radius: 50%;
         background: var(--gradient-primary);
-        color: #0a0a0f;
+        color: #0a0a0a;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 12px;
         font-weight: 700;
-        border: 2px solid rgba(0, 245, 212, 0.3);
+        border: 2px solid rgba(251, 191, 36, 0.3);
     }
 
     .vendor-avatar img {
@@ -350,8 +351,8 @@
         width: 120px;
         height: 120px;
         border-radius: 50%;
-        background: rgba(0, 245, 212, 0.1);
-        border: 2px solid rgba(0, 245, 212, 0.2);
+        background: rgba(251, 191, 36, 0.1);
+        border: 2px solid rgba(251, 191, 36, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -396,8 +397,8 @@
 
     .empty-state .btn-primary:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 30px rgba(0, 245, 212, 0.4);
-        color: #0a0a0f;
+        box-shadow: 0 12px 30px rgba(251, 191, 36, 0.4);
+        color: #0a0a0a;
     }
 
     /* Responsive */
@@ -451,7 +452,7 @@
         </div>
         {% if bookmarks %}
         <div class="bookmark-count">
-            <i class="bi bi-bookmark-fill" style="color: var(--accent-cyan);"></i>
+            <i class="bi bi-bookmark-fill" style="color: var(--accent-gold);"></i>
             <span class="count-value">{{ bookmarks|length }}</span>
             <span>saved items</span>
         </div>
@@ -590,7 +591,7 @@
             const icon = btn.querySelector('i');
             if (data.liked) {
                 icon.className = 'bi bi-heart-fill';
-                btn.style.color = '#f72585';
+                btn.style.color = '#fbbf24';
             } else {
                 icon.className = 'bi bi-heart';
                 btn.style.color = '';

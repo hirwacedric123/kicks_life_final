@@ -6,19 +6,18 @@
 
 {% block content %}
 <style>
-    /* Dark Theme Variables */
+    /* Dark Theme Variables - Gold & Black Theme */
     :root {
         --card-bg: rgba(255, 255, 255, 0.03);
-        --card-border: rgba(255, 255, 255, 0.08);
+        --card-border: rgba(251, 191, 36, 0.25);
         --text-primary: #ffffff;
         --text-secondary: rgba(255, 255, 255, 0.7);
         --text-muted: rgba(255, 255, 255, 0.5);
-        --accent-cyan: #00f5d4;
-        --accent-pink: #f72585;
-        --accent-purple: #9b5de5;
         --accent-gold: #fbbf24;
-        --accent-blue: #4361ee;
-        --gradient-primary: linear-gradient(135deg, #00f5d4 0%, #00bbf9 50%, #9b5de5 100%);
+        --accent-amber: #f59e0b;
+        --accent-orange: #d97706;
+        --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        --gradient-secondary: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
     }
 
     .admin-container {
@@ -69,8 +68,8 @@
 
     .btn-add-product:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 30px rgba(0, 245, 212, 0.4);
-        color: #0a0a0f;
+        box-shadow: 0 12px 30px rgba(251, 191, 36, 0.4);
+        color: #0a0a0a;
     }
 
     /* Stats Grid */
@@ -106,7 +105,7 @@
 
     .stats-card:hover {
         transform: translateY(-5px);
-        border-color: rgba(0, 245, 212, 0.3);
+        border-color: rgba(251, 191, 36, 0.3);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
     }
 
@@ -125,12 +124,12 @@
     }
 
     .stats-card .icon-wrapper.blue {
-        background: rgba(67, 97, 238, 0.15);
-        border: 1px solid rgba(67, 97, 238, 0.3);
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .stats-card .icon-wrapper.blue i {
-        color: var(--accent-blue);
+        color: var(--accent-amber);
     }
 
     .stats-card .icon-wrapper.gold {
@@ -143,21 +142,21 @@
     }
 
     .stats-card .icon-wrapper.cyan {
-        background: rgba(0, 245, 212, 0.15);
-        border: 1px solid rgba(0, 245, 212, 0.3);
+        background: rgba(251, 191, 36, 0.15);
+        border: 1px solid rgba(251, 191, 36, 0.3);
     }
 
     .stats-card .icon-wrapper.cyan i {
-        color: var(--accent-cyan);
+        color: var(--accent-gold);
     }
 
     .stats-card .icon-wrapper.pink {
-        background: rgba(247, 37, 133, 0.15);
-        border: 1px solid rgba(247, 37, 133, 0.3);
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .stats-card .icon-wrapper.pink i {
-        color: var(--accent-pink);
+        color: var(--accent-amber);
     }
 
     .stats-card i {
@@ -196,7 +195,7 @@
     .card-header {
         padding: 20px 24px;
         border-bottom: 1px solid var(--card-border);
-        background: linear-gradient(135deg, rgba(0, 245, 212, 0.05) 0%, rgba(247, 37, 133, 0.03) 100%);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(245, 158, 11, 0.03) 100%);
         display: flex;
         align-items: center;
         gap: 10px;
@@ -231,12 +230,12 @@
         padding: 16px 20px;
         margin-bottom: 12px;
         transition: all 0.3s ease;
-        border-left: 4px solid var(--accent-cyan);
+        border-left: 4px solid var(--accent-gold);
     }
 
     .order-card:hover {
-        background: rgba(0, 245, 212, 0.03);
-        border-left-color: var(--accent-pink);
+        background: rgba(251, 191, 36, 0.03);
+        border-left-color: var(--accent-amber);
     }
 
     .order-card h6 {
@@ -275,27 +274,27 @@
     }
 
     .status-processing {
-        background: rgba(67, 97, 238, 0.15);
-        color: var(--accent-blue);
-        border: 1px solid rgba(67, 97, 238, 0.3);
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--accent-amber);
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .status-shipped {
-        background: rgba(155, 93, 229, 0.15);
-        color: var(--accent-purple);
-        border: 1px solid rgba(155, 93, 229, 0.3);
+        background: rgba(217, 119, 6, 0.15);
+        color: var(--accent-orange);
+        border: 1px solid rgba(217, 119, 6, 0.3);
     }
 
     .status-delivered, .status-completed {
-        background: rgba(0, 245, 212, 0.15);
-        color: var(--accent-cyan);
-        border: 1px solid rgba(0, 245, 212, 0.3);
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
     }
 
     .status-cancelled {
-        background: rgba(247, 37, 133, 0.15);
-        color: var(--accent-pink);
-        border: 1px solid rgba(247, 37, 133, 0.3);
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
     /* Status Select */
@@ -311,8 +310,8 @@
     }
 
     .status-select:focus {
-        border-color: var(--accent-cyan);
-        box-shadow: 0 0 10px rgba(0, 245, 212, 0.2);
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
         outline: none;
     }
 
@@ -347,9 +346,9 @@
     }
 
     .stock-badge {
-        background: rgba(247, 37, 133, 0.15);
-        color: var(--accent-pink);
-        border: 1px solid rgba(247, 37, 133, 0.3);
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
         padding: 4px 12px;
         border-radius: 50px;
         font-size: 12px;
@@ -457,13 +456,13 @@
     }
 
     .product-category {
-        background: rgba(0, 245, 212, 0.1);
-        color: var(--accent-cyan);
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--accent-gold);
         padding: 4px 10px;
         border-radius: 50px;
         font-size: 11px;
         font-weight: 600;
-        border: 1px solid rgba(0, 245, 212, 0.2);
+        border: 1px solid rgba(251, 191, 36, 0.2);
     }
 
     .product-stock {
@@ -475,7 +474,7 @@
     }
 
     .product-stock.low {
-        color: var(--accent-pink);
+        color: #ef4444;
     }
 
     .product-actions {
@@ -502,24 +501,24 @@
     }
 
     .product-btn.edit {
-        background: rgba(0, 245, 212, 0.1);
-        color: var(--accent-cyan);
-        border: 1px solid rgba(0, 245, 212, 0.3);
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--accent-gold);
+        border: 1px solid rgba(251, 191, 36, 0.3);
     }
 
     .product-btn.edit:hover {
-        background: var(--accent-cyan);
-        color: #0a0a0f;
+        background: var(--accent-gold);
+        color: #0a0a0a;
     }
 
     .product-btn.view {
-        background: rgba(67, 97, 238, 0.1);
-        color: var(--accent-blue);
-        border: 1px solid rgba(67, 97, 238, 0.3);
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--accent-amber);
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .product-btn.view:hover {
-        background: var(--accent-blue);
+        background: var(--accent-amber);
         color: white;
     }
 
