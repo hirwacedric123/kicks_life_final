@@ -1,0 +1,839 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}Shopping Cart - KicksLife250{% endblock %}
+
+{% block content %}
+<style>
+    /* Dark Theme Variables - Gold & Black Theme */
+    :root {
+        --bg-primary: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(251, 191, 36, 0.25);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-muted: rgba(255, 255, 255, 0.5);
+        --accent-cyan: #fbbf24;
+        --accent-pink: #f59e0b;
+        --accent-purple: #d97706;
+        --accent-gold: #fbbf24;
+        --accent-amber: #f59e0b;
+        --gradient-primary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        --gradient-secondary: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--gradient-primary);
+        border-radius: 3px;
+    }
+
+    .marketplace-container {
+        width: 100%;
+        padding: 30px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-title i {
+        font-size: 1.5rem;
+    }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 15px;
+    }
+
+    .cart-count {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        padding: 12px 24px;
+        border-radius: 50px;
+        color: var(--text-primary);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .cart-count .count-value {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.25rem;
+    }
+
+    /* Cart Layout */
+    .cart-layout {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .cart-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Cart Items Section */
+    .cart-items-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .cart-items-header {
+        padding: 24px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--card-border);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(245, 158, 11, 0.03) 100%);
+    }
+
+    .cart-items-header h5 {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .cart-items-header h5::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+    }
+
+    .btn-clear-cart {
+        background: rgba(217, 119, 6, 0.1);
+        border: 1px solid rgba(217, 119, 6, 0.3);
+        color: var(--accent-purple);
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-clear-cart:hover {
+        background: rgba(217, 119, 6, 0.2);
+        border-color: var(--accent-purple);
+        color: var(--accent-gold);
+    }
+
+    .cart-items-body {
+        padding: 20px;
+    }
+
+    /* Cart Item */
+    .cart-item {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .cart-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .cart-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(251, 191, 36, 0.3);
+        box-shadow: 0 4px 16px rgba(251, 191, 36, 0.1);
+    }
+
+    .cart-item-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        transition: all 0.3s ease;
+    }
+    
+    .cart-item-image:hover {
+        border-color: var(--accent-gold);
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+    }
+
+    .cart-item-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .cart-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .cart-item-title {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .cart-item-title a {
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .cart-item-title a:hover {
+        color: var(--accent-gold);
+    }
+
+    .btn-remove-item {
+        background: rgba(217, 119, 6, 0.1);
+        border: 1px solid rgba(217, 119, 6, 0.3);
+        color: var(--accent-purple);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-remove-item:hover {
+        background: rgba(217, 119, 6, 0.2);
+        border-color: var(--accent-gold);
+        color: var(--accent-gold);
+    }
+
+    .cart-item-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cart-item-category {
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+
+    .cart-item-price {
+        color: var(--accent-gold);
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .cart-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-top: 8px;
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .quantity-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .quantity-input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        padding: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .quantity-input-group:focus-within {
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1);
+    }
+
+    .quantity-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .quantity-btn:hover {
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--accent-gold);
+    }
+
+    .quantity-input {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        width: 50px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .quantity-input:focus {
+        outline: none;
+    }
+
+    .item-total {
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-left: auto;
+    }
+    
+    .item-total-value {
+        color: var(--accent-gold);
+        font-weight: 700;
+    }
+
+    .item-total-label {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-right: 4px;
+    }
+
+    /* Empty Cart */
+    .empty-cart {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-cart-icon {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+    }
+
+    .empty-cart h3 {
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+
+    .empty-cart p {
+        color: var(--text-secondary);
+        margin-bottom: 30px;
+    }
+
+    .btn-shop-now {
+        background: var(--gradient-primary);
+        border: none;
+        color: #0a0a0f;
+        padding: 12px 32px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-shop-now:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+        color: #0a0a0f;
+    }
+
+    /* Order Summary */
+    .order-summary-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+
+    .order-summary-header {
+        padding: 24px 30px;
+        border-bottom: 1px solid var(--card-border);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(245, 158, 11, 0.03) 100%);
+    }
+
+    .order-summary-header h5 {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .order-summary-header h5::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: var(--gradient-primary);
+        border-radius: 2px;
+    }
+
+    .order-summary-body {
+        padding: 24px 30px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--card-border);
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .summary-value {
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .summary-row.total {
+        margin-top: 16px;
+        padding-top: 20px;
+        border-top: 2px solid var(--card-border);
+    }
+
+    .summary-row.total .summary-label {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .summary-row.total .summary-value {
+        color: var(--accent-gold);
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .btn-checkout {
+        width: 100%;
+        background: var(--gradient-primary);
+        border: none;
+        color: #0a0a0f;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-checkout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.5);
+        color: #0a0a0f;
+    }
+
+    .btn-checkout:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-continue-shopping {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        color: var(--text-primary);
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-top: 12px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-continue-shopping:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--accent-gold);
+        color: var(--accent-gold);
+    }
+
+    /* Stock Warning */
+    .stock-warning {
+        background: rgba(217, 119, 6, 0.1);
+        border: 1px solid rgba(217, 119, 6, 0.3);
+        color: var(--accent-amber);
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Loading State */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+</style>
+
+<div class="marketplace-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-cart3"></i>
+                Shopping Cart
+            </h1>
+            <p class="page-subtitle">Review your items before checkout</p>
+        </div>
+        {% if cart_items %}
+        <div class="cart-count">
+            <i class="bi bi-bag-check"></i>
+            <span class="count-value">{{ cart.get_total_items }}</span>
+            <span>item{{ cart.get_total_items|pluralize }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if cart_items %}
+    <div class="cart-layout">
+        <!-- Cart Items -->
+        <div class="cart-items-card">
+            <div class="cart-items-header">
+                <h5>Your Items</h5>
+                <form method="POST" action="{% url 'clear_cart' %}" onsubmit="return confirm('Are you sure you want to clear your cart?');" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-clear-cart">
+                        <i class="bi bi-trash"></i>
+                        Clear Cart
+                    </button>
+                </form>
+            </div>
+            <div class="cart-items-body">
+                {% for item in cart_items %}
+                <div class="cart-item" data-item-id="{{ item.id }}">
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="cart-item-image">
+                    <div class="cart-item-details">
+                        <div class="cart-item-header">
+                            <h3 class="cart-item-title">
+                                <a href="{% url 'post_detail' item.product.id %}">{{ item.product.title }}</a>
+                            </h3>
+                            <form method="POST" action="{% url 'remove_from_cart' item.id %}" class="remove-item-form" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-remove-item">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="cart-item-meta">
+                            <span class="cart-item-category">{{ item.product.get_category_display }}</span>
+                            <div class="cart-item-price">{{ item.product.price|currency }} each</div>
+                            {% if not item.is_available %}
+                            <div class="stock-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Only {{ item.product.inventory }} available in stock
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="cart-item-actions">
+                            <div class="quantity-control">
+                                <span class="quantity-label">Quantity:</span>
+                                <div class="quantity-input-group">
+                                    <button type="button" class="quantity-btn decrease-btn" data-item-id="{{ item.id }}">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <form method="POST" action="{% url 'update_cart_item' item.id %}" class="quantity-form" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.inventory }}" class="quantity-input" data-item-id="{{ item.id }}" onchange="updateQuantity({{ item.id }}, this.value)">
+                                    </form>
+                                    <button type="button" class="quantity-btn increase-btn" data-item-id="{{ item.id }}">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="item-total">
+                                <span class="item-total-label">Total:</span>
+                                <span class="item-total-value">{{ item.get_total_price|currency }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary-card">
+            <div class="order-summary-header">
+                <h5>Order Summary</h5>
+            </div>
+            <div class="order-summary-body">
+                <div class="summary-row">
+                    <span class="summary-label">Subtotal</span>
+                    <span class="summary-value" id="subtotal">{{ subtotal|currency }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Shipping</span>
+                    <span class="summary-value" id="delivery-fee" style="color: var(--accent-gold); font-weight: 700;">
+                        <i class="bi bi-check-circle"></i> Free in Kigali
+                    </span>
+                </div>
+                <div class="summary-row total">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value" id="total">{{ total|currency }}</span>
+                </div>
+                <a href="{% url 'dashboard' %}" class="btn-continue-shopping">
+                    <i class="bi bi-arrow-left"></i>
+                    Continue Shopping
+                </a>
+                <button type="button" class="btn-checkout" onclick="alert('Checkout page will be implemented next!')">
+                    <i class="bi bi-bag-check"></i>
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="cart-items-card">
+        <div class="empty-cart">
+            <div class="empty-cart-icon">
+                <i class="bi bi-cart-x"></i>
+            </div>
+            <h3>Your cart is empty</h3>
+            <p>Looks like you haven't added any items to your cart yet.</p>
+            <a href="{% url 'dashboard' %}" class="btn-shop-now">
+                <i class="bi bi-bag-plus"></i>
+                Start Shopping
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Update quantity functions
+    function updateQuantity(itemId, quantity) {
+        const form = document.querySelector(`.quantity-form[action*="${itemId}"]`);
+        const formData = new FormData(form);
+        formData.set('quantity', quantity);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update item total
+                const itemRow = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+                const itemTotal = itemRow.querySelector('.item-total-value');
+                itemTotal.textContent = formatCurrency(data.item_total);
+                
+                // Update summary
+                document.getElementById('subtotal').textContent = formatCurrency(data.subtotal);
+                // Delivery fee is always free, but update if needed
+                const deliveryFeeEl = document.getElementById('delivery-fee');
+                if (deliveryFeeEl && parseFloat(data.delivery_fee) === 0) {
+                    deliveryFeeEl.innerHTML = '<i class="bi bi-check-circle"></i> Free in Kigali';
+                } else if (deliveryFeeEl) {
+                    deliveryFeeEl.textContent = formatCurrency(data.delivery_fee);
+                }
+                document.getElementById('total').textContent = formatCurrency(data.total);
+                
+                // Update cart count in header if exists
+                updateCartCount(data.cart_count);
+            } else {
+                alert(data.message || 'Error updating quantity');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating quantity. Please try again.');
+        });
+    }
+
+    // Increase quantity
+    document.querySelectorAll('.increase-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+            const max = parseInt(input.max);
+            const current = parseInt(input.value);
+            if (current < max) {
+                input.value = current + 1;
+                updateQuantity(itemId, input.value);
+            } else {
+                alert(`Only ${max} items available in stock.`);
+            }
+        });
+    });
+
+    // Decrease quantity
+    document.querySelectorAll('.decrease-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+            const current = parseInt(input.value);
+            if (current > 1) {
+                input.value = current - 1;
+                updateQuantity(itemId, input.value);
+            }
+        });
+    });
+
+    // Remove item with AJAX
+    document.querySelectorAll('.remove-item-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!confirm('Remove this item from cart?')) return;
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove item from DOM
+                    const itemRow = document.querySelector(`.cart-item[data-item-id="${data.item_id || this.action.match(/\d+/)[0]}"]`);
+                    if (itemRow) {
+                        itemRow.remove();
+                    }
+                    
+                    // Update summary
+                    document.getElementById('subtotal').textContent = formatCurrency(data.subtotal);
+                    // Delivery fee is always free
+                    const deliveryFeeEl = document.getElementById('delivery-fee');
+                    if (deliveryFeeEl && parseFloat(data.delivery_fee) === 0) {
+                        deliveryFeeEl.innerHTML = '<i class="bi bi-check-circle"></i> Free in Kigali';
+                    } else if (deliveryFeeEl) {
+                        deliveryFeeEl.textContent = formatCurrency(data.delivery_fee);
+                    }
+                    document.getElementById('total').textContent = formatCurrency(data.total);
+                    
+                    // Update cart count
+                    updateCartCount(data.cart_count);
+                    
+                    // Reload if cart is empty
+                    if (data.cart_count === 0) {
+                        location.reload();
+                    }
+                } else {
+                    alert(data.message || 'Error removing item');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.submit(); // Fallback to normal form submission
+            });
+        });
+    });
+
+    // Format currency (simple version - adjust based on your currency filter)
+    function formatCurrency(value) {
+        return 'RWF ' + parseFloat(value).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    // Update cart count in header
+    function updateCartCount(count) {
+        const cartCountElements = document.querySelectorAll('.cart-count .count-value, [data-cart-count]');
+        cartCountElements.forEach(el => {
+            el.textContent = count;
+        });
+    }
+</script>
+{% endblock %}
+

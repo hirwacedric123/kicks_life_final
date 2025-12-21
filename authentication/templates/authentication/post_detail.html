@@ -266,10 +266,14 @@
                             {% if post.price %}
                                 {% if post.inventory > 0 %}
                                 <div class="purchase-actions">
-                                    <button type="button" class="btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
-                                        <i class="bi bi-bag-plus"></i>
-                                        Buy Now
-                                    </button>
+                                    <form method="POST" action="{% url 'add_to_cart' post.id %}" class="add-to-cart-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn-primary" style="width: 100%;">
+                                            <i class="bi bi-cart-plus"></i>
+                                            Add to Cart
+                                        </button>
+                                    </form>
                                     <p class="security-note">
                                         <i class="bi bi-shield-check"></i>
                                         Secure payment • KicksLife250 Protection
@@ -295,8 +299,8 @@
                             {% if post.inventory > 0 %}
                             <div class="purchase-actions">
                                 <a href="{% url 'login' %}?next={% url 'post_detail' post.id %}" class="btn-primary">
-                                    <i class="bi bi-bag-plus"></i>
-                                    Login to Buy
+                                    <i class="bi bi-cart-plus"></i>
+                                    Login to Add to Cart
                                 </a>
                                 <p class="security-note">
                                     <i class="bi bi-shield-check"></i>
@@ -386,191 +390,6 @@
 </section>
 {% endif %}
 
-<!-- Payment Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-gray-500 text-black px-4">
-                <h5 class="modal-title" id="paymentModalLabel">
-                    <i class="bi bi-credit-card me-2"></i>Complete Your Purchase
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="{% url 'purchase_product' post.id %}" id="paymentForm">
-                    {% csrf_token %}
-                    
-                    <!-- Product Summary -->
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <img src="{{ post.image.url }}" alt="{{ post.title }}" class="img-fluid rounded">
-                        </div>
-                        <div class="col-md-8">
-                            <h6 class="fw-bold">{{ post.title }}</h6>
-                            <p class="text-muted mb-1">by {{ post.user.username }}</p>
-                            <h5 class="text-primary">{{ post.price|currency }} each</h5>
-                            <span class="badge bg-success">{{ post.inventory }} in stock</span>
-                        </div>
-                    </div>
-
-                    <!-- Payment Method Selection -->
-                    <div class="mb-4 py-4 px-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-credit-card me-2"></i>Payment Method
-                        </label>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="payment-option">
-                                    <input type="radio" name="payment_method" value="momo" id="momo" class="form-check-input" checked>
-                                    <label for="momo" class="payment-card">
-                                        <div class="payment-card-content">
-                                            <div class="payment-icon">
-                                                <i class="bi bi-phone text-success fs-2"></i>
-                                            </div>
-                                            <div class="payment-details">
-                                                <h6 class="mb-1">Mobile Money</h6>
-                                                <small class="text-muted">Pay with MoMo</small>
-                                            </div>
-                                            <div class="payment-check">
-                                                <i class="bi bi-check-circle-fill text-success"></i>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="payment-option">
-                                    <input type="radio" name="payment_method" value="credit" id="credit" class="form-check-input">
-                                    <label for="credit" class="payment-card">
-                                        <div class="payment-card-content">
-                                            <div class="payment-icon">
-                                                <i class="bi bi-credit-card text-primary fs-2"></i>
-                                            </div>
-                                            <div class="payment-details">
-                                                <h6 class="mb-1">Credit Card</h6>
-                                                <small class="text-muted">Visa, MasterCard, etc.</small>
-                                            </div>
-                                            <div class="payment-check">
-                                                <i class="bi bi-check-circle-fill text-success"></i>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quantity Selection -->
-                    <div class="mb-4 py-4 px-4">
-                        <label for="modal-quantity" class="form-label fw-bold">
-                            Quantity
-                        </label>
-                        <div class="quantity-selector">
-                            <button type="button" class="btn btn-outline-secondary d-none" onclick="decreaseQuantity()">
-                                <i class="bi bi-dash"></i>
-                            </button>
-                            <input type="number" class="form-control text-center" id="modal-quantity" name="quantity" 
-                                   min="1" max="{{ post.inventory }}" value="1" required onchange="validateQuantity()" oninput="validateQuantity()">
-                            <button type="button" class="btn btn-outline-secondary d-none" onclick="increaseQuantity()">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Delivery Method Selection -->
-                    <div class="mb-4 py-4 px-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-truck me-2"></i>Delivery Method
-                        </label>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="delivery-option">
-                                    <input type="radio" name="delivery_method" value="pickup" id="modal-pickup" class="form-check-input" checked>
-                                    <label for="modal-pickup" class="delivery-card">
-                                        <div class="delivery-icon">
-                                            <i class="bi bi-shop text-primary fs-3"></i>
-                                        </div>
-                                        <div class="delivery-details">
-                                            <h6 class="mb-1">Pickup</h6>
-                                            <small class="text-muted">Collect at KicksLife250</small>
-                                            <div class="text-success fw-bold">FREE</div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 py-4 px-4">
-                                <div class="delivery-option">
-                                    <input type="radio" name="delivery_method" value="delivery" id="modal-delivery" class="form-check-input">
-                                    <label for="modal-delivery" class="delivery-card">
-                                        <div class="delivery-icon">
-                                            <i class="bi bi-truck text-success fs-3"></i>
-                                        </div>
-                                        <div class="delivery-details">
-                                            <h6 class="mb-1">Home Delivery</h6>
-                                            <small class="text-muted">Delivered to your door</small>
-                                            <div class="text-primary fw-bold">+ RWF 500</div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Delivery Address (shown only when delivery is selected) -->
-                    <div class="mb-4" id="modal-delivery-address-section" style="display: none;">
-                        <label for="modal-delivery-address" class="form-label fw-bold">
-                            <i class="bi bi-geo-alt me-2"></i>Delivery Address
-                        </label>
-                        <textarea class="form-control" id="modal-delivery-address" name="delivery_address" rows="3" 
-                                  placeholder="Enter your full delivery address"></textarea>
-                        <div class="mt-2">
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="modal-share-location-btn">
-                                <i class="bi bi-geo-alt me-1"></i> Share My Location
-                            </button>
-                            <small class="text-muted d-block mt-1">This helps us provide accurate delivery service</small>
-                        </div>
-                        <input type="hidden" id="modal-delivery-latitude" name="delivery_latitude">
-                        <input type="hidden" id="modal-delivery-longitude" name="delivery_longitude">
-                    </div>
-
-                    <!-- Price Breakdown -->
-                    <div class="card bg-light mb-4">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="bi bi-calculator me-2"></i>Order Summary
-                            </h6>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Product Price:</span>
-                                <span id="modal-product-total">{{ post.price|currency }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2" id="modal-delivery-fee-row" style="display: none;">
-                                <span>Delivery Fee:</span>
-                                <span>RWF 500</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Payment Processing:</span>
-                                <span class="text-success">FREE</span>
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between fw-bold fs-5">
-                                <span>Total:</span>
-                                <span id="modal-total-price" class="text-primary">{{ post.price|currency }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-2"></i>Cancel
-                </button>
-                <button type="submit" form="paymentForm" class="btn btn-primary btn-lg">
-                    <i class="bi bi-shield-check me-2"></i>Complete Purchase
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <style>
     .marketplace-container {
@@ -1143,6 +962,163 @@
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.7; transform: scale(1.2); }
     }
+    
+    /* Toast Notification Styles - Gold Theme */
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes bounceIn {
+        0% {
+            transform: scale(0.3);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        70% {
+            transform: scale(0.9);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        min-width: 320px;
+        max-width: 450px;
+        z-index: 10000;
+        animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .toast-notification.success {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        border: 1px solid rgba(251, 191, 36, 0.5);
+        box-shadow: 0 10px 40px rgba(251, 191, 36, 0.4),
+                    0 0 20px rgba(251, 191, 36, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    
+    .toast-notification.error {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        border: 1px solid rgba(217, 119, 6, 0.5);
+        box-shadow: 0 10px 40px rgba(217, 119, 6, 0.4),
+                    0 0 20px rgba(217, 119, 6, 0.2);
+    }
+    
+    .toast-content {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 24px;
+        border-radius: 16px;
+        color: #0a0a0f;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .toast-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .toast-icon {
+        font-size: 24px;
+        animation: bounceIn 0.5s ease;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+    }
+    
+    .toast-message {
+        flex: 1;
+        font-weight: 600;
+        font-size: 15px;
+        line-height: 1.4;
+        color: #0a0a0f;
+    }
+    
+    .toast-close {
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        color: #0a0a0f;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        font-size: 16px;
+    }
+    
+    .toast-close:hover {
+        background: rgba(0, 0, 0, 0.2);
+        transform: rotate(90deg);
+    }
+    
+    .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(0, 0, 0, 0.2);
+        width: 100%;
+        animation: progressBar 4s linear forwards;
+    }
+    
+    @keyframes progressBar {
+        from {
+            width: 100%;
+        }
+        to {
+            width: 0%;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .toast-notification {
+            right: 10px;
+            left: 10px;
+            min-width: auto;
+            max-width: none;
+        }
+    }
 
     /* Responsive Design */
     @media (max-width: 1200px) {
@@ -1340,6 +1316,145 @@
         });
     }
     
+    // Handle Add to Cart functionality
+    const addToCartForm = document.querySelector('.add-to-cart-form');
+    if (addToCartForm) {
+        addToCartForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Adding...';
+            
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Added!';
+                    submitBtn.style.background = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                    
+                    // Update cart count if element exists
+                    updateCartCount(data.cart_count || 0);
+                    
+                    // Show notification
+                    showNotification(data.message || 'Item added to cart!', 'success');
+                    
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.style.background = '';
+                    }, 2000);
+                } else {
+                    alert(data.message || 'Error adding item to cart');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error adding item to cart. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        });
+    }
+    
+    // Update cart count in header
+    function updateCartCount(count) {
+        const cartCountElements = document.querySelectorAll('[data-cart-count], .cart-count .count-value');
+        cartCountElements.forEach(el => {
+            el.textContent = count;
+        });
+    }
+    
+    // Show notification - Enhanced Gold Theme Toast
+    function showNotification(message, type = 'success') {
+        // Remove any existing notifications first
+        const existingNotifications = document.querySelectorAll('.toast-notification');
+        existingNotifications.forEach(notif => {
+            notif.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notif.remove(), 300);
+        });
+        
+        // Create notification container
+        const notification = document.createElement('div');
+        notification.className = `toast-notification ${type}`;
+        
+        // Create content
+        const content = document.createElement('div');
+        content.className = 'toast-content';
+        
+        // Icon
+        const icon = document.createElement('div');
+        icon.className = 'toast-icon';
+        icon.innerHTML = `<i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'}"></i>`;
+        
+        // Message
+        const messageEl = document.createElement('div');
+        messageEl.className = 'toast-message';
+        messageEl.textContent = message;
+        
+        // Close button
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'toast-close';
+        closeBtn.innerHTML = '<i class="bi bi-x"></i>';
+        closeBtn.setAttribute('aria-label', 'Close notification');
+        
+        // Progress bar
+        const progressBar = document.createElement('div');
+        progressBar.className = 'toast-progress';
+        
+        // Assemble notification
+        content.appendChild(icon);
+        content.appendChild(messageEl);
+        content.appendChild(closeBtn);
+        notification.appendChild(content);
+        notification.appendChild(progressBar);
+        
+        document.body.appendChild(notification);
+        
+        // Function to remove notification
+        const removeNotification = () => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        };
+        
+        // Auto-remove after 4 seconds
+        const autoRemove = setTimeout(removeNotification, 4000);
+        
+        // Clear timeout and remove if user closes manually
+        closeBtn.onclick = () => {
+            clearTimeout(autoRemove);
+            removeNotification();
+        };
+        
+        // Pause progress on hover
+        notification.addEventListener('mouseenter', () => {
+            progressBar.style.animationPlayState = 'paused';
+        });
+        
+        notification.addEventListener('mouseleave', () => {
+            progressBar.style.animationPlayState = 'running';
+        });
+    }
+    
     // Handle share functionality (dummy function for now)
     const shareBtn = document.querySelector('.share-btn');
     if (shareBtn) {
@@ -1359,207 +1474,5 @@
         });
     }
 
-    // Payment Modal Functionality
-    const productPrice = parseFloat("{{ post.price|floatformat:2 }}");
-    const deliveryFee = 5.00;
-    const maxInventory = parseInt("{{ post.inventory }}");
-    
-    // Quantity controls with stock validation
-    function increaseQuantity() {
-        const quantityInput = document.getElementById('modal-quantity');
-        const maxQuantity = parseInt(quantityInput.getAttribute('max'));
-        const currentQuantity = parseInt(quantityInput.value);
-        
-        if (currentQuantity < maxQuantity && currentQuantity < maxInventory) {
-            quantityInput.value = currentQuantity + 1;
-            updatePricing();
-        } else if (currentQuantity >= maxInventory) {
-            // Show stock limit message
-            showStockLimitMessage();
-        }
-    }
-    
-    function decreaseQuantity() {
-        const quantityInput = document.getElementById('modal-quantity');
-        const currentQuantity = parseInt(quantityInput.value);
-        
-        if (currentQuantity > 1) {
-            quantityInput.value = currentQuantity - 1;
-            updatePricing();
-            hideStockLimitMessage();
-        }
-    }
-    
-    function showStockLimitMessage() {
-        let existingMessage = document.getElementById('stock-limit-message');
-        if (!existingMessage) {
-            const quantitySection = document.querySelector('.quantity-selector').parentNode;
-            const message = document.createElement('div');
-            message.id = 'stock-limit-message';
-            message.className = 'alert alert-warning mt-2 mb-0';
-            message.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Maximum available quantity: ' + maxInventory;
-            quantitySection.appendChild(message);
-        }
-    }
-    
-    function hideStockLimitMessage() {
-        const message = document.getElementById('stock-limit-message');
-        if (message) {
-            message.remove();
-        }
-    }
-    
-    // Enhanced quantity validation
-    function validateQuantity() {
-        const quantityInput = document.getElementById('modal-quantity');
-        const quantity = parseInt(quantityInput.value);
-        const submitButton = document.querySelector('button[type="submit"][form="paymentForm"]');
-        
-        if (quantity > maxInventory) {
-            quantityInput.value = maxInventory;
-            showStockLimitMessage();
-        } else if (quantity < 1) {
-            quantityInput.value = 1;
-        } else {
-            hideStockLimitMessage();
-        }
-        
-        // Disable submit button if no stock
-        if (maxInventory <= 0) {
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="bi bi-bag-x me-2"></i>Out of Stock';
-        } else {
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="bi bi-shield-check me-2"></i>Complete Purchase';
-        }
-        
-        updatePricing();
-    }
-    
-    // Update pricing based on quantity and delivery method
-    function updatePricing() {
-        const quantity = parseInt(document.getElementById('modal-quantity').value) || 1;
-        const deliveryMethodRadio = document.querySelector('input[name="delivery_method"]:checked');
-        const deliveryMethod = deliveryMethodRadio ? deliveryMethodRadio.value : 'pickup';
-        
-        const subtotal = productPrice * quantity;
-        const totalDeliveryFee = deliveryMethod === 'delivery' ? deliveryFee : 0;
-        const total = subtotal + totalDeliveryFee;
-        
-        // Update product price display
-        document.getElementById('modal-product-total').textContent = 'RWF' + subtotal.toFixed(2);
-        
-        // Update total price display
-        document.getElementById('modal-total-price').textContent = 'RWF' + total.toFixed(2);
-        
-        // Show/hide delivery fee row based on delivery method
-        const deliveryFeeRow = document.getElementById('modal-delivery-fee-row');
-        const deliveryAddressSection = document.getElementById('modal-delivery-address-section');
-        
-        if (deliveryMethod === 'delivery') {
-            // Show delivery fee row when delivery is selected
-            deliveryFeeRow.style.display = 'flex';
-            deliveryAddressSection.style.display = 'block';
-            document.getElementById('modal-delivery-address').setAttribute('required', 'required');
-        } else {
-            // Hide delivery fee row when pickup is selected
-            deliveryFeeRow.style.display = 'none';
-            deliveryAddressSection.style.display = 'none';
-            document.getElementById('modal-delivery-address').removeAttribute('required');
-        }
-    }
-    
-    // Handle delivery method changes
-    document.addEventListener('DOMContentLoaded', function() {
-        const deliveryRadios = document.querySelectorAll('input[name="delivery_method"]');
-        deliveryRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                updatePricing();
-            });
-        });
-        
-        // Add quantity input validation
-        const quantityInput = document.getElementById('modal-quantity');
-        if (quantityInput) {
-            quantityInput.addEventListener('input', validateQuantity);
-            quantityInput.addEventListener('change', validateQuantity);
-        }
-        
-        // Location sharing functionality
-        const shareLocationBtn = document.getElementById('modal-share-location-btn');
-        if (shareLocationBtn) {
-            shareLocationBtn.addEventListener('click', function() {
-                const btn = this;
-                const originalText = btn.innerHTML;
-                
-                btn.innerHTML = '<i class="bi bi-geo-alt me-1"></i> Getting Location...';
-                btn.disabled = true;
-                
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-                            
-                            // Store coordinates in hidden fields
-                            document.getElementById('modal-delivery-latitude').value = lat;
-                            document.getElementById('modal-delivery-longitude').value = lng;
-                            
-                            // Update address field
-                            const addressField = document.getElementById('modal-delivery-address');
-                            if (!addressField.value.trim()) {
-                                addressField.value = `Location shared (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
-                            }
-                            
-                            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Location Shared';
-                            btn.classList.remove('btn-outline-primary');
-                            btn.classList.add('btn-success');
-                            
-                            setTimeout(() => {
-                                btn.innerHTML = originalText;
-                                btn.classList.remove('btn-success');
-                                btn.classList.add('btn-outline-primary');
-                                btn.disabled = false;
-                            }, 3000);
-                        },
-                        function(error) {
-                            console.error('Location error:', error);
-                            btn.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Location Failed';
-                            btn.classList.remove('btn-outline-primary');
-                            btn.classList.add('btn-warning');
-                            
-                            setTimeout(() => {
-                                btn.innerHTML = originalText;
-                                btn.classList.remove('btn-warning');
-                                btn.classList.add('btn-outline-primary');
-                                btn.disabled = false;
-                            }, 3000);
-                        }
-                    );
-                } else {
-                    btn.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Not Supported';
-                    btn.classList.remove('btn-outline-primary');
-                    btn.classList.add('btn-warning');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.classList.remove('btn-warning');
-                        btn.classList.add('btn-outline-primary');
-                        btn.disabled = false;
-                    }, 3000);
-                }
-            });
-        }
-        
-        // Initialize pricing and validation on page load
-        // Ensure pickup is selected by default and pricing is calculated correctly
-        const pickupRadio = document.getElementById('modal-pickup');
-        if (pickupRadio) {
-            pickupRadio.checked = true;
-        }
-        
-        validateQuantity();
-        updatePricing();
-    });
 </script>
 {% endblock %}

@@ -148,10 +148,8 @@ class Purchase(models.Model):
             # Generate a unique order ID
             self.order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
         
-        # Set delivery fee if delivery method is delivery
-        if self.delivery_method == 'delivery' and self.delivery_fee == 0:
-            from decimal import Decimal
-            self.delivery_fee = Decimal('5.00')  # RWF5 delivery fee
+        # Free shipping in Kigali - no delivery fee
+        # Delivery fee remains 0.00 for all orders
         
         super().save(*args, **kwargs)
     
@@ -177,6 +175,57 @@ class Bookmark(models.Model):
     class Meta:
         ordering = ['-created_at']
         unique_together = ['user', 'post']
+
+class Cart(models.Model):
+    """Shopping cart for a user"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Cart for {self.user.username}"
+    
+    def get_total_items(self):
+        """Get total number of items in cart"""
+        return sum(item.quantity for item in self.items.all())
+    
+    def get_subtotal(self):
+        """Calculate subtotal of all items in cart"""
+        from decimal import Decimal
+        total = Decimal('0.00')
+        for item in self.items.all():
+            total += item.get_total_price()
+        return total
+    
+    def get_total(self, delivery_fee=0):
+        """Calculate total including delivery fee"""
+        return self.get_subtotal() + Decimal(str(delivery_fee))
+    
+    class Meta:
+        ordering = ['-updated_at']
+
+class CartItem(models.Model):
+    """Individual item in shopping cart"""
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='cart_items')
+    quantity = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.quantity}x {self.product.title} in {self.cart.user.username}'s cart"
+    
+    def get_total_price(self):
+        """Calculate total price for this cart item"""
+        return self.product.price * self.quantity
+    
+    def is_available(self):
+        """Check if the requested quantity is available in stock"""
+        return self.product.inventory >= self.quantity
+    
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['cart', 'product']
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='auxiliary_images')

@@ -27,7 +27,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 from .forms import SignUpForm, ProductReviewForm
-from .models import User, Post, Purchase, Bookmark, ProductImage, ProductReview
+from .models import User, Post, Purchase, Bookmark, ProductImage, ProductReview, Cart, CartItem
 # Removed QR and OTP utilities for simplified workflow
 from django.views.decorators.csrf import csrf_exempt
 
@@ -950,7 +950,7 @@ def purchase_product(request, post_id):
         
         # Calculate total price
         total_price = product.price * quantity
-        delivery_fee = Decimal('5.00') if delivery_method == 'delivery' else Decimal('0.00')
+        delivery_fee = Decimal('0.00')  # Free shipping in Kigali
         
         # Validate delivery details if delivery is selected
         if delivery_method == 'delivery':
@@ -998,7 +998,7 @@ def purchase_product(request, post_id):
         
         # Success message based on delivery method
         if delivery_method == 'delivery':
-            messages.success(request, f'Order placed successfully! {quantity} x {product.title} for RWF {total_price + delivery_fee:,.2f} (including RWF {delivery_fee:,.2f} delivery fee). We will contact you soon for delivery arrangements.')
+            messages.success(request, f'Order placed successfully! {quantity} x {product.title} for RWF {total_price:,.2f}. Free shipping in Kigali! We will contact you soon for delivery arrangements.')
         else:
             messages.success(request, f'Order placed successfully! {quantity} x {product.title} for RWF {total_price:,.2f}. Please visit our store to collect your items.')
         
@@ -1102,6 +1102,236 @@ def bookmarks(request):
     }
     
     return render(request, 'authentication/bookmarks.html', context)
+
+# ============================================
+# SHOPPING CART VIEWS
+# ============================================
+
+def get_or_create_cart(user):
+    """Helper function to get or create a cart for a user"""
+    cart, created = Cart.objects.get_or_create(user=user)
+    return cart
+
+@login_required
+def view_cart(request):
+    """Display the shopping cart"""
+    cart = get_or_create_cart(request.user)
+    cart_items = cart.items.all().select_related('product')
+    
+    # Calculate totals
+    subtotal = cart.get_subtotal()
+    delivery_fee = Decimal('0.00')  # Free shipping in Kigali
+    
+    context = {
+        'cart': cart,
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'delivery_fee': delivery_fee,
+        'total': subtotal + delivery_fee,
+    }
+    
+    return render(request, 'authentication/cart.html', context)
+
+@login_required
+def add_to_cart(request, product_id):
+    """Add a product to the cart"""
+    if request.method == 'POST':
+        product = get_object_or_404(Post, id=product_id)
+        
+        # Check if product is out of stock
+        if product.inventory <= 0:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'This product is currently out of stock.'
+                }, status=400)
+            messages.error(request, 'This product is currently out of stock.')
+            return redirect('post_detail', post_id=product_id)
+        
+        # Get quantity from request
+        try:
+            quantity = int(request.POST.get('quantity', 1))
+            if quantity <= 0:
+                raise ValueError("Quantity must be positive")
+        except (ValueError, TypeError):
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please enter a valid quantity.'
+                }, status=400)
+            messages.error(request, 'Please enter a valid quantity.')
+            return redirect('post_detail', post_id=product_id)
+        
+        # Check if enough inventory
+        if product.inventory < quantity:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Only {product.inventory} items available in stock.'
+                }, status=400)
+            messages.error(request, f'Only {product.inventory} items available in stock.')
+            return redirect('post_detail', post_id=product_id)
+        
+        # Get or create cart
+        cart = get_or_create_cart(request.user)
+        
+        # Check if item already exists in cart
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            product=product,
+            defaults={'quantity': quantity}
+        )
+        
+        if not created:
+            # Update quantity if item already exists
+            new_quantity = cart_item.quantity + quantity
+            if new_quantity > product.inventory:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Cannot add more. Only {product.inventory} items available in stock.'
+                    }, status=400)
+                messages.error(request, f'Cannot add more. Only {product.inventory} items available in stock.')
+                return redirect('post_detail', post_id=product_id)
+            cart_item.quantity = new_quantity
+            cart_item.save()
+        
+        # Update cart timestamp
+        cart.save()
+        
+        # Get updated cart count
+        cart_count = cart.get_total_items()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f'{product.title} added to cart successfully!',
+                'cart_count': cart_count,
+                'item_quantity': cart_item.quantity
+            })
+        
+        messages.success(request, f'{product.title} added to cart successfully!')
+        return redirect('view_cart')
+    
+    return redirect('post_detail', post_id=product_id)
+
+@login_required
+def update_cart_item(request, item_id):
+    """Update quantity of a cart item"""
+    if request.method == 'POST':
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        
+        try:
+            quantity = int(request.POST.get('quantity', 1))
+            if quantity <= 0:
+                raise ValueError("Quantity must be positive")
+        except (ValueError, TypeError):
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please enter a valid quantity.'
+                }, status=400)
+            messages.error(request, 'Please enter a valid quantity.')
+            return redirect('view_cart')
+        
+        # Check inventory
+        if quantity > cart_item.product.inventory:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Only {cart_item.product.inventory} items available in stock.'
+                }, status=400)
+            messages.error(request, f'Only {cart_item.product.inventory} items available in stock.')
+            return redirect('view_cart')
+        
+        cart_item.quantity = quantity
+        cart_item.save()
+        
+        # Update cart timestamp
+        cart_item.cart.save()
+        
+        # Calculate updated totals
+        subtotal = cart_item.cart.get_subtotal()
+        delivery_fee = Decimal('0.00')  # Free shipping in Kigali
+        total = subtotal + delivery_fee
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Cart updated successfully!',
+                'item_total': float(cart_item.get_total_price()),
+                'subtotal': float(subtotal),
+                'delivery_fee': float(delivery_fee),
+                'total': float(total),
+                'cart_count': cart_item.cart.get_total_items()
+            })
+        
+        messages.success(request, 'Cart updated successfully!')
+        return redirect('view_cart')
+    
+    return redirect('view_cart')
+
+@login_required
+def remove_from_cart(request, item_id):
+    """Remove an item from the cart"""
+    if request.method == 'POST':
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        product_title = cart_item.product.title
+        item_id_value = cart_item.id
+        cart_item.delete()
+        
+        # Update cart timestamp
+        cart = get_or_create_cart(request.user)
+        cart.save()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            subtotal = cart.get_subtotal()
+            delivery_fee = Decimal('0.00')  # Free shipping in Kigali
+            total = subtotal + delivery_fee
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'{product_title} removed from cart.',
+                'item_id': item_id_value,
+                'subtotal': float(subtotal),
+                'delivery_fee': float(delivery_fee),
+                'total': float(total),
+                'cart_count': cart.get_total_items()
+            })
+        
+        messages.success(request, f'{product_title} removed from cart.')
+        return redirect('view_cart')
+    
+    return redirect('view_cart')
+
+@login_required
+def clear_cart(request):
+    """Clear all items from the cart"""
+    if request.method == 'POST':
+        cart = get_or_create_cart(request.user)
+        cart.items.all().delete()
+        cart.save()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Cart cleared successfully!',
+                'cart_count': 0
+            })
+        
+        messages.success(request, 'Cart cleared successfully!')
+        return redirect('view_cart')
+    
+    return redirect('view_cart')
+
+@login_required
+def get_cart_count(request):
+    """API endpoint to get current cart item count"""
+    if request.user.is_authenticated:
+        cart = get_or_create_cart(request.user)
+        count = cart.get_total_items()
+        return JsonResponse({'cart_count': count})
+    return JsonResponse({'cart_count': 0})
 
 @login_required
 def admin_dashboard(request):
