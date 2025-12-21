@@ -103,7 +103,7 @@
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid var(--card-border);
         border-radius: 10px;
-        color: var(--text-primary);
+        color: #ffffff !important;
         font-size: 14px;
         transition: all 0.3s ease;
     }
@@ -113,15 +113,60 @@
         border-color: var(--accent-gold);
         background: rgba(255, 255, 255, 0.08);
         box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        color: #ffffff !important;
+    }
+
+    .form-control:focus-visible {
+        color: #ffffff !important;
     }
 
     .form-control::placeholder {
         color: var(--text-muted);
     }
 
+    /* Fix autofill text color */
+    .form-control:-webkit-autofill,
+    .form-control:-webkit-autofill:hover,
+    .form-control:-webkit-autofill:focus,
+    .form-control:-webkit-autofill:active {
+        -webkit-text-fill-color: #ffffff !important;
+        -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.05) inset !important;
+        box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.05) inset !important;
+        transition: background-color 5000s ease-in-out 0s;
+        color: #ffffff !important;
+    }
+
+    /* Ensure text color on input */
+    .form-control input,
+    .form-control textarea {
+        color: #ffffff !important;
+    }
+
     textarea.form-control {
         resize: vertical;
         min-height: 80px;
+        color: #ffffff !important;
+    }
+
+    textarea.form-control:focus {
+        color: #ffffff !important;
+    }
+
+    /* Fix for all input types */
+    input[type="text"].form-control,
+    input[type="number"].form-control,
+    input[type="tel"].form-control,
+    input[type="email"].form-control,
+    textarea.form-control {
+        color: #ffffff !important;
+    }
+
+    input[type="text"].form-control:focus,
+    input[type="number"].form-control:focus,
+    input[type="tel"].form-control:focus,
+    input[type="email"].form-control:focus,
+    textarea.form-control:focus {
+        color: #ffffff !important;
     }
 
     .form-help {
@@ -518,9 +563,51 @@
 </div>
 
 <script>
-    // Form validation
+    // Form validation and text color fix
     document.addEventListener('DOMContentLoaded', function() {
         const deliveryAddressInput = document.querySelector('textarea[name="delivery_address"]');
+
+        // Fix text color for all form inputs
+        const formInputs = document.querySelectorAll('.form-control');
+        formInputs.forEach(input => {
+            // Set initial color
+            input.style.color = '#ffffff';
+            
+            // Fix color on focus
+            input.addEventListener('focus', function() {
+                this.style.color = '#ffffff';
+            });
+            
+            // Fix color on input/typing
+            input.addEventListener('input', function() {
+                this.style.color = '#ffffff';
+            });
+            
+            // Fix color on blur
+            input.addEventListener('blur', function() {
+                this.style.color = '#ffffff';
+            });
+        });
+
+        // Monitor for autofill and fix color
+        setTimeout(function() {
+            formInputs.forEach(input => {
+                if (window.getComputedStyle(input).getPropertyValue('-webkit-text-fill-color') !== 'rgb(255, 255, 255)') {
+                    input.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                    input.style.color = '#ffffff';
+                }
+            });
+        }, 100);
+
+        // Check periodically for autofill
+        setInterval(function() {
+            formInputs.forEach(input => {
+                if (input.matches(':-webkit-autofill')) {
+                    input.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                    input.style.color = '#ffffff';
+                }
+            });
+        }, 500);
 
         // Form validation
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
