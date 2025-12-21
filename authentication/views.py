@@ -40,33 +40,7 @@ def landing_page(request):
     Main landing page for KoraQuest - Public facing homepage
     Shows featured products, categories, and promotional content
     """
-    # Get featured/new products (latest 8 products) - only with images and prices
-    new_arrivals = Post.objects.filter(
-        inventory__gt=0,
-        price__isnull=False,
-        price__gt=0
-    ).exclude(
-        image='',
-        title='',
-        title__isnull=True
-    ).filter(
-        title__isnull=False
-    ).order_by('-created_at')[:8]
-    
-    # Get best sellers (most purchased products) - only with images and prices
-    best_sellers = Post.objects.filter(
-        inventory__gt=0,
-        price__isnull=False,
-        price__gt=0
-    ).exclude(
-        image='',
-        title='',
-        title__isnull=True
-    ).filter(
-        title__isnull=False
-    ).order_by('-total_purchases')[:8]
-    
-    # Get featured products (you can add is_featured field later) - only with images and prices
+    # Get featured products - only with images and prices
     featured_products = Post.objects.filter(
         inventory__gt=0,
         price__isnull=False,
@@ -77,7 +51,7 @@ def landing_page(request):
         title__isnull=True
     ).filter(
         title__isnull=False
-    ).order_by('-created_at')[:4]
+    ).order_by('-created_at')[:6]
     
     # Get all categories with product counts
     categories_with_counts = []
@@ -106,8 +80,6 @@ def landing_page(request):
     }
     
     context = {
-        'new_arrivals': new_arrivals,
-        'best_sellers': best_sellers,
         'featured_products': featured_products,
         'categories': categories_with_counts,
         'recent_reviews': recent_reviews,

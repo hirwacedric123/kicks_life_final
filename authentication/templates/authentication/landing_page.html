@@ -64,15 +64,15 @@
     }
     
     /* Ensure all cards have proper text colors */
-    .category-card, .product-card, .feature-card, .testimonial-card {
+    .category-card, .feature-card, .testimonial-card {
         color: var(--text-primary, #ffffff) !important;
     }
     
-    .category-card *, .product-card *, .feature-card *, .testimonial-card * {
+    .category-card *, .feature-card *, .testimonial-card * {
         color: inherit;
     }
     
-    .category-name, .product-name, .feature-title {
+    .category-name, .feature-title {
         color: var(--text-primary, #ffffff) !important;
     }
     
@@ -575,280 +575,6 @@
         font-weight: 500;
     }
     
-    /* ============================================
-       PRODUCTS SECTION
-       ============================================ */
-    
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 2rem;
-        align-items: stretch;
-        grid-auto-rows: min-content;
-    }
-    
-    .product-card {
-        background: var(--bg-card);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        border: 1px solid var(--glass-border);
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        position: relative;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        cursor: pointer;
-        width: 100%;
-        min-height: 0;
-        contain: layout style;
-    }
-    
-    /* Ensure product card links don't have default link styling */
-    a.product-card {
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-    }
-    
-    a.product-card:hover {
-        text-decoration: none;
-        color: inherit;
-    }
-    
-    /* Ensure card is a single grid item - prevent splitting */
-    .products-grid > .product-card {
-        display: flex !important;
-        flex-direction: column !important;
-        min-width: 0;
-        grid-column: span 1 !important;
-        grid-row: span 1 !important;
-        position: relative;
-    }
-    
-    /* Prevent any child from becoming a grid item */
-    .product-card > * {
-        grid-column: unset !important;
-        grid-row: unset !important;
-        display: block;
-    }
-    
-    /* Ensure image container stays within card */
-    .product-card .product-image-container {
-        display: block !important;
-        position: relative;
-        width: 100%;
-    }
-    
-    /* Ensure product info stays within card */
-    .product-card .product-info {
-        display: flex !important;
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .product-card::before {
-        content: '';
-        position: absolute;
-        inset: -1px;
-        background: linear-gradient(135deg, var(--accent-gold, #fbbf24), var(--accent-amber, #f59e0b));
-        border-radius: 21px;
-        opacity: 0;
-        z-index: -1;
-        transition: opacity 0.3s ease;
-    }
-    
-    .product-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-        background: var(--bg-card-hover);
-    }
-    
-    .product-card:hover::before {
-        opacity: 0.3; /* Reduced opacity so it's just a subtle border glow */
-    }
-    
-    /* Ensure product info section maintains dark background on hover */
-    .product-card:hover .product-info {
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(10px);
-    }
-    
-    .product-image-container {
-        position: relative;
-        height: 280px;
-        overflow: hidden;
-        background: var(--bg-secondary);
-        flex-shrink: 0;
-        width: 100%;
-    }
-    
-    .product-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s ease;
-        display: block;
-    }
-    
-    .product-image-placeholder {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--bg-secondary);
-        color: var(--text-muted);
-        font-size: 3rem;
-    }
-    
-    .product-card:hover .product-image {
-        transform: scale(1.1);
-    }
-    
-    .product-badge {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: var(--gradient-primary);
-        color: #0a0a0a !important;
-        padding: 0.4rem 1rem;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-    
-    .product-actions {
-        position: absolute;
-        bottom: 1rem;
-        left: 1rem;
-        right: 1rem;
-        display: flex;
-        gap: 0.5rem;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-    }
-    
-    .product-card:hover .product-actions {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .product-action-btn {
-        flex: 1;
-        padding: 0.75rem;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        text-decoration: none;
-    }
-    
-    .product-action-btn.primary {
-        background: var(--gradient-primary);
-        color: #0a0a0a !important;
-    }
-    
-    .product-action-btn.primary:hover {
-        box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
-    }
-    
-    .product-action-btn.secondary {
-        background: var(--glass-bg);
-        color: white !important;
-        border: 1px solid var(--glass-border);
-    }
-    
-    .product-action-btn.secondary:hover {
-        background: rgba(245, 158, 11, 0.2);
-        border-color: var(--accent-amber, #f59e0b);
-        color: var(--accent-amber, #f59e0b) !important;
-    }
-    
-    .product-info {
-        padding: 1.5rem;
-        background: transparent;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 2;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    /* Ensure product info has dark background on hover for text visibility */
-    .product-card:hover .product-info {
-        background: rgba(0, 0, 0, 0.6) !important;
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Ensure product name is visible on hover */
-    .product-card:hover .product-name {
-        color: var(--text-primary, #ffffff) !important;
-    }
-    
-    .product-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    
-    .product-price {
-        font-size: 1.5rem;
-        font-weight: 700;
-        background: var(--gradient-primary);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 0.75rem;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-    
-    /* Fix price visibility on hover - use white text with shadow for better contrast */
-    .product-card:hover .product-price {
-        background: none;
-        -webkit-background-clip: unset;
-        -webkit-text-fill-color: #ffffff;
-        background-clip: unset;
-        color: #ffffff !important;
-        text-shadow: 
-            0 2px 8px rgba(0, 0, 0, 0.8),
-            0 0 20px rgba(0, 0, 0, 0.5);
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
-    }
-    
-    .product-rating {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        color: var(--accent-gold, #fbbf24);
-        font-size: 0.9rem;
-    }
-    
-    .product-rating span {
-        color: var(--text-muted, rgba(255, 255, 255, 0.5)) !important;
-        margin-left: 0.5rem;
-    }
     
     /* ============================================
        FEATURES SECTION
@@ -1316,11 +1042,11 @@
     }
     
     /* Professional UI Enhancements */
-    .category-card, .product-card, .feature-card, .testimonial-card {
+    .category-card, .feature-card, .testimonial-card {
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    .category-card:hover, .product-card:hover, .feature-card:hover, .testimonial-card:hover {
+    .category-card:hover, .feature-card:hover, .testimonial-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(251, 191, 36, 0.1);
     }
@@ -1615,58 +1341,6 @@
 </section>
 {% endif %}
 
-<!-- New Arrivals Section -->
-{% if new_arrivals %}
-<section class="section section-alt">
-    <div class="container">
-        <div class="section-header fade-in">
-            <span class="section-badge">Just Dropped</span>
-            <h2 class="section-title">New <span class="gradient-text">Sneakers</span> in Kigali</h2>
-            <p class="section-subtitle">The latest authentic sneakers just arrived in Kigali, Rwanda. Shop new releases and trending shoes online.</p>
-        </div>
-        
-        <div class="products-grid">
-            {% for product in new_arrivals|slice:":4" %}
-                {% if product and product.image and product.title and product.price %}
-                <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}">
-                    <div class="product-image-container">
-                        <span class="product-badge">NEW</span>
-                        <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image" loading="lazy">
-                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
-                            <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-                            <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
-                                <i class="bi bi-heart"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">{{ product.title }}</h3>
-                        <div class="product-price">RWF {{ product.price|floatformat:0 }}</div>
-                        {% if product.review_count > 0 %}
-                        <div class="product-rating">
-                            {% for i in "12345" %}
-                            <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
-                            {% endfor %}
-                            <span>({{ product.review_count }} reviews)</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </a>
-                {% endif %}
-            {% endfor %}
-        </div>
-        
-        <div class="view-all fade-in">
-            <a href="{% url 'dashboard' %}?sort=newest" class="view-all-link">
-                View All New Arrivals
-                <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
-    </div>
-</section>
-{% endif %}
 
 <!-- Features Section -->
 <section class="section">
@@ -1713,57 +1387,6 @@
     </div>
 </section>
 
-<!-- Best Sellers Section -->
-{% if best_sellers %}
-<section class="section section-alt">
-    <div class="container">
-        <div class="section-header fade-in">
-            <span class="section-badge">Most Popular</span>
-            <h2 class="section-title">Best Selling <span class="gradient-text">Sneakers</span> in Kigali</h2>
-            <p class="section-subtitle">The most popular shoes and sneakers everyone in Kigali, Rwanda is buying. Top-rated authentic kicks.</p>
-        </div>
-        
-        <div class="products-grid">
-            {% for product in best_sellers|slice:":4" %}
-                {% if product and product.image and product.title and product.price %}
-                <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}">
-                    <div class="product-image-container">
-                        <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image" loading="lazy">
-                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
-                            <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-                            <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
-                                <i class="bi bi-heart"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">{{ product.title }}</h3>
-                        <div class="product-price">RWF {{ product.price|floatformat:0 }}</div>
-                        {% if product.review_count > 0 %}
-                        <div class="product-rating">
-                            {% for i in "12345" %}
-                            <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
-                            {% endfor %}
-                            <span>({{ product.review_count }} reviews)</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </a>
-                {% endif %}
-            {% endfor %}
-        </div>
-        
-        <div class="view-all fade-in">
-            <a href="{% url 'dashboard' %}?sort=popular" class="view-all-link">
-                View All Best Sellers
-                <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
-    </div>
-</section>
-{% endif %}
 
 <!-- Testimonials Section -->
 {% if recent_reviews %}
