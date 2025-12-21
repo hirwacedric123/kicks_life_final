@@ -583,6 +583,8 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 2rem;
+        align-items: stretch;
+        grid-auto-rows: min-content;
     }
     
     .product-card {
@@ -594,21 +596,60 @@
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        display: block;
+        display: flex;
+        flex-direction: column;
         text-decoration: none;
         color: inherit;
         cursor: pointer;
+        width: 100%;
+        min-height: 0;
+        contain: layout style;
     }
     
     /* Ensure product card links don't have default link styling */
     a.product-card {
         text-decoration: none;
         color: inherit;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
     }
     
     a.product-card:hover {
         text-decoration: none;
         color: inherit;
+    }
+    
+    /* Ensure card is a single grid item - prevent splitting */
+    .products-grid > .product-card {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 0;
+        grid-column: span 1 !important;
+        grid-row: span 1 !important;
+        position: relative;
+    }
+    
+    /* Prevent any child from becoming a grid item */
+    .product-card > * {
+        grid-column: unset !important;
+        grid-row: unset !important;
+        display: block;
+    }
+    
+    /* Ensure image container stays within card */
+    .product-card .product-image-container {
+        display: block !important;
+        position: relative;
+        width: 100%;
+    }
+    
+    /* Ensure product info stays within card */
+    .product-card .product-info {
+        display: flex !important;
+        flex-direction: column;
+        width: 100%;
     }
     
     .product-card::before {
@@ -643,6 +684,8 @@
         height: 280px;
         overflow: hidden;
         background: var(--bg-secondary);
+        flex-shrink: 0;
+        width: 100%;
     }
     
     .product-image {
@@ -650,6 +693,18 @@
         height: 100%;
         object-fit: cover;
         transition: transform 0.6s ease;
+        display: block;
+    }
+    
+    .product-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-secondary);
+        color: var(--text-muted);
+        font-size: 3rem;
     }
     
     .product-card:hover .product-image {
@@ -729,6 +784,10 @@
         transition: all 0.3s ease;
         position: relative;
         z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
     }
     
     /* Ensure product info has dark background on hover for text visibility */
@@ -1568,32 +1627,34 @@
         
         <div class="products-grid">
             {% for product in new_arrivals|slice:":4" %}
-            <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}" style="text-decoration: none; color: inherit;">
-                <div class="product-image-container">
-                    <span class="product-badge">NEW</span>
-                    <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image">
-                    <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
-                        <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
-                            <i class="bi bi-eye"></i> View
-                        </a>
-                        <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
-                            <i class="bi bi-heart"></i>
-                        </button>
+                {% if product and product.image and product.title and product.price %}
+                <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}">
+                    <div class="product-image-container">
+                        <span class="product-badge">NEW</span>
+                        <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image" loading="lazy">
+                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                            <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">{{ product.title }}</h3>
-                    <div class="product-price">RWF {{ product.price|floatformat:0 }}</div>
-                    {% if product.review_count > 0 %}
-                    <div class="product-rating">
-                        {% for i in "12345" %}
-                        <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
-                        {% endfor %}
-                        <span>({{ product.review_count }} reviews)</span>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.title }}</h3>
+                        <div class="product-price">RWF {{ product.price|floatformat:0 }}</div>
+                        {% if product.review_count > 0 %}
+                        <div class="product-rating">
+                            {% for i in "12345" %}
+                            <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
+                            {% endfor %}
+                            <span>({{ product.review_count }} reviews)</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                </div>
-            </a>
+                </a>
+                {% endif %}
             {% endfor %}
         </div>
         
@@ -1664,31 +1725,33 @@
         
         <div class="products-grid">
             {% for product in best_sellers|slice:":4" %}
-            <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}" style="text-decoration: none; color: inherit;">
-                <div class="product-image-container">
-                    <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image">
-                    <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
-                        <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
-                            <i class="bi bi-eye"></i> View
-                        </a>
-                        <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
-                            <i class="bi bi-heart"></i>
-                        </button>
+                {% if product and product.image and product.title and product.price %}
+                <a href="{% url 'post_detail' product.id %}" class="product-card fade-in delay-{{ forloop.counter }}">
+                    <div class="product-image-container">
+                        <img src="{{ product.image.url }}" alt="{{ product.title }} - {{ product.get_category_display }} in Kigali, Rwanda | Buy Online" class="product-image" loading="lazy">
+                        <div class="product-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                            <a href="{% url 'post_detail' product.id %}" class="product-action-btn primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <button class="product-action-btn secondary wishlist-btn" onclick="event.preventDefault(); event.stopPropagation();">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">{{ product.title }}</h3>
-                    <div class="product-price">RWF {{ product.price|floatformat:0 }}</div>
-                    {% if product.review_count > 0 %}
-                    <div class="product-rating">
-                        {% for i in "12345" %}
-                        <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
-                        {% endfor %}
-                        <span>({{ product.review_count }} reviews)</span>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.title }}</h3>
+                        <div class="product-price">RWF {{ product.price|floatformat:0 }}</div>
+                        {% if product.review_count > 0 %}
+                        <div class="product-rating">
+                            {% for i in "12345" %}
+                            <i class="bi bi-star-fill" {% if forloop.counter > product.average_rating %}style="opacity:0.2"{% endif %}></i>
+                            {% endfor %}
+                            <span>({{ product.review_count }} reviews)</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                </div>
-            </a>
+                </a>
+                {% endif %}
             {% endfor %}
         </div>
         
