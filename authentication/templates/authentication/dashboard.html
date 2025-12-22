@@ -769,6 +769,43 @@
             transform: translateY(0) scale(1);
         }
 
+        /* Sold Out Badge */
+        .sold-out-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            animation: pulse-sold-out 2s ease-in-out infinite;
+        }
+
+        .sold-out-badge i {
+            font-size: 12px;
+        }
+
+        @keyframes pulse-sold-out {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.9;
+                transform: scale(1.02);
+            }
+        }
+
         @media (max-width: 768px) {
             .category-badge {
                 top: 8px;
@@ -786,12 +823,28 @@
             }
         }
 
+        @media (max-width: 768px) {
+            .sold-out-badge {
+                top: 8px;
+                right: 8px;
+                padding: 6px 12px;
+                font-size: 10px;
+            }
+        }
+
         @media (max-width: 480px) {
             .category-badge {
                 top: 6px;
                 left: 6px;
                 padding: 4px 8px;
                 border-radius: 50px;
+                font-size: 9px;
+            }
+
+            .sold-out-badge {
+                top: 6px;
+                right: 6px;
+                padding: 5px 10px;
                 font-size: 9px;
             }
         }
@@ -2034,6 +2087,11 @@
                 <div class="card-image-container">
                     <img src="{{ post.image.url }}" alt="{{ post.title }} - {{ post.get_category_display }} in Kigali, Rwanda | Buy Online" class="card-image">
                     <div class="category-badge">{{ post.get_category_display }}</div>
+                    {% if post.inventory == 0 %}
+                    <div class="sold-out-badge">
+                        <i class="bi bi-x-circle"></i> Sold Out
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="card-overlay">

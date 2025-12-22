@@ -40,9 +40,8 @@ def landing_page(request):
     Main landing page for KoraQuest - Public facing homepage
     Shows featured products, categories, and promotional content
     """
-    # Get featured products - only with images and prices
+    # Get featured products - only with images and prices (including sold-out items)
     featured_products = Post.objects.filter(
-        inventory__gt=0,
         price__isnull=False,
         price__gt=0
     ).exclude(
@@ -53,9 +52,8 @@ def landing_page(request):
         title__isnull=False
     ).order_by('-created_at')[:6]
     
-    # Get new arrivals - recently added products (Just Dropped)
+    # Get new arrivals - recently added products (Just Dropped) (including sold-out items)
     new_arrivals = Post.objects.filter(
-        inventory__gt=0,
         price__isnull=False,
         price__gt=0
     ).exclude(
@@ -66,9 +64,8 @@ def landing_page(request):
         title__isnull=False
     ).order_by('-created_at')[:8]
     
-    # Get best sellers - most popular products (Most Popular)
+    # Get best sellers - most popular products (Most Popular) (including sold-out items)
     best_sellers = Post.objects.filter(
-        inventory__gt=0,
         price__isnull=False,
         price__gt=0
     ).exclude(
@@ -79,12 +76,11 @@ def landing_page(request):
         title__isnull=False
     ).order_by('-total_purchases', '-created_at')[:8]
     
-    # Get all categories with product counts
+    # Get all categories with product counts (including sold-out items)
     categories_with_counts = []
     for category_code, category_name in Post.CATEGORY_CHOICES:
         count = Post.objects.filter(
-            category=category_code,
-            inventory__gt=0
+            category=category_code
         ).count()
         if count > 0:  # Only show categories with products
             categories_with_counts.append({
@@ -98,9 +94,9 @@ def landing_page(request):
         rating__gte=4  # Only show 4-5 star reviews
     ).select_related('reviewer', 'product').order_by('-created_at')[:6]
     
-    # Statistics for "Why Choose Us" section
+    # Statistics for "Why Choose Us" section (including sold-out items)
     stats = {
-        'total_products': Post.objects.filter(inventory__gt=0).count(),
+        'total_products': Post.objects.count(),
         'total_orders': Purchase.objects.filter(status='completed').count(),
         'happy_customers': User.objects.filter(role='customer').count(),
     }
@@ -460,10 +456,8 @@ def dashboard_api(request):
             page_size = 20
         
         # Start with all products (no job posts anymore)
+        # Products remain visible even when sold out
         posts = Post.objects.all()
-        
-        # Filter out sold-out products (inventory must be greater than 0)
-        posts = posts.filter(inventory__gt=0)
         
         # Filter out the user's own products if they are a vendor
         if user.is_vendor_role:
@@ -738,8 +732,8 @@ def categories_api(request):
     try:
         categories_data = []
         for choice in Post.CATEGORY_CHOICES:
-            # Get count of products in each category
-            count = Post.objects.filter(category=choice[0], inventory__gt=0).count()
+            # Get count of products in each category (including sold-out items)
+            count = Post.objects.filter(category=choice[0]).count()
             categories_data.append({
                 'value': choice[0],
                 'label': choice[1],
@@ -775,10 +769,8 @@ def dashboard(request):
     sort_by = request.GET.get('sort', 'newest')
     
     # Start with all products (no job posts anymore)
+    # Products remain visible even when sold out
     posts = Post.objects.all()
-    
-    # Filter out sold-out products (inventory must be greater than 0)
-    posts = posts.filter(inventory__gt=0)
     
     # Apply search filter if provided
     if search_query:
@@ -886,16 +878,14 @@ def post_detail(request, post_id):
         guest_likes = request.session.get('guest_likes', [])
         is_liked = post_id in guest_likes
     
-    # Get related products (same category, different product)
+    # Get related products (same category, different product) - including sold-out items
     related_products = Post.objects.filter(
-        category=post.category,
-        inventory__gt=0
+        category=post.category
     ).exclude(id=post.id).order_by('-total_purchases', '-created_at')[:4]
     
-    # Get products from same category for internal linking
+    # Get products from same category for internal linking - including sold-out items
     category_products = Post.objects.filter(
-        category=post.category,
-        inventory__gt=0
+        category=post.category
     ).exclude(id=post.id).order_by('-created_at')[:6]
     
     # SEO context
@@ -1946,8 +1936,8 @@ def sitemap_xml(request):
     host = request.get_host()
     base_url = f"{protocol}://{host}"
     
-    # Get all products
-    products = Post.objects.filter(inventory__gt=0).order_by('-updated_at')
+    # Get all products (including sold-out items for sitemap)
+    products = Post.objects.all().order_by('-updated_at')
     
     # Get current time
     now = timezone.now()
