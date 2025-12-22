@@ -1210,6 +1210,20 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize thumbnail click handlers
         initializeThumbnailGallery();
+        
+        // Ensure size dropdown options are visible
+        const sizeSelect = document.getElementById('size-select');
+        if (sizeSelect) {
+            // Force option styling
+            const options = sizeSelect.querySelectorAll('option');
+            options.forEach(option => {
+                option.style.backgroundColor = '#1a1a1a';
+                option.style.color = '#ffffff';
+            });
+            
+            // Ensure select background doesn't override
+            sizeSelect.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+        }
     });
 
     function initializeThumbnailGallery() {

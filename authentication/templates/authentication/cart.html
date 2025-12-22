@@ -1083,6 +1083,19 @@
         });
     }
 
+    // Ensure cart size dropdowns are visible
+    document.addEventListener('DOMContentLoaded', function() {
+        const sizeSelects = document.querySelectorAll('.cart-size-select');
+        sizeSelects.forEach(select => {
+            const options = select.querySelectorAll('option');
+            options.forEach(option => {
+                option.style.backgroundColor = '#1a1a1a';
+                option.style.color = '#ffffff';
+            });
+            select.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+        });
+    });
+
     // Update size
     function updateSize(itemId, size) {
         const form = document.querySelector(`.size-update-form[action*="${itemId}"]`);
