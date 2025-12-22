@@ -768,6 +768,31 @@
                         <div class="cart-item-meta">
                             <span class="cart-item-category">{{ item.product.get_category_display }}</span>
                             <div class="cart-item-price">{{ item.product.price|currency }} each</div>
+                            {% if item.size %}
+                            <div class="cart-item-size" style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                                <span style="color: var(--text-secondary); font-size: 13px;">Size:</span>
+                                <span style="color: var(--accent-gold); font-weight: 600; font-size: 14px;">EUR {{ item.size }}</span>
+                                <form method="POST" action="{% url 'update_cart_item' item.id %}" class="size-update-form" style="display: inline; margin-left: 8px;">
+                                    {% csrf_token %}
+                                    <select name="size" onchange="updateSize({{ item.id }}, this.value)" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 6px; color: #ffffff; padding: 4px 8px; font-size: 12px;">
+                                        <option value="35" {% if item.size == "35" %}selected{% endif %}>35</option>
+                                        <option value="36" {% if item.size == "36" %}selected{% endif %}>36</option>
+                                        <option value="37" {% if item.size == "37" %}selected{% endif %}>37</option>
+                                        <option value="38" {% if item.size == "38" %}selected{% endif %}>38</option>
+                                        <option value="39" {% if item.size == "39" %}selected{% endif %}>39</option>
+                                        <option value="40" {% if item.size == "40" %}selected{% endif %}>40</option>
+                                        <option value="41" {% if item.size == "41" %}selected{% endif %}>41</option>
+                                        <option value="42" {% if item.size == "42" %}selected{% endif %}>42</option>
+                                        <option value="43" {% if item.size == "43" %}selected{% endif %}>43</option>
+                                        <option value="44" {% if item.size == "44" %}selected{% endif %}>44</option>
+                                        <option value="45" {% if item.size == "45" %}selected{% endif %}>45</option>
+                                        <option value="46" {% if item.size == "46" %}selected{% endif %}>46</option>
+                                        <option value="47" {% if item.size == "47" %}selected{% endif %}>47</option>
+                                        <option value="48" {% if item.size == "48" %}selected{% endif %}>48</option>
+                                    </select>
+                                </form>
+                            </div>
+                            {% endif %}
                             {% if not item.is_available %}
                             <div class="stock-warning">
                                 <i class="bi bi-exclamation-triangle"></i>
@@ -1011,6 +1036,34 @@
         .catch(error => {
             console.error('Error:', error);
             customAlert('Error updating quantity. Please try again.', 'Error', 'warning');
+        });
+    }
+
+    // Update size
+    function updateSize(itemId, size) {
+        const form = document.querySelector(`.size-update-form[action*="${itemId}"]`);
+        const formData = new FormData(form);
+        formData.set('size', size);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to show updated size
+                location.reload();
+            } else {
+                customAlert(data.message || 'Error updating size', 'Error', 'warning');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            customAlert('Error updating size. Please try again.', 'Error', 'warning');
         });
     }
 

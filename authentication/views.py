@@ -1171,7 +1171,7 @@ def add_to_cart(request, product_id):
             messages.error(request, 'This product is currently out of stock.')
             return redirect('post_detail', post_id=product_id)
         
-        # Get quantity from request
+        # Get quantity and size from request
         try:
             quantity = int(request.POST.get('quantity', 1))
             if quantity <= 0:
@@ -1183,6 +1183,16 @@ def add_to_cart(request, product_id):
                     'message': 'Please enter a valid quantity.'
                 }, status=400)
             messages.error(request, 'Please enter a valid quantity.')
+            return redirect('post_detail', post_id=product_id)
+        
+        size = request.POST.get('size', '').strip()
+        if not size:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please select a shoe size (EUR).'
+                }, status=400)
+            messages.error(request, 'Please select a shoe size (EUR).')
             return redirect('post_detail', post_id=product_id)
         
         # Check if enough inventory
@@ -1198,11 +1208,14 @@ def add_to_cart(request, product_id):
         # Get or create cart
         cart = get_or_create_cart(request.user)
         
-        # Check if item already exists in cart
+        # Check if item with same product and size already exists in cart
+        # If size is empty, use None for lookup
+        lookup_size = size if size else None
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
             product=product,
-            defaults={'quantity': quantity}
+            size=lookup_size,
+            defaults={'quantity': quantity, 'size': size}
         )
         
         if not created:
@@ -1268,6 +1281,9 @@ def update_cart_item(request, item_id):
             return redirect('view_cart')
         
         cart_item.quantity = quantity
+        size = request.POST.get('size', '').strip()
+        if size:
+            cart_item.size = size
         cart_item.save()
         
         # Update cart timestamp
@@ -1475,6 +1491,7 @@ def process_checkout(request):
             delivery_fee=delivery_fee,
             delivery_address=delivery_address,
             notes=notes,
+            size=cart_item.size or '',
             status='pending'
         )
         

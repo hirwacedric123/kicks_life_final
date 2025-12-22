@@ -528,7 +528,12 @@
                     <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="summary-item-image">
                     <div class="summary-item-details">
                         <div class="summary-item-title">{{ item.product.title }}</div>
-                        <div class="summary-item-meta">Qty: {{ item.quantity }} × RWF {{ item.product.price|floatformat:0 }}</div>
+                        <div class="summary-item-meta">
+                            Qty: {{ item.quantity }} × RWF {{ item.product.price|floatformat:0 }}
+                            {% if item.size %}
+                            <span style="display: block; margin-top: 4px; color: var(--accent-gold); font-weight: 600;">Size: EUR {{ item.size }}</span>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="summary-item-price">RWF {{ item.get_total_price|floatformat:0 }}</div>
                 </div>

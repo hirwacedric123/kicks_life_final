@@ -640,7 +640,22 @@
                                 <p class="order-meta">
                                     Order #{{ order.order_id }} • {{ order.buyer.username }} • 
                                     {{ order.quantity }}x • {{ order.purchase_price|currency }}
+                                    {% if order.size %}
+                                    <span style="display: block; margin-top: 4px; color: var(--accent-gold); font-weight: 600;">
+                                        <i class="bi bi-rulers"></i> Size: EUR {{ order.size }}
+                                    </span>
+                                    {% endif %}
                                 </p>
+                                {% if order.delivery_address %}
+                                <p class="order-meta" style="margin-top: 6px;">
+                                    <i class="bi bi-geo-alt"></i> {{ order.delivery_address|truncatechars:50 }}
+                                </p>
+                                {% endif %}
+                                {% if order.phone_number %}
+                                <p class="order-meta" style="margin-top: 4px;">
+                                    <i class="bi bi-telephone"></i> {{ order.buyer.phone_number|default:"N/A" }}
+                                </p>
+                                {% endif %}
                                 <small class="order-date">{{ order.created_at|date:"M d, Y H:i" }}</small>
                             </div>
                             <div class="text-end">

@@ -392,6 +392,11 @@
                 <div class="order-item-title">{{ purchase.product.title }}</div>
                 <div class="order-item-meta">Category: {{ purchase.product.get_category_display }}</div>
                 <div class="order-item-meta">Quantity: {{ purchase.quantity }}</div>
+                {% if purchase.size %}
+                <div class="order-item-meta" style="color: var(--accent-gold); font-weight: 600;">
+                    <i class="bi bi-rulers"></i> Size: EUR {{ purchase.size }}
+                </div>
+                {% endif %}
                 <div class="order-item-price">RWF {{ purchase.purchase_price|floatformat:0 }}</div>
             </div>
         </div>

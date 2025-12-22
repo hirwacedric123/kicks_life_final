@@ -141,6 +141,7 @@ class Purchase(models.Model):
     # Simplified fields for direct store operations
     notes = models.TextField(blank=True, null=True, help_text="Order notes or special instructions")
     tracking_number = models.CharField(max_length=100, blank=True, null=True, help_text="Tracking number for shipped orders")
+    size = models.CharField(max_length=10, blank=True, null=True, help_text="EUR shoe size (e.g., 42, 43, 44)")
     
     def save(self, *args, **kwargs):
         if not self.order_id:
@@ -209,6 +210,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='cart_items')
     quantity = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+    size = models.CharField(max_length=10, blank=True, null=True, help_text="EUR shoe size (e.g., 42, 43, 44)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -225,7 +227,7 @@ class CartItem(models.Model):
     
     class Meta:
         ordering = ['-created_at']
-        unique_together = ['cart', 'product']
+        unique_together = [['cart', 'product', 'size']]
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='auxiliary_images')
