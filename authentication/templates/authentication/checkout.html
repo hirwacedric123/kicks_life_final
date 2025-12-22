@@ -64,6 +64,20 @@
         border-radius: 20px;
         padding: 30px;
         backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .checkout-form-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.6;
     }
 
     .section-title {
@@ -74,10 +88,25 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(251, 191, 36, 0.2);
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: var(--gradient-primary);
     }
 
     .section-title i {
         color: var(--accent-gold);
+        font-size: 1.4rem;
+        filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4));
     }
 
     /* Form Styles */
@@ -255,6 +284,20 @@
         position: sticky;
         top: 20px;
         height: fit-content;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .order-summary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+        opacity: 0.6;
     }
 
     .summary-items {
@@ -266,20 +309,34 @@
     .summary-item {
         display: flex;
         gap: 12px;
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.02);
     }
 
-    .summary-item:last-child {
-        border-bottom: none;
+    .summary-item:hover {
+        background: rgba(251, 191, 36, 0.05);
+        border-color: rgba(251, 191, 36, 0.2);
+        transform: translateX(4px);
     }
+
 
     .summary-item-image {
         width: 60px;
         height: 60px;
         object-fit: cover;
         border-radius: 8px;
-        border: 1px solid var(--card-border);
+        border: 2px solid var(--card-border);
+        transition: all 0.3s ease;
+    }
+
+    .summary-item:hover .summary-item-image {
+        border-color: var(--accent-gold);
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+        transform: scale(1.05);
     }
 
     .summary-item-details {
@@ -296,6 +353,12 @@
     .summary-item-meta {
         color: var(--text-muted);
         font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .summary-item-meta span {
+        color: var(--accent-gold);
+        font-weight: 600;
     }
 
     .summary-item-price {
@@ -307,7 +370,12 @@
     .summary-totals {
         margin-top: 20px;
         padding-top: 20px;
-        border-top: 2px solid var(--card-border);
+        border-top: 2px solid rgba(251, 191, 36, 0.3);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, transparent 100%);
+        padding: 20px;
+        border-radius: 12px;
+        margin-left: -20px;
+        margin-right: -20px;
     }
 
     .summary-row {
@@ -363,12 +431,15 @@
 
     .btn-checkout:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+        box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2);
+        filter: brightness(1.1);
     }
 
     .btn-checkout:active {
         transform: translateY(0);
+        box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3);
     }
+
 
     .btn-back-to-cart {
         display: inline-flex;
@@ -419,10 +490,11 @@
                         <i class="bi bi-truck"></i>
                         Delivery Information
                     </h2>
-                    <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid var(--accent-gold); border-radius: 10px; padding: 12px; margin-bottom: 20px;">
-                        <div style="display: flex; align-items: center; gap: 8px; color: var(--accent-gold); font-weight: 600; font-size: 14px;">
-                            <i class="bi bi-truck"></i>
+                    <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);">
+                        <div style="display: flex; align-items: center; gap: 10px; color: var(--accent-gold); font-weight: 700; font-size: 15px;">
+                            <i class="bi bi-truck" style="font-size: 18px; filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5));"></i>
                             <span>Free Home Delivery in Kigali</span>
+                            <span style="margin-left: auto; background: var(--gradient-primary); color: #0a0a0a; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;">FREE</span>
                         </div>
                     </div>
                     <label class="form-label">
@@ -545,9 +617,13 @@
                     <span class="label">Subtotal</span>
                     <span class="value">RWF {{ subtotal|floatformat:0 }}</span>
                 </div>
-                <div class="summary-row">
-                    <span class="label">Shipping</span>
-                    <span class="value" style="color: var(--accent-gold);">Free in Kigali</span>
+                <div class="summary-row" style="background: rgba(251, 191, 36, 0.1); padding: 10px 12px; border-radius: 8px; margin: 8px 0;">
+                    <span class="label" style="color: var(--text-primary); font-weight: 600;">
+                        <i class="bi bi-truck" style="color: var(--accent-gold); margin-right: 6px;"></i>Shipping
+                    </span>
+                    <span class="value" style="color: var(--accent-gold); font-weight: 700; font-size: 15px;">
+                        <i class="bi bi-check-circle-fill" style="margin-right: 4px;"></i>Free in Kigali
+                    </span>
                 </div>
                 <div class="summary-row total">
                     <span class="label">Total</span>
