@@ -285,7 +285,6 @@
         top: 20px;
         height: fit-content;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        position: relative;
         overflow: hidden;
     }
 
@@ -603,7 +602,7 @@
                         <div class="summary-item-meta">
                             Qty: {{ item.quantity }} × RWF {{ item.product.price|floatformat:0 }}
                             {% if item.size %}
-                            <span style="display: block; margin-top: 6px; color: var(--accent-gold); font-weight: 700; font-size: 13px; background: rgba(251, 191, 36, 0.1); padding: 4px 10px; border-radius: 6px; display: inline-block; border: 1px solid rgba(251, 191, 36, 0.3);">
+                            <span style="display: inline-block; margin-top: 6px; color: var(--accent-gold); font-weight: 700; font-size: 13px; background: rgba(251, 191, 36, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);">
                                 <i class="bi bi-rulers" style="margin-right: 4px;"></i>Size: EUR {{ item.size }}
                             </span>
                             {% endif %}
