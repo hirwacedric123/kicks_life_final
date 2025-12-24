@@ -28,6 +28,7 @@ urlpatterns = [
     
     # Admin dashboard
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('manage-orders/', views.manage_orders, name='manage_orders'),
     path('update-order-status/<int:purchase_id>/', views.update_order_status, name='update_order_status'),
     
     # User history and saved items

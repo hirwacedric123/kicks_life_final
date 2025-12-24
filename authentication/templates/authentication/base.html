@@ -356,6 +356,9 @@
                 <a href="{% url 'admin_dashboard' %}" class="nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" title="Admin Dashboard">
                     <i class="bi bi-speedometer2"></i>
                 </a>
+                <a href="{% url 'manage_orders' %}" class="nav-tab {% if request.resolver_match.url_name == 'manage_orders' %}active{% endif %}" title="Manage Orders">
+                    <i class="bi bi-clipboard-data"></i>
+                </a>
                 <a href="{% url 'create_product' %}" class="nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}" title="Add Product">
                     <i class="bi bi-plus-circle"></i>
                 </a>
@@ -405,6 +408,10 @@
                 <a href="{% url 'admin_dashboard' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
                     <i class="bi bi-speedometer2"></i>
                     <span>Admin</span>
+                </a>
+                <a href="{% url 'manage_orders' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'manage_orders' %}active{% endif %}">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Orders</span>
                 </a>
                 <a href="{% url 'create_product' %}" class="mobile-nav-tab {% if request.resolver_match.url_name == 'create_product' %}active{% endif %}">
                     <i class="bi bi-plus-circle"></i>

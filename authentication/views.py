@@ -16,7 +16,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.views.decorators.http import require_http_methods
 from django.db.models import Q, Sum, Count, Avg
 from django.utils import timezone
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
@@ -1584,6 +1584,85 @@ def admin_dashboard(request):
     return render(request, 'authentication/admin_dashboard.html', context)
 
 @login_required
+def manage_orders(request):
+    """Manage all customer orders - Admin only"""
+    if not request.user.is_admin:
+        messages.error(request, 'Access denied. Admin role required.')
+        return redirect('dashboard')
+    
+    # Get filter parameters
+    status_filter = request.GET.get('status', '')
+    search_query = request.GET.get('q', '').strip()
+    sort_by = request.GET.get('sort', 'newest')
+    
+    # Start with all purchases
+    purchases = Purchase.objects.all().select_related('buyer', 'product', 'product__user').order_by('-created_at')
+    
+    # Apply status filter
+    if status_filter and status_filter != 'all':
+        purchases = purchases.filter(status=status_filter)
+    
+    # Apply search filter
+    if search_query:
+        purchases = purchases.filter(
+            Q(order_id__icontains=search_query) |
+            Q(product__title__icontains=search_query) |
+            Q(buyer__username__icontains=search_query) |
+            Q(buyer__first_name__icontains=search_query) |
+            Q(buyer__last_name__icontains=search_query) |
+            Q(buyer__email__icontains=search_query)
+        )
+    
+    # Apply sorting
+    if sort_by == 'oldest':
+        purchases = purchases.order_by('created_at')
+    elif sort_by == 'price_low':
+        purchases = purchases.order_by('purchase_price')
+    elif sort_by == 'price_high':
+        purchases = purchases.order_by('-purchase_price')
+    elif sort_by == 'status':
+        purchases = purchases.order_by('status', '-created_at')
+    else:  # newest (default)
+        purchases = purchases.order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(purchases, 20)  # Show 20 orders per page
+    page_number = request.GET.get('page', 1)
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+    
+    # Calculate statistics
+    total_orders = Purchase.objects.count()
+    pending_count = Purchase.objects.filter(status='pending').count()
+    processing_count = Purchase.objects.filter(status='processing').count()
+    completed_count = Purchase.objects.filter(status='completed').count()
+    cancelled_count = Purchase.objects.filter(status='cancelled').count()
+    
+    # Calculate total revenue
+    total_revenue = Purchase.objects.filter(status='completed').aggregate(
+        total=Sum('purchase_price')
+    )['total'] or 0
+    
+    context = {
+        'orders': page_obj,
+        'total_orders': total_orders,
+        'pending_count': pending_count,
+        'processing_count': processing_count,
+        'completed_count': completed_count,
+        'cancelled_count': cancelled_count,
+        'total_revenue': total_revenue,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'sort_by': sort_by,
+    }
+    
+    return render(request, 'authentication/manage_orders.html', context)
+
+@login_required
 def update_order_status(request, purchase_id):
     """Update order status for admin"""
     if not request.user.is_admin:
@@ -1606,6 +1685,10 @@ def update_order_status(request, purchase_id):
         else:
             messages.error(request, 'Invalid status selected')
     
+    # Redirect back to manage_orders if coming from there, otherwise admin_dashboard
+    referer = request.META.get('HTTP_REFERER', '')
+    if 'manage-orders' in referer:
+        return redirect('manage_orders')
     return redirect('admin_dashboard')
 
 @login_required
