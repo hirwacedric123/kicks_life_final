@@ -296,6 +296,10 @@
         transition: all 0.3s ease;
     }
 
+    .table tbody tr {
+        cursor: pointer;
+    }
+
     .table tbody tr:hover {
         background: linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, rgba(251, 191, 36, 0.03) 100%);
         transform: translateX(4px);
@@ -733,7 +737,7 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                        <tr>
+                        <tr style="cursor: pointer;" onclick="window.location.href='{% url 'order_detail' order.id %}'">
                             <td>
                                 <span class="order-id">#{{ order.order_id }}</span>
                             </td>
@@ -781,7 +785,7 @@
                                     {{ order.get_status_display }}
                                 </span>
                             </td>
-                            <td>
+                            <td onclick="event.stopPropagation();">
                                 <form method="post" action="{% url 'update_order_status' order.id %}" class="d-inline">
                                     {% csrf_token %}
                                     <select name="status" class="status-select" onchange="this.form.submit()">

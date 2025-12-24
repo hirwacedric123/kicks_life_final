@@ -1663,6 +1663,25 @@ def manage_orders(request):
     return render(request, 'authentication/manage_orders.html', context)
 
 @login_required
+def order_detail(request, purchase_id):
+    """View detailed information about a specific order - Admin only"""
+    if not request.user.is_admin:
+        messages.error(request, 'Access denied. Admin role required.')
+        return redirect('dashboard')
+    
+    order = get_object_or_404(Purchase, id=purchase_id)
+    
+    # Get related orders from the same order_id (if multiple items in one order)
+    related_orders = Purchase.objects.filter(order_id=order.order_id).exclude(id=order.id)
+    
+    context = {
+        'order': order,
+        'related_orders': related_orders,
+    }
+    
+    return render(request, 'authentication/order_detail.html', context)
+
+@login_required
 def update_order_status(request, purchase_id):
     """Update order status for admin"""
     if not request.user.is_admin:
@@ -1685,9 +1704,11 @@ def update_order_status(request, purchase_id):
         else:
             messages.error(request, 'Invalid status selected')
     
-    # Redirect back to manage_orders if coming from there, otherwise admin_dashboard
+    # Redirect back to order_detail if coming from there, otherwise manage_orders or admin_dashboard
     referer = request.META.get('HTTP_REFERER', '')
-    if 'manage-orders' in referer:
+    if 'order/' in referer or 'order_detail' in referer:
+        return redirect('order_detail', purchase_id=purchase_id)
+    elif 'manage-orders' in referer:
         return redirect('manage_orders')
     return redirect('admin_dashboard')
 
