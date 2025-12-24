@@ -189,9 +189,10 @@
         padding: 0;
     }
 
-    /* Table Styles */
+    /* Table Styles - Enhanced Design */
     .table-responsive {
         overflow-x: auto;
+        padding: 0;
     }
 
     .table {
@@ -199,6 +200,7 @@
         margin: 0;
         border-collapse: separate;
         border-spacing: 0;
+        background: transparent;
     }
 
     .table thead {
@@ -208,80 +210,166 @@
     }
 
     .table th {
-        background: rgba(251, 191, 36, 0.05);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
         color: var(--accent-gold);
-        font-weight: 600;
-        padding: 18px 24px;
-        font-size: 12px;
+        font-weight: 700;
+        padding: 20px 24px;
+        font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 1px solid var(--card-border);
+        letter-spacing: 1px;
+        border-bottom: 2px solid rgba(251, 191, 36, 0.3);
         white-space: nowrap;
+        position: relative;
+    }
+
+    .table th:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 25%;
+        height: 50%;
+        width: 1px;
+        background: rgba(251, 191, 36, 0.2);
     }
 
     .table td {
-        padding: 18px 24px;
+        padding: 24px;
         vertical-align: middle;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         color: var(--text-secondary);
         font-size: 14px;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.01);
     }
 
     .table tbody tr {
         transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .table tbody tr::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: transparent;
+        transition: all 0.3s ease;
     }
 
     .table tbody tr:hover {
-        background: rgba(251, 191, 36, 0.03);
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, rgba(251, 191, 36, 0.03) 100%);
+        transform: translateX(4px);
+    }
+
+    .table tbody tr:hover::before {
+        background: var(--gradient-primary);
     }
 
     .table tbody tr:hover td {
         color: var(--text-primary);
     }
 
-    /* Order ID */
-    .order-id {
-        font-family: 'Space Mono', monospace;
-        font-weight: 600;
-        color: var(--text-primary);
-        background: rgba(251, 191, 36, 0.1);
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 13px;
-        border: 1px solid rgba(251, 191, 36, 0.2);
+    .table tbody tr:last-child td {
+        border-bottom: none;
     }
 
-    /* Product Info */
+    /* Order ID - Enhanced */
+    .order-id {
+        font-family: 'Space Mono', monospace;
+        font-weight: 700;
+        color: var(--text-primary);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 12px;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        display: inline-block;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover .order-id {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%);
+        border-color: var(--accent-gold);
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Product Info - Enhanced Design */
     .product-info {
         display: flex;
-        align-items: center;
-        gap: 14px;
+        align-items: flex-start;
+        gap: 16px;
+        min-width: 250px;
     }
 
     .product-image {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
         object-fit: cover;
         border: 2px solid var(--card-border);
         transition: all 0.3s ease;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .table tbody tr:hover .product-image {
         border-color: var(--accent-gold);
-        box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+        transform: scale(1.05);
+    }
+
+    .product-details {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
     }
 
     .product-title {
         color: var(--text-primary);
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 15px;
         transition: all 0.2s ease;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .product-title:hover {
         color: var(--accent-gold);
+    }
+
+    .product-size-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .product-size-badge {
+        background: rgba(251, 191, 36, 0.15);
+        color: var(--accent-gold);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .product-size-badge i {
+        font-size: 10px;
     }
 
     /* Seller Info */
@@ -292,98 +380,128 @@
     }
 
     .seller-avatar {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid var(--card-border);
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover .seller-avatar {
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
     }
 
     .seller-avatar-placeholder {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         background: var(--gradient-primary);
-        color: #0a0a0f;
+        color: #0a0a0a;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
+        border: 2px solid rgba(251, 191, 36, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover .seller-avatar-placeholder {
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
     }
 
     .seller-name {
-        color: var(--text-secondary);
+        color: var(--text-primary);
         font-size: 14px;
+        font-weight: 500;
     }
 
-    /* Date */
+    /* Date - Enhanced */
     .date-cell {
-        color: var(--text-muted);
+        color: var(--text-secondary);
         font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
     }
 
-    /* Price */
+    .date-cell::before {
+        content: '📅';
+        margin-right: 6px;
+        font-size: 12px;
+    }
+
+    /* Price - Enhanced */
     .price {
         font-weight: 700;
-        font-size: 15px;
+        font-size: 16px;
         background: var(--gradient-primary);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        white-space: nowrap;
     }
 
-    /* Status Badges */
+    /* Status Badges - Enhanced Design */
     .status-badge {
-        padding: 8px 16px;
+        padding: 10px 18px;
         border-radius: 50px;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         text-transform: capitalize;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .status-badge::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
     }
 
     .status-pending {
-        background: rgba(251, 191, 36, 0.15);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%);
         color: var(--accent-gold);
-        border: 1px solid rgba(251, 191, 36, 0.3);
+        border: 1px solid rgba(251, 191, 36, 0.4);
     }
 
     .status-pending::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
         background: var(--accent-gold);
         animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
     }
 
     .status-processing {
-        background: rgba(67, 97, 238, 0.15);
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.2) 0%, rgba(67, 97, 238, 0.15) 100%);
         color: #4361ee;
-        border: 1px solid rgba(67, 97, 238, 0.3);
+        border: 1px solid rgba(67, 97, 238, 0.4);
     }
 
     .status-processing::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
         background: #4361ee;
         animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(67, 97, 238, 0.6);
     }
 
     .status-completed {
-        background: rgba(34, 197, 94, 0.15);
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.15) 100%);
         color: #22c55e;
-        border: 1px solid rgba(34, 197, 94, 0.3);
+        border: 1px solid rgba(34, 197, 94, 0.4);
     }
 
     .status-completed::before {
         content: '✓';
         font-size: 10px;
+        background: #22c55e;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
     }
 
     .status-cancelled {
@@ -560,23 +678,44 @@
         }
 
         .table th, .table td {
-            padding: 10px 12px;
+            padding: 16px 12px;
             font-size: 12px;
         }
 
         .product-image {
-            width: 36px;
-            height: 36px;
+            width: 50px;
+            height: 50px;
+        }
+
+        .product-details {
+            min-width: 0;
+        }
+
+        .product-title {
+            font-size: 13px;
         }
 
         .order-id {
-            font-size: 11px;
-            padding: 4px 8px;
+            font-size: 10px;
+            padding: 6px 10px;
         }
 
         .status-badge {
-            padding: 6px 10px;
+            padding: 8px 12px;
             font-size: 10px;
+        }
+
+        .seller-avatar, .seller-avatar-placeholder {
+            width: 32px;
+            height: 32px;
+        }
+
+        .seller-name {
+            font-size: 12px;
+        }
+
+        .price {
+            font-size: 14px;
         }
     }
 </style>
@@ -663,13 +802,22 @@
                                 <div class="product-info">
                                     {% if purchase.product.image %}
                                     <img src="{{ purchase.product.image.url }}" alt="{{ purchase.product.title }}" class="product-image">
-                                    {% endif %}
-                                    <a href="{% url 'post_detail' purchase.product.id %}" class="product-title">{{ purchase.product.title|truncatechars:30 }}</a>
-                                    {% if purchase.size %}
-                                    <div style="margin-top: 4px; color: var(--accent-gold); font-size: 12px; font-weight: 600;">
-                                        <i class="bi bi-rulers"></i> Size: EUR {{ purchase.size }}
+                                    {% else %}
+                                    <div class="product-image" style="background: rgba(251, 191, 36, 0.1); display: flex; align-items: center; justify-content: center; border: 2px solid rgba(251, 191, 36, 0.3);">
+                                        <i class="bi bi-image" style="font-size: 24px; color: var(--accent-gold);"></i>
                                     </div>
                                     {% endif %}
+                                    <div class="product-details">
+                                        <a href="{% url 'post_detail' purchase.product.id %}" class="product-title">{{ purchase.product.title }}</a>
+                                        {% if purchase.size %}
+                                        <div class="product-size-info">
+                                            <span class="product-size-badge">
+                                                <i class="bi bi-rulers"></i>
+                                                EUR {{ purchase.size }}
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </td>
                             <td>
