@@ -290,7 +290,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email Configuration for OTP
+# Email Configuration for OTP and Notifications
 if DEBUG:
     # For development, use console backend to see emails in terminal
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -303,6 +303,10 @@ else:
     EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
     DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'KoraQuest <noreply@koraquest.com>')
+
+# Company email for order notifications
+# Default to kickslife250@gmail.com, but can be overridden with COMPANY_ORDER_EMAIL environment variable
+COMPANY_ORDER_EMAIL = os.environ.get('COMPANY_ORDER_EMAIL', 'kickslife250@gmail.com')
 
 # QR Code Settings - Removed (not used)
 # QR_CODE_UPDATE_INTERVAL = 600  # 10 minutes in seconds

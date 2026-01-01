@@ -17,6 +17,8 @@ from django.views.decorators.http import require_http_methods
 from django.db.models import Q, Sum, Count, Avg
 from django.utils import timezone
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.conf import settings
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
@@ -30,6 +32,461 @@ from .forms import SignUpForm, ProductReviewForm, CheckoutForm
 from .models import User, Post, Purchase, Bookmark, ProductImage, ProductReview, Cart, CartItem
 # Removed QR and OTP utilities for simplified workflow
 from django.views.decorators.csrf import csrf_exempt
+
+# ============================================
+# EMAIL UTILITIES
+# ============================================
+
+def get_company_order_email_html(purchase):
+    """Generate HTML email template for company order notification"""
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Order Notification</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+            <tr>
+                <td align="center" style="padding: 40px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                                <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">🛍️ New Order Received</h1>
+                                <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px; opacity: 0.9;">Order #{purchase.order_id}</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Order Info Section -->
+                        <tr>
+                            <td style="padding: 30px;">
+                                <div style="background-color: #fef3c7; border-left: 4px solid #fbbf24; padding: 15px; margin-bottom: 25px; border-radius: 4px;">
+                                    <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 600;">
+                                        📅 Order Date: {purchase.created_at.strftime("%B %d, %Y at %I:%M %p")}
+                                    </p>
+                                    <p style="margin: 5px 0 0 0; color: #92400e; font-size: 14px;">
+                                        Status: <span style="background-color: #fbbf24; color: #000; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">{purchase.get_status_display()}</span>
+                                    </p>
+                                </div>
+                                
+                                <!-- Customer Information -->
+                                <h2 style="margin: 0 0 15px 0; color: #1f2937; font-size: 20px; font-weight: 600; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">👤 Customer Information</h2>
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Name:</strong> {purchase.buyer.get_full_name() or purchase.buyer.username}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Username:</strong> {purchase.buyer.username}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Email:</strong> <a href="mailto:{purchase.buyer.email or 'N/A'}" style="color: #2563eb; text-decoration: none;">{purchase.buyer.email or 'N/A'}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Phone:</strong> {purchase.buyer.phone_number or 'N/A'}</td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Product Information -->
+                                <h2 style="margin: 25px 0 15px 0; color: #1f2937; font-size: 20px; font-weight: 600; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">📦 Product Information</h2>
+                                <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Product:</strong> {purchase.product.title}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Category:</strong> {purchase.product.get_category_display()}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Quantity:</strong> {purchase.quantity}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Size:</strong> {purchase.size or 'N/A'}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <!-- Pricing -->
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                                    <tr>
+                                        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb;">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                <tr>
+                                                    <td style="color: #6b7280; font-size: 14px;">Unit Price:</td>
+                                                    <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600;">RWF {purchase.product.price:,.2f}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="color: #6b7280; font-size: 14px; padding-top: 8px;">Subtotal:</td>
+                                                    <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600; padding-top: 8px;">RWF {purchase.purchase_price:,.2f}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="color: #6b7280; font-size: 14px; padding-top: 8px;">Delivery Fee:</td>
+                                                    <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600; padding-top: 8px;">RWF {purchase.delivery_fee:,.2f}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px; background-color: #fef3c7;">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                <tr>
+                                                    <td style="color: #92400e; font-size: 16px; font-weight: 700;">Total Amount:</td>
+                                                    <td align="right" style="color: #92400e; font-size: 20px; font-weight: 700;">RWF {(purchase.purchase_price + purchase.delivery_fee):,.2f}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Delivery Information -->
+                                <h2 style="margin: 25px 0 15px 0; color: #1f2937; font-size: 20px; font-weight: 600; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">🚚 Delivery Information</h2>
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 25px;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Method:</strong> {purchase.get_delivery_method_display()}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Address:</strong> {purchase.delivery_address or 'N/A'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Payment Method:</strong> {purchase.get_payment_method_display()}</td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Notes -->
+                                {f'''<div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+                                    <p style="margin: 0 0 8px 0; color: #92400e; font-size: 14px; font-weight: 600;">📝 Special Notes:</p>
+                                    <p style="margin: 0; color: #92400e; font-size: 14px;">{purchase.notes}</p>
+                                </div>''' if purchase.notes else ''}
+                                
+                                <!-- Call to Action -->
+                                <div style="text-align: center; margin-top: 30px; padding-top: 25px; border-top: 2px solid #e5e7eb;">
+                                    <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 14px;">Please log in to the admin dashboard to process this order.</p>
+                                    <a href="#" style="display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #000000; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; font-size: 14px;">View Order in Dashboard</a>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #1f2937; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
+                                <p style="margin: 0; color: #9ca3af; font-size: 12px;">This is an automated notification from <strong style="color: #fbbf24;">KicksLife250</strong></p>
+                                <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 11px;">© {purchase.created_at.year} KicksLife250. All rights reserved.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    return html_content
+
+def send_order_notification_email(purchase):
+    """Send email notification to company when a new order is placed"""
+    try:
+        company_email = getattr(settings, 'COMPANY_ORDER_EMAIL', None)
+        
+        # If no company email is set, try to use EMAIL_HOST_USER as fallback
+        if not company_email:
+            company_email = getattr(settings, 'EMAIL_HOST_USER', None)
+        
+        # If still no email, skip sending
+        if not company_email:
+            return False
+        
+        # Prepare email content
+        subject = f'🛍️ New Order Received - {purchase.order_id}'
+        
+        # Plain text version (fallback)
+        plain_message = f"""
+New Order Notification
+
+Order ID: {purchase.order_id}
+Date: {purchase.created_at.strftime("%B %d, %Y at %I:%M %p")}
+Status: {purchase.get_status_display()}
+
+Customer: {purchase.buyer.get_full_name() or purchase.buyer.username}
+Email: {purchase.buyer.email or 'N/A'}
+Phone: {purchase.buyer.phone_number or 'N/A'}
+
+Product: {purchase.product.title}
+Quantity: {purchase.quantity}
+Total: RWF {(purchase.purchase_price + purchase.delivery_fee):,.2f}
+
+Please log in to the admin dashboard to process this order.
+"""
+        
+        # HTML version
+        html_message = get_company_order_email_html(purchase)
+        
+        # Create email
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[company_email],
+        )
+        email.attach_alternative(html_message, "text/html")
+        email.send(fail_silently=False)
+        
+        return True
+    except Exception as e:
+        # Log error but don't break the order process
+        print(f"Error sending order notification email: {str(e)}")
+        return False
+
+def get_customer_order_confirmation_html(purchase):
+    """Generate HTML email template for customer order confirmation"""
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Confirmation</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+            <tr>
+                <td align="center" style="padding: 40px 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                                <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">✅ Thank You!</h1>
+                                <p style="margin: 15px 0 0 0; color: #ffffff; font-size: 18px; opacity: 0.95;">Your order has been confirmed</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Greeting -->
+                        <tr>
+                            <td style="padding: 30px 30px 20px 30px;">
+                                <p style="margin: 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
+                                    Dear <strong>{purchase.buyer.get_full_name() or purchase.buyer.username}</strong>,
+                                </p>
+                                <p style="margin: 15px 0 0 0; color: #4b5563; font-size: 15px; line-height: 1.6;">
+                                    We have received your order and are processing it. Here are your order details:
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Order Info Card -->
+                        <tr>
+                            <td style="padding: 0 30px 25px 30px;">
+                                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fbbf24; padding: 20px; border-radius: 8px; text-align: center;">
+                                    <p style="margin: 0 0 8px 0; color: #92400e; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Order Number</p>
+                                    <p style="margin: 0; color: #000000; font-size: 24px; font-weight: 700; font-family: 'Courier New', monospace;">{purchase.order_id}</p>
+                                    <p style="margin: 10px 0 0 0; color: #92400e; font-size: 13px;">{purchase.created_at.strftime("%B %d, %Y at %I:%M %p")}</p>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Product Details -->
+                        <tr>
+                            <td style="padding: 0 30px 25px 30px;">
+                                <h2 style="margin: 0 0 15px 0; color: #1f2937; font-size: 20px; font-weight: 600; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">📦 Order Details</h2>
+                                <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid #fbbf24;">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 8px 0;">
+                                                <p style="margin: 0; color: #1f2937; font-size: 18px; font-weight: 600;">{purchase.product.title}</p>
+                                                <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">{purchase.product.get_category_display()}</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 15px 0 0 0; border-top: 1px solid #e5e7eb; margin-top: 15px;">
+                                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td style="color: #6b7280; font-size: 14px; padding: 5px 0;">Quantity:</td>
+                                                        <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600; padding: 5px 0;">{purchase.quantity}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="color: #6b7280; font-size: 14px; padding: 5px 0;">Size:</td>
+                                                        <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600; padding: 5px 0;">{purchase.size or 'N/A'}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="color: #6b7280; font-size: 14px; padding: 5px 0;">Unit Price:</td>
+                                                        <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600; padding: 5px 0;">RWF {purchase.product.price:,.2f}</td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Pricing Summary -->
+                        <tr>
+                            <td style="padding: 0 30px 25px 30px;">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                                    <tr>
+                                        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb;">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                <tr>
+                                                    <td style="color: #6b7280; font-size: 14px; padding: 5px 0;">Subtotal:</td>
+                                                    <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600; padding: 5px 0;">RWF {purchase.purchase_price:,.2f}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="color: #6b7280; font-size: 14px; padding: 5px 0;">Delivery Fee:</td>
+                                                    <td align="right" style="color: #1f2937; font-size: 14px; font-weight: 600; padding: 5px 0;">RWF {purchase.delivery_fee:,.2f}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 20px 15px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                <tr>
+                                                    <td style="color: #000000; font-size: 18px; font-weight: 700;">Total Amount:</td>
+                                                    <td align="right" style="color: #000000; font-size: 24px; font-weight: 700;">RWF {(purchase.purchase_price + purchase.delivery_fee):,.2f}</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Delivery Info -->
+                        <tr>
+                            <td style="padding: 0 30px 25px 30px;">
+                                <h2 style="margin: 0 0 15px 0; color: #1f2937; font-size: 20px; font-weight: 600; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">🚚 Delivery Information</h2>
+                                <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Method:</strong> {purchase.get_delivery_method_display()}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Address:</strong> {purchase.delivery_address or 'N/A'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0; color: #4b5563; font-size: 14px;"><strong style="color: #1f2937;">Payment:</strong> {purchase.get_payment_method_display()}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Notes -->
+                        {f'''<tr>
+                            <td style="padding: 0 30px 25px 30px;">
+                                <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #fbbf24;">
+                                    <p style="margin: 0 0 8px 0; color: #92400e; font-size: 14px; font-weight: 600;">📝 Special Instructions:</p>
+                                    <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">{purchase.notes}</p>
+                                </div>
+                            </td>
+                        </tr>''' if purchase.notes else ''}
+                        
+                        <!-- What's Next -->
+                        <tr>
+                            <td style="padding: 0 30px 25px 30px;">
+                                <h2 style="margin: 0 0 15px 0; color: #1f2937; font-size: 20px; font-weight: 600; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">✨ What's Next?</h2>
+                                <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e;">
+                                    <ol style="margin: 0; padding-left: 20px; color: #166534; font-size: 14px; line-height: 2;">
+                                        <li style="margin-bottom: 8px;">We will review your order and confirm availability</li>
+                                        <li style="margin-bottom: 8px;">You will receive updates on your order status</li>
+                                        <li style="margin-bottom: 8px;">For home delivery orders, we will contact you to arrange delivery</li>
+                                        <li>You can track your order status in your account dashboard</li>
+                                    </ol>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Support -->
+                        <tr>
+                            <td style="padding: 0 30px 30px 30px;">
+                                <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb; text-align: center;">
+                                    <p style="margin: 0 0 10px 0; color: #1e40af; font-size: 14px; font-weight: 600;">Need Help?</p>
+                                    <p style="margin: 0 0 8px 0; color: #1e40af; font-size: 13px;">If you have any questions about your order, please contact us:</p>
+                                    <p style="margin: 0; color: #1e40af; font-size: 13px;">
+                                        📧 <a href="mailto:kickslife250@gmail.com" style="color: #2563eb; text-decoration: none; font-weight: 600;">kickslife250@gmail.com</a>
+                                    </p>
+                                    <p style="margin: 5px 0 0 0; color: #1e40af; font-size: 13px;">
+                                        🆔 Order ID: <strong>{purchase.order_id}</strong>
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #1f2937; padding: 30px; text-align: center; border-radius: 0 0 8px 8px;">
+                                <p style="margin: 0 0 10px 0; color: #fbbf24; font-size: 20px; font-weight: 700;">KicksLife250</p>
+                                <p style="margin: 0 0 15px 0; color: #9ca3af; font-size: 14px;">Thank you for shopping with us!</p>
+                                <p style="margin: 0; color: #6b7280; font-size: 11px;">© {purchase.created_at.year} KicksLife250. All rights reserved.</p>
+                                <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 11px;">This is an automated email. Please do not reply to this message.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    return html_content
+
+def send_customer_order_confirmation_email(purchase):
+    """Send order confirmation email to customer when they place an order"""
+    try:
+        # Check if customer has an email address
+        customer_email = purchase.buyer.email
+        if not customer_email:
+            return False
+        
+        # Prepare email content
+        subject = f'✅ Order Confirmation - {purchase.order_id}'
+        
+        # Plain text version (fallback)
+        plain_message = f"""
+Thank you for your order!
+
+Dear {purchase.buyer.get_full_name() or purchase.buyer.username},
+
+We have received your order and are processing it.
+
+Order ID: {purchase.order_id}
+Order Date: {purchase.created_at.strftime("%B %d, %Y at %I:%M %p")}
+
+Product: {purchase.product.title}
+Quantity: {purchase.quantity}
+Total: RWF {(purchase.purchase_price + purchase.delivery_fee):,.2f}
+
+What's Next?
+1. We will review your order and confirm availability
+2. You will receive updates on your order status
+3. For home delivery orders, we will contact you to arrange delivery
+4. You can track your order status in your account dashboard
+
+Need Help?
+Email: kickslife250@gmail.com
+Order ID: {purchase.order_id}
+
+Thank you for shopping with KicksLife250!
+"""
+        
+        # HTML version
+        html_message = get_customer_order_confirmation_html(purchase)
+        
+        # Create email
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[customer_email],
+        )
+        email.attach_alternative(html_message, "text/html")
+        email.send(fail_silently=False)
+        
+        return True
+    except Exception as e:
+        # Log error but don't break the order process
+        print(f"Error sending customer order confirmation email: {str(e)}")
+        return False
 
 # ============================================
 # LANDING PAGE (PUBLIC)
@@ -998,6 +1455,12 @@ def purchase_product(request, post_id):
         
         purchase.save()
         
+        # Send order notification email to company
+        send_order_notification_email(purchase)
+        
+        # Send order confirmation email to customer
+        send_customer_order_confirmation_email(purchase)
+        
         # Update inventory immediately after successful purchase
         product.inventory -= quantity
         
@@ -1488,6 +1951,12 @@ def process_checkout(request):
         # Update product inventory
         cart_item.product.inventory -= cart_item.quantity
         cart_item.product.save()
+        
+        # Send order notification email to company
+        send_order_notification_email(purchase)
+        
+        # Send order confirmation email to customer
+        send_customer_order_confirmation_email(purchase)
         
         created_purchases.append(purchase)
     
