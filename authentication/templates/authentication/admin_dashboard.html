@@ -231,11 +231,13 @@
         margin-bottom: 12px;
         transition: all 0.3s ease;
         border-left: 4px solid var(--accent-gold);
+        cursor: pointer;
     }
 
     .order-card:hover {
         background: rgba(251, 191, 36, 0.03);
         border-left-color: var(--accent-amber);
+        transform: translateX(4px);
     }
 
     .order-card h6 {
@@ -356,16 +358,41 @@
     }
 
     /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: var(--text-muted);
-    }
+        .empty-state {
+            padding: 30px 15px;
+        }
+
+        .empty-state i {
+            font-size: 1.5rem;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+        }
+
+        .section-header .btn-add-product {
+            width: 100%;
+            justify-content: center;
+        }
 
     .empty-state i {
         font-size: 2rem;
         margin-bottom: 12px;
         opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 14px;
     }
 
     /* Products Grid */
@@ -540,10 +567,21 @@
 
         .page-header {
             flex-direction: column;
+            align-items: flex-start;
         }
 
         .page-title {
             font-size: 1.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+        }
+
+        .btn-add-product {
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
         }
 
         .stats-grid {
@@ -559,19 +597,265 @@
             font-size: 1.25rem;
         }
 
+        .stats-card .icon-wrapper {
+            width: 48px;
+            height: 48px;
+        }
+
+        .stats-card i {
+            font-size: 1.25rem;
+        }
+
+        .cards-grid {
+            gap: 16px;
+        }
+
+        .dashboard-card {
+            border-radius: 16px;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+        }
+
+        .card-header h5 {
+            font-size: 14px;
+        }
+
+        .card-body {
+            padding: 16px 20px;
+        }
+
+        /* Order Card Responsive */
+        .order-card {
+            padding: 12px 16px;
+            margin-bottom: 10px;
+        }
+
+        .order-card .d-flex {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .order-card .text-end {
+            text-align: left !important;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .order-card h6 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .order-card .order-meta {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .order-card .order-date {
+            font-size: 11px;
+            display: block;
+            margin-top: 6px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            font-size: 10px;
+        }
+
+        .status-select {
+            padding: 8px 10px;
+            font-size: 11px;
+            min-width: 120px;
+        }
+
         .products-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
         }
+
+        .product-card {
+            padding: 12px;
+        }
+
+        .product-card img {
+            width: 60px;
+            height: 60px;
+        }
+
+        .product-card h6 {
+            font-size: 13px;
+        }
+
+        .product-card .product-meta {
+            font-size: 11px;
+        }
+
+        .product-buttons {
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .product-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Stock Item Responsive */
+        .stock-item {
+            padding: 12px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .stock-badge {
+            align-self: flex-end;
+            font-size: 11px;
+            padding: 4px 10px;
+        }
     }
 
     @media (max-width: 480px) {
+        .admin-container {
+            padding: 12px;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+        }
+
+        .page-subtitle {
+            font-size: 12px;
+        }
+
         .stats-grid {
             grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .stats-card {
+            padding: 14px;
+        }
+
+        .stats-card .stat-value {
+            font-size: 1.1rem;
+        }
+
+        .stats-card .stat-label {
+            font-size: 11px;
+        }
+
+        .cards-grid {
+            gap: 12px;
+        }
+
+        .card-header {
+            padding: 14px 16px;
+        }
+
+        .card-body {
+            padding: 14px 16px;
+        }
+
+        /* Order Card Mobile */
+        .order-card {
+            padding: 10px 12px;
+            border-radius: 12px;
+        }
+
+        .order-card h6 {
+            font-size: 13px;
+        }
+
+        .order-card .order-meta {
+            font-size: 11px;
+            word-break: break-word;
+        }
+
+        .order-card .text-end {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .status-select {
+            width: 100%;
+            min-width: unset;
         }
 
         .products-grid {
             grid-template-columns: 1fr;
+        }
+
+        .product-card {
+            padding: 10px;
+        }
+
+        .product-card img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .product-card h6 {
+            font-size: 12px;
+        }
+
+        .product-card .product-meta {
+            font-size: 10px;
+        }
+
+        .stock-item {
+            padding: 10px;
+        }
+
+        .stock-item h6 {
+            font-size: 12px;
+        }
+
+        .stock-item small {
+            font-size: 10px;
+        }
+
+        .empty-state {
+            padding: 20px 12px;
+        }
+
+        .empty-state i {
+            font-size: 1.25rem;
+        }
+
+        .empty-state p {
+            font-size: 11px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+        }
+    }
+
+    /* Touch-friendly improvements for mobile */
+    @media (max-width: 768px) {
+        .order-card {
+            min-height: 44px; /* Minimum touch target size */
+        }
+
+        .status-select {
+            min-height: 44px; /* Minimum touch target size */
+        }
+
+        .product-btn {
+            min-height: 44px;
+            padding: 10px 16px;
+        }
+
+        .btn-add-product {
+            min-height: 44px;
         }
     }
 </style>
@@ -633,7 +917,7 @@
             <div class="card-body">
                 {% if recent_orders %}
                     {% for order in recent_orders %}
-                    <div class="order-card">
+                    <div class="order-card" onclick="window.location.href='{% url 'order_detail' order.id %}'">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h6>{{ order.product.title }}</h6>
@@ -658,14 +942,14 @@
                                 {% endif %}
                                 <small class="order-date">{{ order.created_at|date:"M d, Y H:i" }}</small>
                             </div>
-                            <div class="text-end">
+                            <div class="text-end" onclick="event.stopPropagation()">
                                 <span class="status-badge status-{{ order.status }}">
                                     {{ order.get_status_display }}
                                 </span>
                                 <div class="mt-2">
-                                    <form method="post" action="{% url 'update_order_status' order.id %}" class="d-inline">
+                                    <form method="post" action="{% url 'update_order_status' order.id %}" class="d-inline" onclick="event.stopPropagation()">
                                         {% csrf_token %}
-                                        <select name="status" class="status-select" onchange="this.form.submit()">
+                                        <select name="status" class="status-select" onchange="this.form.submit(); event.stopPropagation();">
                                             <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
                                             <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
                                             <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Shipped</option>
