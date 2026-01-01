@@ -1664,15 +1664,27 @@ def manage_orders(request):
 
 @login_required
 def order_detail(request, purchase_id):
-    """View detailed information about a specific order - Admin only"""
-    if not request.user.is_admin:
-        messages.error(request, 'Access denied. Admin role required.')
-        return redirect('dashboard')
-    
+    """View detailed information about a specific order - Admin or Vendor (for their own products)"""
     order = get_object_or_404(Purchase, id=purchase_id)
     
+    # Check if user is admin or if user is the vendor who owns the product
+    is_admin = request.user.is_admin
+    is_vendor_owner = order.product.user == request.user
+    
+    if not (is_admin or is_vendor_owner):
+        messages.error(request, 'Access denied. You can only view orders for your own products.')
+        return redirect('dashboard')
+    
     # Get related orders from the same order_id (if multiple items in one order)
-    related_orders = Purchase.objects.filter(order_id=order.order_id).exclude(id=order.id)
+    # For vendors, only show related orders for their own products
+    if is_admin:
+        related_orders = Purchase.objects.filter(order_id=order.order_id).exclude(id=order.id)
+    else:
+        # Vendor can only see related orders for their own products
+        related_orders = Purchase.objects.filter(
+            order_id=order.order_id,
+            product__user=request.user
+        ).exclude(id=order.id)
     
     context = {
         'order': order,

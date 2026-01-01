@@ -189,7 +189,7 @@
                     </thead>
                     <tbody>
                         {% for purchase in recent_purchases %}
-                        <tr>
+                        <tr style="cursor: pointer;" onclick="window.location.href='{% url 'order_detail' purchase.id %}'">
                             <td>
                                 <span class="order-id">{{ purchase.order_id }}</span>
                             </td>
