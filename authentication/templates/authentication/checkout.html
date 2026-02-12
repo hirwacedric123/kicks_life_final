@@ -439,6 +439,35 @@
         box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3);
     }
 
+    .btn-whatsapp {
+        width: 100%;
+        padding: 18px 24px;
+        background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+        border: none;
+        border-radius: 12px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 17px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35);
+    }
+
+    .btn-whatsapp:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(37, 211, 102, 0.45);
+        filter: brightness(1.05);
+        color: #fff;
+    }
+
+    .btn-whatsapp i {
+        font-size: 22px;
+    }
 
     .btn-back-to-cart {
         display: inline-flex;
@@ -474,116 +503,29 @@
             <i class="bi bi-arrow-left"></i> Back to Cart
         </a>
         <h1 class="checkout-title">Checkout</h1>
-        <p class="checkout-subtitle">Complete your order by providing shipping and payment information</p>
+        <p class="checkout-subtitle">Send your order via WhatsApp — no form to fill. We'll confirm and arrange delivery in the chat.</p>
     </div>
 
     <div class="checkout-content">
-        <!-- Checkout Form -->
+        <!-- Order via WhatsApp -->
         <div class="checkout-form-section">
-            <form method="POST" action="{% url 'process_checkout' %}" id="checkoutForm">
-                {% csrf_token %}
-                
-                <!-- Delivery Address -->
-                <div class="form-group">
-                    <h2 class="section-title">
-                        <i class="bi bi-truck"></i>
-                        Delivery Information
-                    </h2>
-                    <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);">
-                        <div style="display: flex; align-items: center; gap: 10px; color: var(--accent-gold); font-weight: 700; font-size: 15px;">
-                            <i class="bi bi-truck" style="font-size: 18px; filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5));"></i>
-                            <span>Free Home Delivery in Kigali</span>
-                            <span style="margin-left: auto; background: var(--gradient-primary); color: #0a0a0a; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;">FREE</span>
-                        </div>
-                    </div>
-                    <label class="form-label">
-                        Delivery Address <span class="required">*</span>
-                    </label>
-                    {{ form.delivery_address }}
-                    {% if form.delivery_address.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.delivery_address.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                    <div class="form-help">Enter your complete delivery address (Street, Sector, District)</div>
-                </div>
-
-                <!-- Payment Method -->
-                <div class="form-group">
-                    <h2 class="section-title">
-                        <i class="bi bi-credit-card"></i>
-                        Payment Method
-                    </h2>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="payment_method" value="momo" {% if form.payment_method.value == 'momo' or not form.payment_method.value %}checked{% endif %}>
-                            <div class="radio-label">
-                                <div>Mobile Money</div>
-                                <div class="radio-description">Pay with MTN Mobile Money or Airtel Money</div>
-                            </div>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="payment_method" value="credit" {% if form.payment_method.value == 'credit' %}checked{% endif %}>
-                            <div class="radio-label">
-                                <div>Credit Card</div>
-                                <div class="radio-description">Pay with Visa or Mastercard</div>
-                            </div>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="payment_method" value="cash" {% if form.payment_method.value == 'cash' %}checked{% endif %}>
-                            <div class="radio-label">
-                                <div>Cash on Delivery</div>
-                                <div class="radio-description">Pay when you receive your order</div>
-                            </div>
-                        </label>
-                    </div>
-                    {% if form.payment_method.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.payment_method.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-
-                <!-- Contact Information -->
-                <div class="shipping-info-section">
-                    <h2 class="section-title">
-                        <i class="bi bi-person"></i>
-                        Contact Information
-                    </h2>
-                    
-                    <div class="form-group">
-                        <label class="form-label">
-                            Phone Number <span class="required">*</span>
-                        </label>
-                        {{ form.phone_number }}
-                        {% if form.phone_number.errors %}
-                            <ul class="errorlist">
-                                {% for error in form.phone_number.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
-                        <div class="form-help">We'll use this to contact you about your order</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Order Notes (Optional)</label>
-                        {{ form.notes }}
-                        {% if form.notes.errors %}
-                            <ul class="errorlist">
-                                {% for error in form.notes.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
-                        <div class="form-help">Any special instructions or notes for your order</div>
-                    </div>
-                </div>
-            </form>
+            <h2 class="section-title">
+                <i class="bi bi-whatsapp"></i>
+                Order via WhatsApp
+            </h2>
+            <div style="background: linear-gradient(135deg, rgba(37, 211, 102, 0.15) 0%, rgba(34, 150, 80, 0.1) 100%); border: 2px solid rgba(37, 211, 102, 0.5); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <p style="color: var(--text-primary); margin: 0 0 12px 0; font-size: 15px;">
+                    <i class="bi bi-check-circle-fill" style="color: #25d366;"></i>
+                    <strong>Simple & fast.</strong> Click the button below to open WhatsApp with your order already written. Just add your delivery address and phone in the chat and send.
+                </p>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">
+                    Free delivery in Kigali. We'll confirm payment options and delivery with you on WhatsApp.
+                </p>
+            </div>
+            <a href="{{ whatsapp_order_url }}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
+                <i class="bi bi-whatsapp"></i>
+                Send order via WhatsApp
+            </a>
         </div>
 
         <!-- Order Summary -->
@@ -632,75 +574,17 @@
                 </div>
             </div>
 
-            <button type="submit" form="checkoutForm" class="btn-checkout">
-                <i class="bi bi-lock-fill"></i>
-                Place Order
-            </button>
+            <a href="{{ whatsapp_order_url }}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp" style="margin-top: 20px;">
+                <i class="bi bi-whatsapp"></i>
+                Send order via WhatsApp
+            </a>
 
             <div style="margin-top: 20px; text-align: center; font-size: 12px; color: var(--text-muted);">
-                <i class="bi bi-shield-check"></i> Secure checkout
+                <i class="bi bi-chat-dots"></i> We'll confirm your order and delivery on WhatsApp
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    // Form validation and text color fix
-    document.addEventListener('DOMContentLoaded', function() {
-        const deliveryAddressInput = document.querySelector('textarea[name="delivery_address"]');
-
-        // Fix text color for all form inputs
-        const formInputs = document.querySelectorAll('.form-control');
-        formInputs.forEach(input => {
-            // Set initial color
-            input.style.color = '#ffffff';
-            
-            // Fix color on focus
-            input.addEventListener('focus', function() {
-                this.style.color = '#ffffff';
-            });
-            
-            // Fix color on input/typing
-            input.addEventListener('input', function() {
-                this.style.color = '#ffffff';
-            });
-            
-            // Fix color on blur
-            input.addEventListener('blur', function() {
-                this.style.color = '#ffffff';
-            });
-        });
-
-        // Monitor for autofill and fix color
-        setTimeout(function() {
-            formInputs.forEach(input => {
-                if (window.getComputedStyle(input).getPropertyValue('-webkit-text-fill-color') !== 'rgb(255, 255, 255)') {
-                    input.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
-                    input.style.color = '#ffffff';
-                }
-            });
-        }, 100);
-
-        // Check periodically for autofill
-        setInterval(function() {
-            formInputs.forEach(input => {
-                if (input.matches(':-webkit-autofill')) {
-                    input.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
-                    input.style.color = '#ffffff';
-                }
-            });
-        }, 500);
-
-        // Form validation
-        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-            if (!deliveryAddressInput.value.trim()) {
-                e.preventDefault();
-                alert('Please enter a delivery address.');
-                deliveryAddressInput.focus();
-                return false;
-            }
-        });
-    });
-</script>
 {% endblock %}
 

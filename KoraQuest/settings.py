@@ -421,3 +421,6 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+# WhatsApp order number (no + or spaces) - used for "Order via WhatsApp" links
+WHATSAPP_ORDER_NUMBER = os.environ.get('WHATSAPP_ORDER_NUMBER', '250792033104')

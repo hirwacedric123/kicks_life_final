@@ -3,6 +3,7 @@ import csv
 import io
 import json
 from datetime import datetime
+from urllib.parse import quote
 from decimal import Decimal
 import json
 
@@ -1349,6 +1350,19 @@ def post_detail(request, post_id):
     seo_description = f"{post.title} - {post.description[:150]}... Buy now in Kigali, Rwanda. Price: RWF {post.price}. Fast delivery available."
     seo_keywords = f"{post.title}, {post.get_category_display}, shoes in Kigali, sneakers Rwanda, buy online, {post.get_category_display} Kigali"
     
+    whatsapp_number = getattr(settings, 'WHATSAPP_ORDER_NUMBER', '250792033104')
+    # Pre-built WhatsApp URL for single-product order (e.g. for guests)
+    if post.price is not None:
+        guest_wa_msg = (
+            f"Hi! I'd like to order from KicksLife250:\n\n"
+            f"*{post.title}*\n"
+            f"Price: RWF {post.price:,.0f}\n"
+            f"(Free delivery in Kigali)\n\n"
+            "Please send my delivery address and phone. Thanks!"
+        )
+        product_whatsapp_url = f"https://wa.me/{whatsapp_number}?text={quote(guest_wa_msg)}"
+    else:
+        product_whatsapp_url = f"https://wa.me/{whatsapp_number}"
     context = {
         'post': post,
         'product': post,  # For structured data
@@ -1361,6 +1375,8 @@ def post_detail(request, post_id):
         'is_liked': is_liked,
         'related_products': related_products,
         'category_products': category_products,
+        'whatsapp_order_number': whatsapp_number,
+        'product_whatsapp_url': product_whatsapp_url,
         # SEO
         'seo_title': f"{post.title} - KicksLife250 | Buy in Kigali, Rwanda",
         'seo_description': seo_description,
@@ -1851,12 +1867,24 @@ def checkout(request):
     delivery_fee = Decimal('0.00')  # Free shipping in Kigali
     total = cart.get_total(delivery_fee)
     
-    # Initialize form with user's phone number if available
-    initial_data = {}
-    if request.user.phone_number:
-        initial_data['phone_number'] = request.user.phone_number
-    
-    form = CheckoutForm(initial=initial_data)
+    # Build WhatsApp order message (pre-filled for customer to send)
+    lines = ["Hi! I'd like to place an order from KicksLife250.", "", "*My order:*"]
+    for item in cart_items:
+        line = f"• {item.product.title} × {item.quantity}"
+        if item.size:
+            line += f" — Size EUR {item.size}"
+        line += f" — RWF {item.get_total_price():,.0f}"
+        lines.append(line)
+    lines.extend([
+        "",
+        f"*Total:* RWF {total:,.0f}",
+        "(Free delivery in Kigali)",
+        "",
+        "Please send your delivery address and phone number in this chat. Thanks!",
+    ])
+    whatsapp_message = "\n".join(lines)
+    whatsapp_number = getattr(settings, 'WHATSAPP_ORDER_NUMBER', '250792033104')
+    whatsapp_order_url = f"https://wa.me/{whatsapp_number}?text={quote(whatsapp_message)}"
     
     context = {
         'cart': cart,
@@ -1864,7 +1892,7 @@ def checkout(request):
         'subtotal': subtotal,
         'delivery_fee': delivery_fee,
         'total': total,
-        'form': form,
+        'whatsapp_order_url': whatsapp_order_url,
     }
     
     return render(request, 'authentication/checkout.html', context)

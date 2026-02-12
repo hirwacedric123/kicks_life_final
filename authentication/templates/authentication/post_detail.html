@@ -293,10 +293,14 @@
                                             </select>
                                         </div>
                                         
-                                        <button type="submit" class="btn-primary" style="width: 100%;">
+                                        <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 10px;">
                                             <i class="bi bi-cart-plus"></i>
                                             Add to Cart
-                                    </button>
+                                        </button>
+                                        <button type="button" class="btn-whatsapp-product" id="order-whatsapp-btn" data-title="{{ post.title|escapejs }}" data-price="{{ post.price|floatformat:0 }}" data-wa="{{ whatsapp_order_number }}" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #25d366 0%, #128c7e 100%); border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                            <i class="bi bi-whatsapp" style="font-size: 18px;"></i>
+                                            Order via WhatsApp
+                                        </button>
                                     </form>
                                     <p class="security-note">
                                         <i class="bi bi-shield-check"></i>
@@ -318,13 +322,13 @@
                             {% endif %}
                         {% endif %}
                     {% else %}
-                        <!-- Guest User: Show login prompt for purchase -->
+                        <!-- Guest User: Order via WhatsApp or Login to Add to Cart -->
                         {% if post.price %}
                             {% if post.inventory > 0 %}
                             <div class="purchase-actions">
-                                <a href="{% url 'login' %}?next={% url 'post_detail' post.id %}" class="btn-primary">
-                                    <i class="bi bi-cart-plus"></i>
-                                    Login to Add to Cart
+                                <a href="{{ product_whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-product" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #25d366 0%, #128c7e 100%); border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="bi bi-whatsapp" style="font-size: 18px;"></i>
+                                    Order via WhatsApp
                                 </a>
                                 <p class="security-note">
                                     <i class="bi bi-shield-check"></i>
@@ -1407,6 +1411,25 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             });
+        });
+    }
+    
+    // Order via WhatsApp (single product)
+    const orderWhatsAppBtn = document.getElementById('order-whatsapp-btn');
+    if (orderWhatsAppBtn) {
+        orderWhatsAppBtn.addEventListener('click', function() {
+            const sizeSelect = document.getElementById('size-select');
+            const size = sizeSelect && sizeSelect.value ? sizeSelect.value : '';
+            const title = this.getAttribute('data-title') || '';
+            const price = this.getAttribute('data-price') || '';
+            const wa = this.getAttribute('data-wa') || '250792033104';
+            let msg = "Hi! I'd like to order from KicksLife250:\n\n";
+            msg += "*" + title + "*\n";
+            msg += "Quantity: 1\n";
+            if (size) msg += "Size: EUR " + size + "\n";
+            msg += "Price: RWF " + price + "\n";
+            msg += "\n(Free delivery in Kigali)\n\nPlease send my delivery address and phone in this chat. Thanks!";
+            window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank', 'noopener,noreferrer');
         });
     }
     
